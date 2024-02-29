@@ -52,7 +52,8 @@ function FindModelNew(G,T)
     print("Finding the family...");
     k,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T);
     N:=#BaseRing(G);
-    printf "thhe family key in the databese is %o",k;
+    printf "the family key in the databese is %o\n",k;
+    /*
     if not assigned famG`M then
         print("No modular curve record found in the family. Computing it...");
         M:=FindModelOfXG(CreateModularCurveRec0(famG`H),10 : G0:=famG`calG);
@@ -60,15 +61,16 @@ function FindModelNew(G,T)
     else
         M:=famG`M;
     end if;
+    */
     //Now we conjugate G so that it lies in fam_G`calG.
     
     G:=Gcong;
     T:=Tcong;//I hope this is okay.
     //Computing the cocycle related to H and G. See the paper for details.
-    printf "Computing the cocycle";
+    printf "Computing the cocycle\n";
     xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M);
     //Now the twist
-    printf "Twisting the curve...";
+    printf "Twisting the curve...\n";
     psi:=Twist(M,xi,K, famG`calG);
 
     return psi;
