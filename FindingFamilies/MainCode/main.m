@@ -1,0 +1,77 @@
+
+load "../OpenImage/main/FindOpenImage.m";
+load "../OpenImage/SZ-data/RationalFunctions.m";
+load "../OpenImage/SZ-data/GL2Invariants.m";
+
+//from SZ
+// given subgroups H1,H2 of G, returns true if H1 is conjugate in G to a subgroup of H2
+function IsConjugateToSubgroup(G,H1,H2)
+    if not IsDivisibleBy(#H2,#H1) then return false; end if;
+    if H1 subset H2 then return true; end if;   // handle easy cases quickly
+    n:=#H2 div #H1;
+    return #[H:H in Subgroups(H2:IndexEqual:=n)|IsConjugate(G,H`subgroup,H1)] ne 0;
+end function;
+
+
+
+load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
+I:=Open("../FamilyData/Genus1Families.dat", "r");
+FAM:=AssociativeArray();
+a:=1;
+repeat
+	b,y:=ReadObjectCheck(I);
+	if b then
+		FAM[a]:=y;
+	end if;
+    a:=a+1;
+until not b;
+
+
+
+load "../TwistingCode/H90.m";
+load "../FamilyFinder/aggclosurecreator.m";
+load "../TwistingCode/GroupToCocycle.m";
+load "../TwistingCode/TwistingCode.m";
+
+
+
+
+
+
+
+
+
+
+
+function FindModelNew(G,T)   
+    //Input: G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
+    //       T is G intersection SL2(Z/NZ)
+    //Output: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above. n is depends on the model of the family representative that is twist of G,
+    
+    //We first start with finding the family in our database that contains G. 
+    print("Finding the family...");
+    k,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T);
+    N:=#BaseRing(G);
+    printf "thhe family key in the databese is %o",k;
+    if not assigned famG`M then
+        print("No modular curve record found in the family. Computing it...");
+        M:=FindModelOfXG(CreateModularCurveRec0(famG`H),10 : G0:=famG`calG);
+        printf "Computed";
+    else
+        M:=famG`M;
+    end if;
+    //Now we conjugate G so that it lies in fam_G`calG.
+    
+    G:=Gcong;
+    T:=Tcong;//I hope this is okay.
+    //Computing the cocycle related to H and G. See the paper for details.
+    printf "Computing the cocycle";
+    xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M);
+    //Now the twist
+    printf "Twisting the curve...";
+    psi:=Twist(M,xi,K, famG`calG);
+
+    return psi;
+end function; 
+
+//It workssssssssssssssssssssssssssssssssssssss!!!!!

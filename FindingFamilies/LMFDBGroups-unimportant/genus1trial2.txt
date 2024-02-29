@@ -1,0 +1,261 @@
+Magma V2.27-7     Tue Feb 27 2024 17:41:01 on fibonacci [Seed = 3313430317]
+
++-------------------------------------------------------------------+
+|       This copy of Magma has been made available through a        |
+|                   generous initiative of the                      |
+|                                                                   |
+|                         Simons Foundation                         |
+|                                                                   |
+| covering U.S. Colleges, Universities, Nonprofit Research entities,|
+|               and their students, faculty, and staff              |
++-------------------------------------------------------------------+
+
+Type ? for help.  Type <Ctrl>-D to quit.
+
+Loading file "/homes/ek693/Project/ComputeModel/FindingFamilies/LMFDBGroups/gen\
+us1trial.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/MainCode/main.m"
+Loading "FindOpenImage.m"
+Loading "../precomputation/ComputeFrobData.m"
+Loading "../main/GL2GroupTheory.m"
+Loading "../main/ModularCurves.m"
+Loading "../data-files/cyclic_invariant_polynomials.m"
+Loading "/homes/ek693/Project/ComputeModel/OpenImage/SZ-data/RationalFunctions.\
+m"
+Loading "/homes/ek693/Project/ComputeModel/OpenImage/SZ-data/GL2Invariants.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/FamilyData/familycre\
+atecodewithanarrayfosubgroup.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/TwistingCode/H90.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/FamilyFinder/aggclos\
+urecreator.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/TwistingCode/GroupTo\
+Cocycle.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/TwistingCode/Twistin\
+gCode.m"
+Loading "/homes/ek693/Project/ComputeModel/FindingFamilies/LMFDBGroups/genus1.m\
+"
+Finding the family...
+thhe family key in the databese is 3151Computing the cocycleTwisting the curve...1
+0.080
+Finding the family...
+thhe family key in the databese is 3153Computing the cocycleTwisting the curve...2
+0.040
+Finding the family...
+thhe family key in the databese is 3203Computing the cocycleTwisting the curve...3
+0.040
+Finding the family...
+thhe family key in the databese is 3282Computing the cocycleTwisting the curve...4
+0.050
+Finding the family...
+thhe family key in the databese is 3207Computing the cocycleTwisting the curve...5
+0.070
+Finding the family...
+thhe family key in the databese is 3263Computing the cocycleTwisting the curve...6
+0.030
+Finding the family...
+thhe family key in the databese is 3321Computing the cocycleTwisting the curve...7
+0.020
+Finding the family...
+thhe family key in the databese is 3323Computing the cocycleTwisting the curve...8
+0.030
+Finding the family...
+thhe family key in the databese is 3347Computing the cocycleTwisting the curve...9
+0.020
+Finding the family...
+thhe family key in the databese is 3361Computing the cocycleTwisting the curve...10
+0.020
+Finding the family...
+thhe family key in the databese is 3455Computing the cocycleTwisting the curve...11
+0.030
+Finding the family...
+thhe family key in the databese is 3412Computing the cocycleTwisting the curve...12
+0.060
+Finding the family...
+thhe family key in the databese is 3572Computing the cocycleTwisting the curve...13
+0.060
+Finding the family...
+thhe family key in the databese is 3551Computing the cocycleTwisting the curve...14
+0.030
+Finding the family...
+thhe family key in the databese is 3585Computing the cocycleTwisting the curve...15
+0.020
+Finding the family...
+thhe family key in the databese is 3647Computing the cocycleTwisting the curve...16
+0.230
+Finding the family...
+thhe family key in the databese is 3652Computing the cocycleTwisting the curve...17
+0.030
+Finding the family...
+thhe family key in the databese is 3668Computing the cocycleTwisting the curve...18
+0.020
+Finding the family...
+thhe family key in the databese is 3672Computing the cocycleTwisting the curve...19
+0.010
+Finding the family...
+thhe family key in the databese is 3688Computing the cocycleTwisting the curve...20
+0.020
+Finding the family...
+thhe family key in the databese is 3694Computing the cocycleTwisting the curve...21
+0.020
+Finding the family...
+thhe family key in the databese is 3704Computing the cocycleTwisting the curve...22
+0.050
+Finding the family...
+thhe family key in the databese is 3717Computing the cocycleTwisting the curve...23
+0.050
+Finding the family...
+thhe family key in the databese is 3739Computing the cocycleTwisting the curve...24
+0.050
+Finding the family...
+thhe family key in the databese is 3744Computing the cocycleTwisting the curve...25
+0.050
+Finding the family...
+thhe family key in the databese is 3999Computing the cocycleTwisting the curve...26
+0.240
+Finding the family...
+thhe family key in the databese is 3981Computing the cocycleTwisting the curve...27
+0.210
+Finding the family...
+thhe family key in the databese is 4227Computing the cocycleTwisting the curve...28
+0.250
+Finding the family...
+thhe family key in the databese is 4219Computing the cocycleTwisting the curve...29
+0.230
+Finding the family...
+thhe family key in the databese is 4281Computing the cocycleTwisting the curve...30
+0.240
+Finding the family...
+thhe family key in the databese is 4190Computing the cocycleTwisting the curve...31
+0.440
+Finding the family...
+thhe family key in the databese is 4318Computing the cocycleTwisting the curve...32
+0.240
+Finding the family...
+thhe family key in the databese is 4322Computing the cocycleTwisting the curve...33
+0.230
+Finding the family...
+thhe family key in the databese is 4080Computing the cocycleTwisting the curve...34
+0.220
+Finding the family...
+thhe family key in the databese is 4015Computing the cocycleTwisting the curve...35
+0.210
+Finding the family...
+thhe family key in the databese is 3807Computing the cocycleTwisting the curve...36
+0.210
+Finding the family...
+thhe family key in the databese is 3897Computing the cocycleTwisting the curve...37
+0.220
+Finding the family...
+thhe family key in the databese is 3799Computing the cocycleTwisting the curve...38
+0.220
+Finding the family...
+thhe family key in the databese is 3892Computing the cocycleTwisting the curve...39
+0.220
+Finding the family...
+thhe family key in the databese is 4125Computing the cocycleTwisting the curve...40
+0.210
+Finding the family...
+thhe family key in the databese is 3962Computing the cocycleTwisting the curve...41
+0.220
+Finding the family...
+thhe family key in the databese is 3827Computing the cocycleTwisting the curve...42
+0.220
+Finding the family...
+thhe family key in the databese is 3819Computing the cocycleTwisting the curve...43
+0.430
+Finding the family...
+thhe family key in the databese is 3890Computing the cocycleTwisting the curve...44
+0.210
+Finding the family...
+thhe family key in the databese is 3872Computing the cocycleTwisting the curve...45
+0.220
+Finding the family...
+thhe family key in the databese is 3969Computing the cocycleTwisting the curve...46
+0.210
+Finding the family...
+thhe family key in the databese is 3964Computing the cocycleTwisting the curve...47
+0.220
+Finding the family...
+thhe family key in the databese is 4316Computing the cocycleTwisting the curve...48
+0.240
+Finding the family...
+thhe family key in the databese is 4302Computing the cocycleTwisting the curve...49
+0.230
+Finding the family...
+thhe family key in the databese is 4163Computing the cocycleTwisting the curve...50
+0.250
+Finding the family...
+thhe family key in the databese is 4140Computing the cocycleTwisting the curve...51
+0.240
+Finding the family...
+thhe family key in the databese is 4310Computing the cocycleTwisting the curve...52
+0.240
+Finding the family...
+thhe family key in the databese is 4306Computing the cocycleTwisting the curve...53
+0.240
+Finding the family...
+thhe family key in the databese is 4155Computing the cocycleTwisting the curve...54
+0.240
+Finding the family...
+thhe family key in the databese is 4134Computing the cocycleTwisting the curve...55
+0.230
+Finding the family...
+thhe family key in the databese is 4187Computing the cocycleTwisting the curve...56
+0.450
+Finding the family...
+thhe family key in the databese is 4196Computing the cocycleTwisting the curve...57
+0.230
+Finding the family...
+thhe family key in the databese is 4367Computing the cocycleTwisting the curve...58
+0.040
+Finding the family...
+thhe family key in the databese is 4369Computing the cocycleTwisting the curve...59
+0.030
+Finding the family...
+thhe family key in the databese is 4361Computing the cocycleTwisting the curve...60
+0.040
+Finding the family...
+thhe family key in the databese is 4371Computing the cocycleTwisting the curve...61
+0.030
+Finding the family...
+thhe family key in the databese is 4489Computing the cocycleTwisting the curve...62
+0.510
+Finding the family...
+thhe family key in the databese is 4497Computing the cocycleTwisting the curve...63
+0.460
+Finding the family...
+thhe family key in the databese is 4930Computing the cocycleTwisting the curve...64
+0.460
+Finding the family...
+thhe family key in the databese is 4952Computing the cocycleTwisting the curve...65
+0.450
+Finding the family...
+thhe family key in the databese is 4944Computing the cocycleTwisting the curve...66
+0.460
+Finding the family...
+thhe family key in the databese is 5169Computing the cocycleTwisting the curve...67
+0.460
+Finding the family...
+thhe family key in the databese is 4379Computing the cocycleTwisting the curve...68
+0.460
+Finding the family...
+thhe family key in the databese is 5153Computing the cocycleTwisting the curve...69
+0.650
+Finding the family...
+thhe family key in the databese is 5174Computing the cocycleTwisting the curve...70
+0.460
+Finding the family...
+thhe family key in the databese is 4114No modular curve record found in the family. Computing it...
+
+FindModelNew(
+    G: MatrixGroup(2, IntegerRing(8)) of order 2^5,
+    T: MatrixGroup(2, IntegerRing(8)) of order 2^3
+)
+In file "/homes/ek693/Project/ComputeModel/FindingFamilies/MainCode/main.m", 
+line 76, column 53:
+>>         M:=FindModelOfXG(CreateModularCurveRec0(famG`H),10 : G0:=famG`calG)
+                                                       ^
+Runtime error in `: Field 'H' is not assigned
+
+
+Total time: 30.009 seconds, Total memory usage: 2435.84MB
