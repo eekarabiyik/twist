@@ -63,7 +63,7 @@ function FindModelNew(G,T)
     end if;
     */
     //Now we conjugate G so that it lies in fam_G`calG.
-    
+    M:=famG`M;
     G:=Gcong;
     T:=Tcong;//I hope this is okay.
     //Computing the cocycle related to H and G. See the paper for details.
