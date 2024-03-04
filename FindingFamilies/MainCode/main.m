@@ -15,7 +15,7 @@ end function;
 
 
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
-I:=Open("../FamilyData/Genus1Families.dat", "r");
+I:=Open("../FamilyData/Genus01Families.dat", "r");
 FAM:=AssociativeArray();
 a:=1;
 repeat
