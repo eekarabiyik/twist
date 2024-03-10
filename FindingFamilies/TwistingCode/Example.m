@@ -6,3 +6,12 @@ G0:=sub<GL(2,Integers(14)|[[ 13, 0, 0, 13 ],[ 13, 0, 6, 1 ],[ 3, 10, 8, 13 ],[ 1
 
 //This is the representative in the Family F(G0,G meet SL2)
 H:=sub<GL(2,Integers(56)|[[ 7, 16, 10, 23 ],[ 15, 0, 0, 15 ],[ 1, 42, 28, 43 ],[ 31, 20, 36, 39 ],[ 29, 0, 0, 29 ],[ 43, 14, 14, 15 ],[ 15, 42, 0, 1 ],[ 9, 0, 0, 9 ],[ 1, 14, 0, 1 ],[ 55, 0, 0, 55 ],[ 11, 22, 26, 47 ]])>;
+
+//The following is how I work this code.
+//Model for our representative
+M:=FindModelOfXG(CreateModularCurveRec0(H),30 : G0:=G0);
+//xi is cocycle, K is where it is defined.
+xi,K:=GroupToCocycle(G0,H,G,G meet SL(2,Integers(#BaseRing(G))),M);
+
+
+psi:=Twist(M,xi,K, G0);
