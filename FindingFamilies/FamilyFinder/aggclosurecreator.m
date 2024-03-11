@@ -2,7 +2,7 @@
 
 
 
-//This is really dumb I think.
+//This is really dumb and could/should be improved.
 function FiniteLift(A,N1,N2)
     /* Input:
         N1, N2: integers greater than 1 where N1 divides N2
@@ -74,10 +74,20 @@ function FamilyFinderNew(G, T)
     T:=ChangeRing(T,Integers(T_level));
     X:=AssociativeArray();
     G_level:=gl2Level(G);
-    calG:=ChangeRing(G,Integers(T_level));
+    G:=gl2Lift(G,LCM([G_level,6]));
+    T:=sl2Lift(T,LCM([T_level,6]));
+    callevel:=1;
+    reallevel:=1;
+    for p in PrimeDivisors(#BaseRing(T)) do
+        callevel:=callevel*p^(Maximum(Valuation(#BaseRing(T),p),Valuation(#BaseRing(G),p)));
+        //reallevel:=reallevel*p^(Maximum(Valuation(T_level*6,p),Valuation(G_level,p)));
+    end for;
+    calG:=ChangeRing(G,Integers(callevel));
     if not ContainsScalars(calG) then calG:=AdjoinScalars(calG); end if;
     calG_level:=gl2Level(calG);
     calG:=ChangeRing(calG,Integers(calG_level));
+    T:=ChangeRing(T,Integers(T_level));
+    G:=ChangeRing(G,Integers(N));
     Y:=AssociativeArray();
     for k in Keys(FAM) do
        
@@ -108,10 +118,11 @@ function FamilyFinderNew(G, T)
 
     Gcong:=Conjugate(G,b);
     assert Gcong subset gl2Lift(FAM[o]`calG,N);
-
+    assert IsNormal(gl2Lift(FAM[o]`calG,N),Gcong);
     Tcong:=Conjugate(sl2Lift(T,N),b);
 
 
+    assert Tcong eq sl2Lift(FAM[o]`B,N);
 
 
         
@@ -121,3 +132,6 @@ return o,FAM[o],Gcong,gl2Lift(FAM[o]`calG,N),Tcong;
 end function;
 
 
+
+
+//This should be completely fine at this point.
