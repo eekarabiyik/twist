@@ -4,7 +4,7 @@ load "../OpenImage/SZ-data/RationalFunctions.m";
 load "../OpenImage/SZ-data/GL2Invariants.m";
 
 //from SZ
-// given subgroups H1,H2 of G, returns true if H1 is conjugate in G to a subgroup of H2
+//given subgroups H1,H2 of G, returns true if H1 is conjugate in G to a subgroup of H2
 function IsConjugateToSubgroup(G,H1,H2)
     if not IsDivisibleBy(#H2,#H1) then return false; end if;
     if H1 subset H2 then return true; end if;   // handle easy cases quickly
@@ -13,9 +13,9 @@ function IsConjugateToSubgroup(G,H1,H2)
 end function;
 
 
-
+//We load all of our families. The file size will be much lower.
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
-I:=Open("../FamilyData/Genus01Families.dat", "r");
+I:=Open("../FamilyData/Genus01FamiliesLowSize.dat", "r");
 FAM:=AssociativeArray();
 a:=1;
 repeat
@@ -52,7 +52,8 @@ function FindModelNew(G,T)
     print("Finding the family...");
     k,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T);
     N:=#BaseRing(G);
-    printf "the family key in the databese is %o\n",k;
+    printf "The family key in the database is %o\n",k;
+    //The following piece of code can be used if the modular curve is not already precomputed.
     /*
     if not assigned famG`M then
         print("No modular curve record found in the family. Computing it...");
@@ -62,11 +63,11 @@ function FindModelNew(G,T)
         M:=famG`M;
     end if;
     */
-    //Now we conjugate G so that it lies in fam_G`calG.
+    //Now we conjugate G so that it lies in fam_G`calG. Gcong computed above is already the conjugated version.
     M:=famG`M;
     G:=Gcong;
-    T:=Tcong;//I hope this is okay.
-    //Computing the cocycle related to H and G. See the paper for details.
+    T:=Tcong;
+    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
     printf "Computing the cocycle\n";
     xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M);
     //Now the twist

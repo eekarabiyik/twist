@@ -19,7 +19,7 @@ G0:=sub<GL(2,Integers(14))|[[ 11, 2, 8, 3 ],[ 3, 0, 6, 5 ],[ 3, 10, 8, 13 ],[ 11
 
 //This is the representative in the Family F(G0,G meet SL2)
 H:=sub<GL(2,Integers(14))|[[ 9, 0, 0, 9 ],[ 9, 12, 12, 5 ],[ 13, 4, 6, 3 ],[ 7, 12, 4, 5 ]]>;
-
+//FIRST RUN THE ABOVE LINES!
 
 
 

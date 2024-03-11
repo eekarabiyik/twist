@@ -41,15 +41,15 @@ end for;
 
 "Finding Representatives";
 for k in Keys(FAM) do
+    print(k);
     if FAM[k]`genus lt 3 then continue; end if;
     time0:=Realtime();
     
         T:=FindSpecialSubgroup(FAM[k]`calG,FAM[k]`B);
         if gl2DetIndex(T) eq 1 then
+            T:=ChangeRing(T,Integers(gl2Level(T)));
             FAM[k]`H:=T;
         end if;
-
-    print(k);
     print(Realtime(time0));
 end for;
 

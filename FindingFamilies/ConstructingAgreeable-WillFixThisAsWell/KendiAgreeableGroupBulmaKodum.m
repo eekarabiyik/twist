@@ -1,3 +1,9 @@
+/*
+This is the code for finding all groups that contain the agreeable groups up to a certain genus. 
+
+
+*/
+
 ChangeDirectory("/homes/ek693/Project/ComputeModel/OpenImage/main");
 load "FindOpenImage.m";
 load "/homes/ek693/Project/ComputeModel/OpenImage/SZ-data/RationalFunctions.m";
@@ -5,6 +11,7 @@ load "/homes/ek693/Project/ComputeModel/OpenImage/SZ-data/GL2Invariants.m";
 ChangeDirectory("/homes/ek693/Project/cummingspauli");
 load "pre.m";
 load "csg.m";
+//Load congruence groups from CP-database depending on what you want to compute.
 load "/homes/ek693/Project/cummingspauli/csg4-lev104.dat";
 load "/homes/ek693/Project/ComputeModel/FindingFamilies/FamilyData/familycreatecodewithanarrayfosubgroup.m";
 
@@ -22,7 +29,7 @@ function ContainsScalars(G)
 end function;
 
 
-
+// Based on SZ.
 // Given a subgroup H of SL(2,Z/nZ), returns a (possibly empty) list of subgroups G of GL(2,Z/nZ) of level n
 // for which gl2DetIndex(G)=1 and GL2ContainsCC(G)=true and G meet SL(2,Z/nZ) eq H
 function gl2QImagesFromSL2eray(H)
@@ -45,6 +52,7 @@ gl2Genus:=GL2Genus;
 X:=AssociativeArray();
 a:=1;
 for k in Keys(L) do
+    print(L[k]`name);
     if L[k]`level eq 1 then
         N0:=2;
         SL2:=SL(2,Integers(N0));
@@ -62,8 +70,7 @@ for k in Keys(L) do
 
     R:=[ <k, gl2QImagesFromSL2eray(sl2Lift(H,N1))>]; 
 
-    X[k]:=<R[1][2],k>;// first thing is groups, second coordinate is the key in CP
-    print(a);
+    X[k]:=<R[1][2],k>;// first thing is the list of groups, second coordinate is the key in CP.
     a:=a+1;
     
 end for;
@@ -139,6 +146,7 @@ end function;
 FAM1:=AssociativeArray();
 time0:=Realtime();
 for k in Keys(COMM) do
+    print(k);
     if L[COMM[k][2]]`level eq 1 then
         N0:=2;
         SL2:=SL(2,Integers(N0));
@@ -150,8 +158,8 @@ for k in Keys(COMM) do
        
        
            
-            FAM1[k]:=<R,COMM[k][1],COMM[k][2]>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
-    print(k);
+        FAM1[k]:=<R,COMM[k][1],COMM[k][2]>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
+   
     print(Realtime()-time0);
 end for;
 
@@ -160,7 +168,7 @@ for k in Keys(FAM1) do
     c:=c+#FAM1[k][1][1][2];
 end for;
 
-
+printf "The number of families is at most %o\n",c;
 
 
 
@@ -168,7 +176,7 @@ end for;
 "Creating family rec for all new families";
 
 
-//Here for all the families we check for the genus of the family. If it is bigger than for we put it into aan array.
+//Here for all the families we check for the genus of the family. If it is bigger than for we put it into an array.
 BS:=AssociativeArray();
 time3:=Realtime();
 a:=1;
@@ -177,7 +185,7 @@ for k in Keys(FAM1) do
     else
         for i in [1..#FAM1[k][1][1][2]] do
             g:=gl2Genus(FAM1[k][1][1][2][i]);
-            if g gt 4 then continue; 
+            if g gt 4 then continue; //change g gt x accordingly
             else 
                 BS[a]:=CreateFamilyRecSubgroup(FAM1[k][2],FAM1[k][1][1][2][i]); //first coordinate is B, second is calG, third one is calG's key in CP
                 a:=a+1;
@@ -198,13 +206,8 @@ end for;
 
 
 
-
+//This is obsolete after davids Code.
 //Various representativefinder functions. I am not sure if I will use them
-
-
-
-
-
 //The following is the function for finding the representatives in a correct way. Need to make it better tho.
 
 function RepresentativeFinderMaximal(B,calG)

@@ -804,26 +804,35 @@ function FindCanonicalModel(M, prec)
     g:=M`genus;
     error if g lt 3, "Curve must have genus at least 3";
 
-    // Compute modular forms of weight 2 if needed. 
-    if (not assigned M`k or M`k ne 2) or M`prec lt prec then
-        M:=FindModularForms(2,M,prec);
-    end if;
+    
 
     // Now compute cusps forms of weight 2.
-    //M:=FindCuspForms(M);     //Runtime Error arises here as well
+    //M:=FindCuspForms(M);     //Runtime Error arises here as well // Might need to find a way so that it doesnt recompute modularforms over and over again.
     yyy:=prec;
     repeat
-        "Computing cusp forms in canonical model prec";
+        
+        // Compute modular forms of weight 2 if needed. 
+        if (not assigned M`k or M`k ne 2) or M`prec lt prec then
+            "computing modular forms of weight 2";
+            M:=FindModularForms(2,M,prec);
+        end if;
+
+        
+       
+        
         prec:=yyy;
-        if M`prec lt prec then
+        printf  "Computing cusp forms in canonical model  %o\n",prec;
+       /*
+        if M`prec lt prec then // this is mistake
             M`prec:=prec;
         end if;
+        */
         mult:=[1: i in [1..#M`cusps]];
 
         N:=M`N;
         cusps:=M`cusps;
         widths:=M`widths;
-     
+        //This should be okay for me -Eray
         error if &or[m lt 0: m in mult], "Multiplicities need to be positive."; 
         if &and[m eq 0: m in mult] or #M`F eq 0 then M`F0:=M`F; break; end if;  // nothing to compute
 
@@ -864,7 +873,6 @@ function FindCanonicalModel(M, prec)
         M`F0:=FF;
 
 
-
     until not &or[ mult[i]/widths[i] ge M`prec/N : i in [1..#mult] ];
 
 
@@ -894,13 +902,15 @@ function FindCanonicalModel(M, prec)
 
 
     if #I2 notin {(g-1)*(g-2) div 2,((g-2)*(g-3)) div 2} then 
-            return FindCanonicalModel(M, prec+10);  // try again with more precision!
+            "First thing of return"; 
+            return FindCanonicalModel(M, prec+20);  // try again with more precision! ----10 doesnt work but 20 does ??????
     end if;
     //error if #I2 notin {(g-1)*(g-2) div 2,((g-2)*(g-3)) div 2}, "Incorrect number of quadratic relations; need more terms in q-expansion";
     Q0:=Scheme(PP,I2);   
     dimQ0:=Dimension(Q0);
 
     if dimQ0 lt 1 then 
+            "Second thing of return";
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
     end if;
     //error if dimQ0 lt 1, "Incorrect quadratic relations; need more terms in q-expansion";
@@ -908,6 +918,7 @@ function FindCanonicalModel(M, prec)
     if  #I2 eq (g-1)*(g-2) div 2 then 
         // Curve is probably hyperelliptic; if so, Q0 is a curve of genus 0 (we now check this)
         if dimQ0 gt 1 then 
+            "third thing of return";
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
         end if;
         //error if dimQ0 gt 1, "Incorrect quadratic relations; need more terms in q-expansion";
@@ -916,12 +927,12 @@ function FindCanonicalModel(M, prec)
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
         end if;
         //error if Genus(Q0) ne 0, "Incorrect quadratic relations; need more terms in q-expansion";        
-        return false, I2, F; 
+        return false, I2, F, prec; 
     end if;
 
     if dimQ0 eq 1 then
         // canonical curve is probably not hyperelliptic and is cut out by quadratic polynomials.
-        return true, I2, F;
+        return true, I2, F, prec;
     end if;
 
     if g eq 3 then
@@ -941,7 +952,7 @@ function FindCanonicalModel(M, prec)
         f,A:=MinimizeReducePlaneQuartic(PZ!f);       
         A:=ChangeRing(A,Rationals())^(-1);
         F:=[ [&+[A[e,j]*F[j][i]: j in [1..3]]: i in [1..#M`cusps]] : e in [1..3] ];
-        return true, [f], F; 
+        return true, [f], F, prec; 
     end if;
 
     // We are now in the case where X_G has genus at least 4 and is trigonal or isomorphic to a plane quintic (g=6). 
@@ -975,10 +986,10 @@ function FindCanonicalModel(M, prec)
     end while;
     psi:=I2 cat J;
 
-    return true, psi, F; 
+    return true, psi, F, prec; 
 end function;
 
-function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false) 
+function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false, is_not_hyperelliptic:=true) 
     /*  Input:       
                 M:      a record of type "ModularCurveRec" (for example produced as output of CreateModularCurveRec) that 
                         corresponds to a modular curve X_G.    We assume G has full determinant and contains -I.
@@ -1023,11 +1034,17 @@ function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false)
         M`f:=[jInvariant(q+O(q^Maximum(prec,120)))];  
         return M;
     end if;
-
+    hyper:=true;
     // If the genus is at least 3, we first try to compute the image of the canonical map.  This will give a model
     // of the curve X_G if it is not hyperelliptic.
-    if M`genus ge 3 then
-        flag, psi, F:= FindCanonicalModel(M, prec);
+   
+    if M`genus ge 3 and is_not_hyperelliptic then
+        flag, psi, F, newprec:= FindCanonicalModel(M, prec);
+        prec:=newprec;
+        if not flag then
+            hyper:=false;
+            "Hyperelliptic detected";
+        end if;
         if flag then
             M`k:=2;
             M`F0:=F;
@@ -1036,7 +1053,7 @@ function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false)
             return M;
         end if;
     end if;
-
+        
     //  We increase our even weight k until Riemann-Roch guarantees an embedding of XG using M_{k,G}.
     k:=0;
     repeat
@@ -1230,7 +1247,7 @@ function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false)
 
     if dim0 lt 1 then 
         // Too many equations for model; need more terms of q-expansions to rule out more polynomials
-        return FindModelOfXG(M, prec+15 :  compute_all:=compute_all, G0:=G0);  // try again with more precision!
+        return FindModelOfXG(M, prec+15 :  compute_all:=compute_all, G0:=G0, is_not_hyperelliptic:=hyper);  // try again with more precision!
     end if;
 
     deg:= degD - &+mult;
@@ -1248,7 +1265,7 @@ function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false)
 
         // Too many equations for model; need more terms of q-expansions to rule out more polynomials.
         if dim1 lt 1 then 
-            return FindModelOfXG(M, prec+20 :  compute_all:=compute_all, G0:=G0);  // try again with more precision!
+            return FindModelOfXG(M, prec+20 :  compute_all:=compute_all, G0:=G0,is_not_hyperelliptic:=hyper);  // try again with more precision!
         end if;
 
         assert dim1 eq 1;
@@ -1386,7 +1403,7 @@ if ratpoint eq true then
 
         c:=[  [Evaluate(pol,[f[j]:f in F]) : j in [1..#M`cusps]] : pol in W];
         if &or [IsWeaklyZero(c[3][j]) : j in [1..#M`cusps]] then
-            return FindModelOfXG(M, prec+20 : compute_all:=compute_all, G0:=G0);  // try again with more precision
+            return FindModelOfXG(M, prec+20 : compute_all:=compute_all, G0:=G0,is_not_hyperelliptic:=hyper);  // try again with more precision
         end if;
         x:=[c[1][j]/c[3][j]: j in [1..#M`cusps]];
         y:=[c[2][j]/c[3][j]: j in [1..#M`cusps]];

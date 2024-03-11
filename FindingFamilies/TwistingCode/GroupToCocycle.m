@@ -2,13 +2,13 @@
 function GroupToCocycle(calG,G,H,T,M)
     /*
         Input:  calG: This is an open subgroup of GL2(Zhat), containing negative identity with full determinant.
-                G: A representative in the family F(calG,G)=F(calG,B) for some B arising from our calculations. Check Davids chapter 14 for details.
+                G: A representative in the family F(calG,G)=F(calG,B) for some B arising from our calculations. Check Zywina-Explicit Open Image-Chapter 14 for details.
                 H: A group in the family F(calG,G). This will be the group we are trying to compute the modular curve of. 
                 T: SL2 intersection of H
                 M: Modular curve of G.
-                Note that G and H are switched here, my mistake
+                Note that G and H are switched here, notationwise
         Output: 
-                xi: Gal(K/Q)-> GL(H`genus,K) 1-cocycle arising from the map H-> calG/G
+                xi: Gal(K/Q)-> GL(#M`F0,K) 1-cocycle arising from the map H-> calG/G
     */
     //Arranging the levels
     N1:=#BaseRing(calG);
@@ -22,7 +22,6 @@ function GroupToCocycle(calG,G,H,T,M)
     T:=sl2Lift(T,N);
 
     UN,iotaN:=UnitGroup(Integers(N));
-    //In my future coede, I will assume that H1, i.e. the intersection with SL2 
     SL2:=SL(2,Integers(N));
     H1:=T;
     //Forming the quotient calG/G. We have to make it into an abelian group so that the kernels actually work.
@@ -31,7 +30,7 @@ function GroupToCocycle(calG,G,H,T,M)
     //Defining the necessary map like inclusions and so on.
     phi:=hom<H->calG| [H.i : i in [1..Ngens(H)]]>;
 
-    //Transversals are like representatives from the cosets. Very useful for many things. I am not sure how this function works tho.
+    //Transversals are like representatives from the cosets. Very useful for many things.
     K:=Transversal(H,H1);  
     xi:=map<{iotaN(d): d in UN}-> Parent([1]) | [<Determinant(t),[Integers()!a:a in Eltseq(t)]>: t in K]>;
 
@@ -42,9 +41,7 @@ function GroupToCocycle(calG,G,H,T,M)
     
     //These are only with quocalG. Migt be useful. map gamma gives matrices which can be useful to calculate the ambient automorphism matrices.
     //gammad1:=map<{iotaN(d): d in UN}-> quocalG | [<Determinant(t),quomapG(phi(xi(Determinant(t))))>: t in K]>; //This gamma for now gives what? it gives in the quotient as  permutations 
-
     //gammadd1:=hom<UN-> quocalG | [gammad1(iotaN(UN.i)): i in [1..Ngens(UN)]]>;// This is a homomorphism
-
     //gamma:=map<UN-> calG | [ <d,gammadd1(d) @@ quomapG>: d in UN]>;//this gives the matrices so that i can put the images into autofmodcurves
 
     //Now we have some of the maps we needed. We will put all these in nice forms. 
@@ -89,7 +86,7 @@ function GroupToCocycle(calG,G,H,T,M)
 
 
 
-    return xi,Kfield;
+    return xi,Kfield,GAL1,sigma1;
 
 
 end function;

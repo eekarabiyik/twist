@@ -23,3 +23,14 @@ end for;
         WriteObject(I, x);
     end for;
 
+
+for k in Keys(curves) do
+    print(k);
+    time0:=Realtime();
+    G:=curves[k]`subgroup;
+    T:=SL(2,Integers(#BaseRing(G))) meet G;
+    psi:=FamilyFinderNew(G,T);
+    print(psi);
+    print(Realtime(time0));
+
+end for;
