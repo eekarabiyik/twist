@@ -15,7 +15,7 @@ end function;
 
 //We load all of our families. The file size will be much lower.
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
-I:=Open("../FamilyData/Genus01FamiliesLowSize.dat", "r");
+I:=Open("../FamilyData/Genus1Families.dat", "r");
 FAM:=AssociativeArray();
 a:=1;
 repeat
