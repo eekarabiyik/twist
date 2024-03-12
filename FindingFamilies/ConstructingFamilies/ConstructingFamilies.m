@@ -130,14 +130,20 @@ for k in Keys(CC) do
 end for;
 
 
+I:=Open("../ConstructingFamilies/AggWithComm.dat", "w");
+    for k in Keys(COMM) do
+        x:=COMM[k];
+        WriteObject(I, x);
+    end for;
 
 
 
 
 
+/*
 
+//From here on it has not been checked until the commented part.
 
-//Below code checks if our groups are agreeable. Uncomment to continue in that way. Otherwise our families will include some redundant ones. I HAVE NOT CHECKED THIS OR DID TRIALS!
 AggGroupsPlusComms:=AssociativeArray();
 for k in Keys(COMM) do
     AggGroupsPlusComms[k]:=<COMM[k][1],sub<SL(2,Integers(COMM[k][3]))|COMM[k][4]>,COMM[k][2]>;//First is the group we computed. Second is its commutator subgroup, third is the associated key in CP database
@@ -220,6 +226,7 @@ I:=Open("../ConstructingFamilies/Families.dat", "w");
         WriteObject(I, x);
     end for;
 
+*/
 
 
 
@@ -230,8 +237,7 @@ I:=Open("../ConstructingFamilies/Families.dat", "w");
 
 
 
-/*
-
+//Below code proceeds without dealing with redundancies. But it is sure to work so I am leaving this here.
 
 //This finds the families
 
@@ -303,7 +309,7 @@ end for;
         WriteObject(I, x);
     end for;
 
-*/
+
 
 //This is obsolete after Zywina's FindSpecialGroup Code.
 //The following is the function for finding the representatives in a correct way. Need to make it better tho.
