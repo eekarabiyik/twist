@@ -2,51 +2,15 @@
 
 
 
-//This is really dumb and could/should be improved.
-function FiniteLift(A,N1,N2)
-    /* Input:
-        N1, N2: integers greater than 1 where N1 divides N2
-        A: a matrix in GL(2,Z/N1)
-        Output:
-            A matrix B in GL(2,Z/N2) whose image modulo N1 is A.
-    */
-    assert A in GL(2,Integers(N1));
-    Aint:=Matrix(Integers(),2,2,[Integers()!i: i in Eltseq(A)] ); 
-    c:=Integers()!Determinant(Aint);
-    if GCD([c,N2]) eq 1 then 
-        return GL(2,Integers(N2))!A; 
-    else
-        T:=[Integers()!i: i in Eltseq(Aint)]; 
-        for i in [1..4] do
-            if not T[i] eq 0 and GCD([N1,N2,T[i]]) eq 1 then 
-                while not GCD([T[i],N2]) eq 1 do
-                    T[i]:=T[i]+N1;
-        
-                end while;
-            end if;    
-        end for;
-        TT:=Matrix(Integers(),2,2,[T[i]: i in [1..4]] );
-        while not GCD([Determinant(TT),N2]) eq 1 do
-            T[1]:=T[1]+N1;
-            TT:=Matrix(Integers(),2,2,[T[i]: i in [1..4]] );
-        end while;
-        return GL(2,Integers(N2))![T[i]: i in [1..4]];
-    end if;
+//Based on Andrew Sutherland's intrinsic (which is faster than what I was using)
+function FiniteLift(A,N,M) 
+    assert IsDivisibleBy(M, N);
+    if N eq M then return A; end if;
+    GL2 := GL(2,Integers(M));
+    M2 := MatrixRing(Integers(),2);
+    m := &*[a[1]^a[2]: a in Factorization(M)| N mod a[1] eq 0];
+    return GL2!CRT([M2!A, Identity(M2)], [m, M div m]);
 end function;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -77,10 +41,8 @@ function FamilyFinderNew(G, T)
     G:=gl2Lift(G,LCM([G_level,6]));
     T:=sl2Lift(T,LCM([T_level,6]));
     callevel:=1;
-    reallevel:=1;
     for p in PrimeDivisors(#BaseRing(T)) do
         callevel:=callevel*p^(Maximum(Valuation(#BaseRing(T),p),Valuation(#BaseRing(G),p)));
-        //reallevel:=reallevel*p^(Maximum(Valuation(T_level*6,p),Valuation(G_level,p)));
     end for;
     calG:=ChangeRing(G,Integers(callevel));
     if not ContainsScalars(calG) then calG:=AdjoinScalars(calG); end if;
@@ -92,7 +54,7 @@ function FamilyFinderNew(G, T)
     for k in Keys(FAM) do
        
        
-       time0:=Realtime();
+       //time0:=Realtime();
         if FAM[k]`B_level eq T_level and IsConjugate(GL(2,Integers(T_level)),T,FAM[k]`B) and g eq FAM[k]`genus and FAM[k]`calG_level eq calG_level then
             
              A,b:=IsConjugate(GL(2,Integers(calG_level)),calG,FAM[k]`calG);

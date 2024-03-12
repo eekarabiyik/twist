@@ -1,0 +1,144 @@
+Magma V2.27-7     Tue Mar 12 2024 10:01:37 on ramsey   [Seed = 2215739901]
+
++-------------------------------------------------------------------+
+|       This copy of Magma has been made available through a        |
+|                   generous initiative of the                      |
+|                                                                   |
+|                         Simons Foundation                         |
+|                                                                   |
+| covering U.S. Colleges, Universities, Nonprofit Research entities,|
+|               and their students, faculty, and staff              |
++-------------------------------------------------------------------+
+
+Type ? for help.  Type <Ctrl>-D to quit.
+
+Loading file "/homes/ek693/Main/FindingFamilies/ConstructingFamilies/Constructi\
+ngFamilies.m"
+Loading "../OpenImage/main/FindOpenImage.m"
+Loading "../OpenImage/precomputation/ComputeFrobData.m"
+Loading "../OpenImage/main/GL2GroupTheory.m"
+Loading "../OpenImage/main/ModularCurves.m"
+Loading "../OpenImage/data-files/cyclic_invariant_polynomials.m"
+Loading "../OpenImage/SZ-data/RationalFunctions.m"
+Loading "../OpenImage/SZ-data/GL2Invariants.m"
+Loading "pre.m"
+computing SL( 2, 2 )
+computing SL( 2, 3 )
+computing SL( 2, 4 )
+computing SL( 2, 5 )
+computing SL( 2, 6 )
+computing SL( 2, 7 )
+computing SL( 2, 8 )
+computing SL( 2, 9 )
+computing SL( 2, 10 )
+computing SL( 2, 11 )
+computing SL( 2, 12 )
+computing SL( 2, 13 )
+computing SL( 2, 14 )
+computing SL( 2, 15 )
+computing SL( 2, 16 )
+computing SL( 2, 18 )
+computing SL( 2, 20 )
+computing SL( 2, 21 )
+computing SL( 2, 22 )
+computing SL( 2, 24 )
+computing SL( 2, 25 )
+computing SL( 2, 26 )
+computing SL( 2, 27 )
+computing SL( 2, 28 )
+computing SL( 2, 30 )
+computing SL( 2, 32 )
+computing SL( 2, 33 )
+computing SL( 2, 35 )
+computing SL( 2, 36 )
+computing SL( 2, 39 )
+computing SL( 2, 40 )
+computing SL( 2, 42 )
+computing SL( 2, 44 )
+computing SL( 2, 45 )
+computing SL( 2, 48 )
+computing SL( 2, 49 )
+computing SL( 2, 50 )
+computing SL( 2, 52 )
+computing SL( 2, 54 )
+computing SL( 2, 55 )
+computing SL( 2, 56 )
+computing SL( 2, 60 )
+computing SL( 2, 63 )
+computing SL( 2, 64 )
+computing SL( 2, 65 )
+computing SL( 2, 66 )
+computing SL( 2, 70 )
+computing SL( 2, 72 )
+computing SL( 2, 75 )
+computing SL( 2, 77 )
+computing SL( 2, 78 )
+computing SL( 2, 80 )
+computing SL( 2, 81 )
+computing SL( 2, 84 )
+computing SL( 2, 88 )
+computing SL( 2, 90 )
+computing SL( 2, 91 )
+computing SL( 2, 96 )
+computing SL( 2, 98 )
+computing SL( 2, 99 )
+computing SL( 2, 100 )
+computing SL( 2, 104 )
+computing SL( 2, 105 )
+computing SL( 2, 108 )
+computing SL( 2, 110 )
+computing SL( 2, 112 )
+computing SL( 2, 117 )
+computing SL( 2, 120 )
+computing SL( 2, 121 )
+computing SL( 2, 125 )
+computing SL( 2, 126 )
+computing SL( 2, 128 )
+computing SL( 2, 130 )
+computing SL( 2, 132 )
+computing SL( 2, 135 )
+computing SL( 2, 140 )
+computing SL( 2, 143 )
+computing SL( 2, 144 )
+computing SL( 2, 147 )
+computing SL( 2, 150 )
+computing SL( 2, 154 )
+computing SL( 2, 156 )
+computing SL( 2, 160 )
+computing SL( 2, 162 )
+computing SL( 2, 165 )
+computing SL( 2, 168 )
+Loading "csg.m"
+Loading "../CummingsPauli/csg1-lev48.dat"
+Loading "csg1-lev40.dat"
+Loading "csg1-lev32.dat"
+Loading "csg1-lev24.dat"
+Loading "csg1-lev16.dat"
+Loading "csg1-lev8.dat"
+Loading "csg1-lev0.dat"
+Loading "csg0-lev48.dat"
+Loading "csg0-lev32.dat"
+Loading "csg0-lev24.dat"
+Loading "csg0-lev16.dat"
+Loading "csg0-lev8.dat"
+Loading "csg0-lev0.dat"
+Loading "../FamilyData/familycreatecodewithanarrayfosubgroup.m"
+1A0
+2A0
+2B0
+2C0
+3A0
+3B0
+3C0
+3D0
+4A0
+4B0
+4C0
+4D0
+4E0
+4F0
+4G0
+5A0
+5B0
+5C0
+5D0

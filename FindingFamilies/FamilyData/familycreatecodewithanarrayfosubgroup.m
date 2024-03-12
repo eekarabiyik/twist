@@ -1,4 +1,5 @@
 
+//This a record for the families we will use. I think most entries are clear.
 FamilyRec := recformat<
     calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index :RngIntElt,                     
     calG_gens, B_gens, subgroupsofH :SeqEnum,   
@@ -16,15 +17,12 @@ FamilyRec := recformat<
 function CreateFamilyRecSubgroup(calG, B  : compute_comm:=false, compute_calgmeetsl2:=false)   
  /*
     Input:
-	    N       : a postitive integer
-	    gens    : a set of generators for a subgroup G of GL(2,Z/NZ)
+	    calG    : an agreeable subgroup
+	    B       : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG
     Output:  
-        A record of type "ModularCurveRec" with the following entries computed: 
-            N, gens, G, H, genus, v2, v3, vinf, sl2level, level, index, degree,  cusps, widths, regular, is_entangled, trdet. 
+        A record of type "FamilyRec" with the following entries computed: 
+            calG, B, calG_level, B_level, calG_gens, B_gens
             
-    Note: when N=1 only some of these entries are computed; Magma does not like matrices with entries in Z/(1).
-
-    When "use_minimal_level" is true, we replace N with the level of G
  */
 
     F := rec<FamilyRec | calG:= calG ,B:=B >;	 
@@ -46,8 +44,6 @@ function CreateFamilyRecSubgroup(calG, B  : compute_comm:=false, compute_calgmee
 
     F`calG_level:=calG_level;
     F`B_level:=B_level;
-    //F`calG_index:=calG_index;
-    //F`B_index:=B_index;
     F`genus:=genus;
     F`calG_gens:=calG_gens;
     F`B_gens:=B_gens;

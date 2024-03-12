@@ -1,6 +1,7 @@
 /*
 This is the code for finding all groups that contain the agreeable groups up to a certain genus. 
 */
+ChangeDirectory("/homes/ek693/Main/FindingFamilies/MainCode");
 load "../OpenImage/main/FindOpenImage.m";
 load "../OpenImage/SZ-data/RationalFunctions.m";
 load "../OpenImage/SZ-data/GL2Invariants.m";
@@ -8,7 +9,7 @@ ChangeDirectory("../CummingsPauli");
 load "pre.m";
 load "csg.m";
 //Load congruence groups from CP-database depending on what you want to compute.
-load "/homes/ek693/Project/cummingspauli/csg4-lev104.dat";
+load "../CummingsPauli/csg1-lev48.dat";
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
 
 function gl2DetIndex(H)
@@ -39,6 +40,24 @@ function gl2QImagesFromSL2eray(H)
     S:=[Inverse(pi)(K`subgroup) : K in Subgroups(Q)];
     return [G: G in S | gl2DetIndex(G) eq 1 and ContainsScalars(G) and #(SL(2,BaseRing(G)) meet G)/#H eq 1];
 end function;
+
+
+
+//This is a function to find the families by finding the groups in calG meet SL2/[calG,calG].
+
+
+function gl2QImagesForFamiliiesEray(GGG,H)
+    N1:=#BaseRing(GGG);
+    N2:=#BaseRing(H);
+    N:=LCM([N1,N2]);
+    GGG:=sl2Lift(GGG,N);
+    H:=sl2Lift(H,N);
+    assert H subset GGG;
+    Q,pi:=quo<GGG|H>;
+    S:=[Inverse(pi)(K`subgroup) : K in Subgroups(Q)];
+    return [T: T in S];
+end function;
+
 
 gl2Genus:=GL2Genus;
 
@@ -96,9 +115,6 @@ end for;
 
 
 
-
-
-
 //Now finding the comm subgroups
 //Different name for arrays need to be careful
 
@@ -119,23 +135,105 @@ end for;
 
 
 
+
+
+//Below code checks if our groups are agreeable. Uncomment to continue in that way. Otherwise our families will include some redundant ones. I HAVE NOT CHECKED THIS OR DID TRIALS!
+AggGroupsPlusComms:=AssociativeArray();
+for k in Keys(COMM) do
+    AggGroupsPlusComms[k]:=<COMM[k][1],sub<SL(2,Integers(COMM[k][3]))|COMM[k][4]>,COMM[k][2]>;//First is the group we computed. Second is its commutator subgroup, third is the associated key in CP database
+end for;
+
+
+
+
+
+for k in Keys(AggGroupsPlusComms) do
+    if gl2Level(AggGroupsPlusComms[k][1]) eq 1 then continue k; end if;
+    assert ContainsScalars(AggGroupsPlusComms[k][1]);
+    level:=gl2Level(AggGroupsPlusComms[k][1]);
+    // Note that X`N is the level of X`G viewed as a subgroup of GL(2,Zhat).
+    // Note that the group X`Hc will be given modulo its level now.
+    if Set(PrimeDivisors(level)) subset Set(PrimeDivisors(gl2Level(AggGroupsPlusComms[k][2]))) then continue k; end if;
+
+    //  Group is not agreeable and needs to be removed! 
+    Remove(~AggGroupsPlusComms,k);
+end for;
+
+
 //This finds the families
 
+"Finding all the families";
 
-//This is a function to find the families by finding the groups in [calG,calG]/B.
+FAM1:=AssociativeArray();
+time0:=Realtime();
+for k in Keys(AggGroupsPlusComms) do
+    print(k);
+    if L[AggGroupsPlusComms[k][3]]`level eq 1 then
+        N0:=2;
+        SL2:=SL(2,Integers(N0));
+        matgens:=[[1,1,0,1],[1,0,1,1]];
+        R:=[ <k, gl2QImagesForFamiliiesEray(sub<SL(2,Integers(2))|matgens>,AggGroupsPlusComms[k][2])>];
+    else
+        R:=[ <k, gl2QImagesForFamiliiesEray(sub<SL(2,Integers(L[AggGroupsPlusComms[k][3]]`level))|L[AggGroupsPlusComms[k][3]]`matgens>,AggGroupsPlusComms[k][2])>];
+    end if;
+       
+       
+           
+        FAM1[k]:=<R,AggGroupsPlusComms[k][1],AggGroupsPlusComms[k][3]>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
+   
+    print(Realtime()-time0);
+end for;
+
+c:=0;
+for k in Keys(FAM1) do
+    c:=c+#FAM1[k][1][1][2];
+end for;
+
+printf "The number of families is at most %o\n",c;
 
 
-function gl2QImagesForFamiliiesEray(GGG,H)
-    N1:=#BaseRing(GGG);
-    N2:=#BaseRing(H);
-    N:=LCM([N1,N2]);
-    GGG:=sl2Lift(GGG,N);
-    H:=sl2Lift(H,N);
-    assert H subset GGG;
-    Q,pi:=quo<GGG|H>;
-    S:=[Inverse(pi)(K`subgroup) : K in Subgroups(Q)];
-    return [T: T in S];
-end function;
+
+
+"Creating family rec for all new families";
+
+BS:=AssociativeArray();
+time3:=Realtime();
+a:=1;
+for k in Keys(FAM1) do
+    if FAM1[k][1][1][2] eq [] then continue;
+    else
+        for i in [1..#FAM1[k][1][1][2]] do
+            g:=gl2Genus(FAM1[k][1][1][2][i]);
+            if g gt 1 then continue; //change g gt x accordingly
+            else 
+                BS[a]:=CreateFamilyRecSubgroup(FAM1[k][2],FAM1[k][1][1][2][i]); //first coordinate is B, second is calG, third one is calG's key in CP
+                a:=a+1;
+            end if;
+        end for;
+    end if;
+    print(k);
+end for;
+
+I:=Open("../ConstructingFamilies/Families.dat", "w");
+    for k in Keys(BS) do
+        x:=BS[k];
+        WriteObject(I, x);
+    end for;
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+//This finds the families
 
 "Finding all the families";
 
@@ -165,6 +263,11 @@ for k in Keys(FAM1) do
 end for;
 
 printf "The number of families is at most %o\n",c;
+
+
+
+
+
 
 
 
@@ -200,10 +303,9 @@ end for;
         WriteObject(I, x);
     end for;
 
-
+*/
 
 //This is obsolete after Zywina's FindSpecialGroup Code.
-//Various representativefinder functions. I am not sure if I will use them
 //The following is the function for finding the representatives in a correct way. Need to make it better tho.
 
 function RepresentativeFinderMaximal(B,calG)

@@ -75,10 +75,7 @@ function GroupToCocycle(calG,G,H,T,M)
     
     xi2:=map<GAL1-> calG | [<d,(gammadd(galisoa(isomap(d) @@ qmapgal)) @@ quomapGG)@@ quomapG>: d in GAL1]>;//Looks like it is working. gotta try it for more groups. Very close to what I need.
     //This takes from the field of definition and gives matrices that can be put into autofmodularforms.
-    //g:=GL2Genus(G);
-    //We are twisting G.
-    //Here I need to pull the model of G from a database. Ask david this. Kinda done, also can look at FindOpenImage.m there must be something similar there.
-   
+       
     xi:=map<GAL1-> MatrixRing(Kfield,#M`F0) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
 
 

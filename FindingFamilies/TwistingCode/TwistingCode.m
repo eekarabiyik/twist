@@ -1,41 +1,38 @@
 function Twist(M,xi,K, calG)   
-//BIG PROBLEM! calG cannot be the whole thing.
- // Input: M: a modular curve in the sense of Zywina. For now we assume that the curve is given by its canonical model. It might be thought as X_G, where G is a group we are considering. We will think about the other cases.
+// Input: M: a modular curve in the sense of Zywina. 
 // xi: Gal(K/Q)-> GL(M`genus,K) 1-cocycle. This is a cocycle that extends from the Aut(M) (usually via AutomorphismOfModularForms function of Zywina).    
 // It factors through the field K.
 // calG: calG is the group which contains G as a normal group and F(calG,G) is the family that G lies in.
-// Output: a sequence "psi" of homogeneous polynomials in Q[x_1,..,x_g], defining the twisted curve.
-// Final goal is to output this curve as a modular curve a la Z.
+// Output: a sequence "psi" of homogeneous polynomials in Q[x_1,..,x_#M`F0], defining the twisted curve.
 //For now we are working over Q.
 //Assuming H90 and Z's FindOpenImage are loaded.
 I:=M`psi;
-// I guess I can just make this FindModel instead of FindCanonicalModel. Note I did and it should work especially considering I've added G0.
 g:=M`genus;
 GAL,iota,sigma:=AutomorphismGroup(K);
 s:=#M`F0;
-
+//Transpose matrix because of Galois action used.   
 MAT:=Transpose(H90(s,K,Rationals(),GAL,sigma,xi));
 Pol<[x]>:=PolynomialRing(K,s); 
 PP:=ProjectiveSpace(K,s-1);  
+//Applying the matrix to the polynomials already computed
 Itw:=[];
 for i in [1..#I] do
    Append(~Itw,Pol!I[i]^MAT);  
 end for;
 
 
-//Get the coefficent vectors of polynomials in I2tw to do Galois descent. Will this always work? I am assuming that all the polynomials in I are homogeneous of degree 2. Okay at worst they will up to deg 4 thanks to davids atkinlehner paper.
+//Get the coefficent vectors of polynomials in I2tw to do Galois descent. 
 mon2:=MonomialsOfDegree(Pol,2);
 mon3:=MonomialsOfDegree(Pol,3);
 mon4:=MonomialsOfDegree(Pol,4);
 mon:=mon2 join mon3 join mon4;
-//If the genus is high this might be computationally unfeasiable as there will be a lot of such monomials. However this is linear algebra so I am not sure if it will actually be a problem. We will see.
 
 coef:=[];
 for f in Itw do 
    Append(~coef,[MonomialCoefficient(f,m): m in mon]);
 end for; 
 
-
+//We will scale the coordinate vectors a little to be able to do Galois Descent
 coeff:=[];
 
 
@@ -43,7 +40,7 @@ coeff:=[];
 
 
 
-for j in [1..#coef] do //This is so that the trace map is never zero. However I am not sure if I am sure to get the correct dimension. over Q[x]?
+for j in [1..#coef] do //This is so that the trace map is never zero.
     coeff[j]:=[];
     for k in [1..#coef[j]] do
         if coef[j][k] ne 0 then
@@ -56,6 +53,22 @@ for j in [1..#coef] do //This is so that the trace map is never zero. However I 
     end for;
 
 end for;
+
+
+
+
+/*
+Note to David Roe/LMFDB
+The matrix we get from the H90 code has coefficients in the number field we use. Resulting polynomals/Ideal are actually defined
+over Rationals, but we need to do a Galois descent to get polynomials over Rationals.
+When we act on the map to the j-line via 
+
+*/
+
+
+
+
+
 
 
 

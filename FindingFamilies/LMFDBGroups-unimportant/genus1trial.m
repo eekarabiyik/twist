@@ -9,7 +9,7 @@ for k in Keys(curves) do
     G:=curves[k]`subgroup;
     T:=SL(2,Integers(#BaseRing(G))) meet G;
     psi:=FindModelNew(G,T);
-    models[k]:=psi;
+    //models[k]:=psi;
     print(psi);
     print(Realtime(time0));
 
@@ -23,7 +23,7 @@ end for;
         WriteObject(I, x);
     end for;
 
-
+/*
 for k in Keys(curves) do
     print(k);
     time0:=Realtime();
@@ -34,3 +34,4 @@ for k in Keys(curves) do
     print(Realtime(time0));
 
 end for;
+*/

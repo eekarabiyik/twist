@@ -51,7 +51,7 @@ end for;
 
 
 
-
+//Note that current FindModelOfXG and FindCanonicalModel are adjusted so that it works for our purposes (mostly about prec, but there are issues with canonical models cut out by quadrics and cubics at the same time)
 "Computing modular curves for representatives";
 for k in Keys(FAM) do
     time0:=Realtime();
