@@ -56,7 +56,7 @@ end for;
 for k in Keys(FAM) do
     time0:=Realtime();
     if assigned FAM[k]`H then
-        FAM[k]`M:=FindModelOfXG(CreateModularCurveRec0(FAM[k]`H),10: G0:=FAM[k]`calG);        
+        FAM[k]`M:=FindModelOfXG(CreateModularCurveRec0(FAM[k]`H),10: G0:=FAM[k]`calG, simplify_cubic:=false);        
     end if;
     print(k);
     print(Realtime(time0));
