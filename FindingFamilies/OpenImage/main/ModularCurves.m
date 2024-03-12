@@ -782,7 +782,7 @@ function FindRelations(F,d)
     return psi;
 end function;
 
-function FindCanonicalModel(M, prec)
+function FindCanonicalModel(M, prec : simplify_cubic:=true)
     /*  Input:       
                 M: a record M type "ModularCurveRec" (for example produced as output of CreateModularCurveRec) that 
                    corresponds to a modular curve X_G with genus g at least 3.
@@ -900,15 +900,15 @@ function FindCanonicalModel(M, prec)
     I2:=FindRelations(F,2);
     I2:=[Pol!P: P in I2];
 
-
+    //POSSIBLE PROBLEM -ERAY
     if #I2 notin {(g-1)*(g-2) div 2,((g-2)*(g-3)) div 2} then 
-            "First thing of return"; 
+            "First thing of return"; //THE PROBLEM IS HERE WITH K=4388 david original prec=20 is problem.
             return FindCanonicalModel(M, prec+20);  // try again with more precision! ----10 doesnt work but 20 does ??????
     end if;
     //error if #I2 notin {(g-1)*(g-2) div 2,((g-2)*(g-3)) div 2}, "Incorrect number of quadratic relations; need more terms in q-expansion";
     Q0:=Scheme(PP,I2);   
     dimQ0:=Dimension(Q0);
-
+    //SECOND POSSIBLE PROBLEM ERAY
     if dimQ0 lt 1 then 
             "Second thing of return";
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
@@ -923,7 +923,7 @@ function FindCanonicalModel(M, prec)
         end if;
         //error if dimQ0 gt 1, "Incorrect quadratic relations; need more terms in q-expansion";
         Q0:=Curve(PP,I2);
-        if Genus(Q0) ne 0 then 
+        if Genus(Q0) ne 0 then //THE PROBLEM STARS HERE SO PROBLY BEFORE THIS SHIT HAPPENS-ERAY-----k=13559 not reduced irred need more prec?
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
         end if;
         //error if Genus(Q0) ne 0, "Incorrect quadratic relations; need more terms in q-expansion";        
@@ -937,6 +937,7 @@ function FindCanonicalModel(M, prec)
 
     if g eq 3 then
         I4:=FindRelations(F,4); 
+        //THIS SHOULD BE OKAY? ERAY
         if #I4 gt 1 then 
             return FindCanonicalModel(M, prec+15);  // try again with more precision!
         end if;
@@ -968,10 +969,16 @@ function FindCanonicalModel(M, prec)
 
     Q0:=Scheme(PP,I2 cat I3);   
     dimQ0:=Dimension(Q0);
+    //CHECK THIS AS WELL-ERAY
     if dimQ0 lt 1 then 
             return FindCanonicalModel(M, prec+10);  // try again with more precision!
     end if;
     //error if dimQ0 lt 1, "Incorrect cubic relations; need more terms in q-expansion";
+    if simplify_cubic eq false then
+        return true, I2 cat I3, F, prec; 
+    end if;
+
+
 
     V3:=sub<V| [V![MonomialCoefficient(f,m): m in mon3] : f in I3]>;
     J:=[];
@@ -989,7 +996,7 @@ function FindCanonicalModel(M, prec)
     return true, psi, F, prec; 
 end function;
 
-function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false, is_not_hyperelliptic:=true) 
+function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false, is_not_hyperelliptic:=true, simplify_cubic:=true) 
     /*  Input:       
                 M:      a record of type "ModularCurveRec" (for example produced as output of CreateModularCurveRec) that 
                         corresponds to a modular curve X_G.    We assume G has full determinant and contains -I.
@@ -1039,7 +1046,7 @@ function FindModelOfXG(M, prec : compute_all:=true, G0:=1, ratpoint:=false, is_n
     // of the curve X_G if it is not hyperelliptic.
    
     if M`genus ge 3 and is_not_hyperelliptic then
-        flag, psi, F, newprec:= FindCanonicalModel(M, prec);
+        flag, psi, F, newprec:= FindCanonicalModel(M, prec: simplify_cubic:=simplify_cubic);
         prec:=newprec;
         if not flag then
             hyper:=false;
