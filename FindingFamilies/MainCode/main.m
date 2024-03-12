@@ -15,7 +15,7 @@ end function;
 
 //We load all of our families. The file size will be much lower.
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
-I:=Open("../FamilyData/Genus1Families.dat", "r");
+I:=Open("../FamilyData/Genus0Families.dat", "r");
 FAM:=AssociativeArray();
 a:=1;
 repeat
@@ -25,6 +25,19 @@ repeat
 	end if;
     a:=a+1;
 until not b;
+
+
+I:=Open("../FamilyData/Genuss1Families.dat", "r");
+repeat
+	b,y:=ReadObjectCheck(I);
+	if b then
+		FAM[a]:=y;
+	end if;
+    a:=a+1;
+until not b;
+
+
+
 
 
 
