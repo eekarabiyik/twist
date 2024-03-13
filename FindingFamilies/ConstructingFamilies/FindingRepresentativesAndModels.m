@@ -55,14 +55,27 @@ end for;
 "Computing modular curves for representatives";
 for k in Keys(FAM) do
     time0:=Realtime();
+    print(k);
     if assigned FAM[k]`H then
         FAM[k]`M:=FindModelOfXG(CreateModularCurveRec0(FAM[k]`H),10: G0:=FAM[k]`calG, simplify_cubic:=false);        
     end if;
-    print(k);
     print(Realtime(time0));
 end for;
 
 
+"Computing Automorphisms of Modular Forms";
+
+for k in Keys(FAM) do;
+    if assigned FAM[k]`M then 
+        calG:=FAM[k]`calG;
+        M:=FAM[k]`M;
+        for i in [1..Ngens(calG)] do
+            FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+        end for;    
+    end if;
+end for;
+
+//After this is done we should be able to delete the q-expansions from FAM[k]`M.
 
 
 "Saving to file";
