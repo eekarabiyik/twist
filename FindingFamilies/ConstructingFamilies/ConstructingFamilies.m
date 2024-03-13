@@ -28,7 +28,7 @@ end function;
 
 // Based on SZ.
 // Given a subgroup H of SL(2,Z/nZ), returns a (possibly empty) list of subgroups G of GL(2,Z/nZ) of level n
-// for which gl2DetIndex(G)=1 and GL2ContainsCC(G)=true and G meet SL(2,Z/nZ) eq H
+// for which gl2DetIndex(G)=1 and ContainsScalars(G) and G meet SL(2,Z/nZ) eq H
 function gl2QImagesFromSL2eray(H)
     GL2:=GL(2,BaseRing(H));
     SL2:=SL(2,BaseRing(H));
@@ -129,7 +129,7 @@ for k in Keys(CC) do
     print(Realtime(time0));
 end for;
 
-
+"Saving to a file...";
 I:=Open("../ConstructingFamilies/AggWithComm.dat", "w");
     for k in Keys(COMM) do
         x:=COMM[k];
@@ -140,7 +140,7 @@ I:=Open("../ConstructingFamilies/AggWithComm.dat", "w");
 
 
 
-/*
+
 
 //From here on it has not been checked until the commented part.
 
@@ -220,13 +220,27 @@ for k in Keys(FAM1) do
     print(k);
 end for;
 
+
+for k in Keys(BS) do
+    if BS[k]`calG_level eq 1 or BS[k]`B_level eq 1 then continue; end if;
+    time0:=Realtime();
+    BS[k]`calG:=ChangeRing(BS[k]`calG,Integers(BS[k]`calG_level));  
+    BS[k]`B:=ChangeRing(BS[k]`B,Integers(BS[k]`B_level));  
+    print(k);
+    print(Realtime(time0));
+end for;    
+
+
+
+
+
+
 I:=Open("../ConstructingFamilies/Families.dat", "w");
     for k in Keys(BS) do
         x:=BS[k];
         WriteObject(I, x);
     end for;
 
-*/
 
 
 
@@ -235,9 +249,9 @@ I:=Open("../ConstructingFamilies/Families.dat", "w");
 
 
 
+/*
 
-
-//Below code proceeds without dealing with redundancies. But it is sure to work so I am leaving this here.
+//Below code proceeds without dealing with redundancies. But it is sure to work. Currently I am using this.
 
 //This finds the families
 
@@ -358,3 +372,4 @@ function RepresentativeFinderMaximal(B,calG)
     return REP;
 end function;
 
+*/

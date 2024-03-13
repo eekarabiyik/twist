@@ -58,22 +58,41 @@ for k in Keys(FAM) do
     print(k);
     if assigned FAM[k]`H then
         FAM[k]`M:=FindModelOfXG(CreateModularCurveRec0(FAM[k]`H),10: G0:=FAM[k]`calG, simplify_cubic:=false);        
+        print(k);
+        calG:=FAM[k]`calG;
+        H:=FAM[k]`H;
+        M:=FAM[k]`M;
+        calG:=gl2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+        for i in [1..Ngens(calG)] do
+            FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+        end for;    
+        print(Realtime(time0));
     end if;
-    print(Realtime(time0));
+
+
+
+
 end for;
 
-
+/*
 "Computing Automorphisms of Modular Forms";
 
 for k in Keys(FAM) do;
     if assigned FAM[k]`M then 
+        time0:=Realtime();
+        print(k);
         calG:=FAM[k]`calG;
+        H:=FAM[k]`H;
         M:=FAM[k]`M;
+        calG:=gl2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
         for i in [1..Ngens(calG)] do
             FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
         end for;    
+        print(Realtime(time0));
     end if;
 end for;
+*/
+
 
 //After this is done we should be able to delete the q-expansions from FAM[k]`M.
 
