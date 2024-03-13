@@ -27,7 +27,7 @@ repeat
 until not b;
 
 
-I:=Open("../FamilyData/Genuss1Families.dat", "r");
+I:=Open("../FamilyData/Genus1Families.dat", "r");
 repeat
 	b,y:=ReadObjectCheck(I);
 	if b then
@@ -89,5 +89,3 @@ function FindModelNew(G,T)
 
     return psi;
 end function; 
-
-//It workssssssssssssssssssssssssssssssssssssss!!!!!
