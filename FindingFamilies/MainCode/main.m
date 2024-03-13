@@ -77,12 +77,13 @@ function FindModelNew(G,T)
     end if;
     */
     //Now we conjugate G so that it lies in fam_G`calG. Gcong computed above is already the conjugated version.
+    AOfMF:=famG`AOfMF;
     M:=famG`M;
     G:=Gcong;
     T:=Tcong;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
     printf "Computing the cocycle\n";
-    xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M);
+    xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
     psi:=Twist(M,xi,K, famG`calG);
