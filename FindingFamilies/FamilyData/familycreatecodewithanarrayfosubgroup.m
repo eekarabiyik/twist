@@ -6,7 +6,7 @@ FamilyRec := recformat<
     works: BoolElt,                                                              
     calG,B,H, commutator_sub :GrpMat,   
     onelementpossibly: BoolElt, 
-    M              
+    M, AOfMF              
     >;	 
 
 
@@ -47,6 +47,7 @@ function CreateFamilyRecSubgroup(calG, B  : compute_comm:=false, compute_calgmee
     F`genus:=genus;
     F`calG_gens:=calG_gens;
     F`B_gens:=B_gens;
+    F`AOfMF:=AssociativeArray();
     
           
 
