@@ -34,6 +34,7 @@ for k in Keys(FAM) do
     
         T:=FindSpecialSubgroup(FAM[k]`calG,FAM[k]`B);
         if gl2DetIndex(T) eq 1 then
+            if gl2Level(T) eq 1 then continue k; end if;
             T:=ChangeRing(T,Integers(gl2Level(T)));
             FAM[k]`H:=T;
         end if;
