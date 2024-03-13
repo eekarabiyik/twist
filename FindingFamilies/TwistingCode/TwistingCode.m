@@ -114,9 +114,5 @@ for v in S do
    end for;
    Append(~I2G,f);   
 end for; 
-
-return I2G;
-
-
-
+return I2G, MAT;
 end function; 

@@ -1,5 +1,5 @@
 
-function GroupToCocycle(calG,G,H,T,M)
+function GroupToCocycle(calG,G,H,T,M,AOfMF)
     /*
         Input:  calG: This is an open subgroup of GL2(Zhat), containing negative identity with full determinant.
                 G: A representative in the family F(calG,G)=F(calG,B) for some B arising from our calculations. Check Zywina-Explicit Open Image-Chapter 14 for details.
@@ -13,6 +13,7 @@ function GroupToCocycle(calG,G,H,T,M)
     //Arranging the levels
     N1:=#BaseRing(calG);
     N2:=#BaseRing(G);
+    calGAut:=gl2Lift(calG,LCM([N1,N2]));
     N3:=#BaseRing(H);
     N4:=#BaseRing(T);
     N:=LCM([N1,N2,N3,N4]);
@@ -47,7 +48,7 @@ function GroupToCocycle(calG,G,H,T,M)
     //Now we have some of the maps we needed. We will put all these in nice forms. 
     KN<a>:=CyclotomicField(N);
     GAL,iota,sigma:=AutomorphismGroup(KN);
-    //GALAB,mapab:=AbelianGroup(GAL); //maybe do not need this
+
     genlist:=[];
     gallist:=[];
     for i in [1..Ngens(UN)] do
@@ -64,22 +65,26 @@ function GroupToCocycle(calG,G,H,T,M)
     Ker:=Kernel(xi1);
     Kfield:=FixedField(KN,Ker);
     GAL1,iota1,sigma1:=AutomorphismGroup(Kfield);
-    //I need to think about some stuff regarding grouptococycle and twisting. Nothing too hard hopefully. Most of the work should be there already.
-    //GAL1;
-
+ 
 
     quogal,qmapgal:= quo<GAL|Ker>;
     bool,isomap:=IsIsomorphic(GAL1,quogal);
 
     
     
-    xi2:=map<GAL1-> calG | [<d,(gammadd(galisoa(isomap(d) @@ qmapgal)) @@ quomapGG)@@ quomapG>: d in GAL1]>;//Looks like it is working. gotta try it for more groups. Very close to what I need.
+    xi2:=hom<GAL1-> calG | [<d,(gammadd(galisoa(isomap(d) @@ qmapgal)) @@ quomapGG)@@ quomapG>: d in GAL1]>;
     //This takes from the field of definition and gives matrices that can be put into autofmodularforms.
        
-    xi:=map<GAL1-> MatrixRing(Kfield,#M`F0) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
+    //xi:=map<GAL1-> MatrixRing(Kfield,#M`F0) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
+    
+    aut1:=hom<calGAut ->GL(#M`F0,Kfield) | [AOfMF[i]:i in [1..Ngens(calGAut)]]>;
+    aut:=lift_hom(aut1,N);
+
+    xi:=hom<GAL1-> GL(#M`F0,Kfield) | [<d,aut(xi2(d))>: d in GAL1]>;
 
 
 
+    //xi:=hom<GAL1-> GL(#M`F0,Kfield) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
 
 
 

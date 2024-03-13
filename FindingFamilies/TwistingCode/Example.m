@@ -9,7 +9,7 @@ H:=sub<GL(2,Integers(56)|[[ 7, 16, 10, 23 ],[ 15, 0, 0, 15 ],[ 1, 42, 28, 43 ],[
 
 //The following is how I work this code.
 //Model for our representative
-M:=FindModelOfXG(CreateModularCurveRec0(H),30 : G0:=G0);
+M:=FindModelOfXG(CreateModularCurveRec0(H),30 : G0:=G0, simplify_cubic:=false);
 //xi is cocycle, K is where it is defined.
 xi,K:=GroupToCocycle(G0,H,G,G meet SL(2,Integers(#BaseRing(G))),M);
 
