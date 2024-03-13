@@ -2,7 +2,7 @@
 
 
 
-//Based on Andrew Sutherland's intrinsic (which is faster than what I was using)
+//Based on Andrew Sutherland's intrinsic (which is faster than what I was using). 
 function FiniteLift(A,N,M) 
     assert IsDivisibleBy(M, N);
     if N eq M then return A; end if;
@@ -17,17 +17,15 @@ end function;
 
 //This is the code for, given a subgroup G of GL_2(Zhat) containing identity and having full determinant, finding the family it lies in. 
 //We first compute its agreeable closure calG', using this we find the family F(calG,B) such that calG' is conjugate to calG.  
-//G:=curves[71]`subgroup;
-//T:=G meet SL(2,Integers(#BaseRing(G)));
 function FamilyFinderNew(G, T)   
  /*
     Input:
-	    G       : a subgroup of GL2(Zhat)
+	    G       : a subgroup of GL2(Zhat) full det, -I in G
 	    T       : G meet SL2
     Output:  
-        Famil(ies) that G lies in. Hopefully there will only be one family. 
+        A family that G lies in. 
             
-    Note: Assumes that the families are loaded?
+    Note: Assumes that the families.
 
  */
 
@@ -77,18 +75,14 @@ function FamilyFinderNew(G, T)
     end for;
 
     b:=FiniteLift(Y[o][2],calG_level,N);
-
     Gcong:=Conjugate(G,b);
     assert Gcong subset gl2Lift(FAM[o]`calG,N);
     assert IsNormal(gl2Lift(FAM[o]`calG,N),Gcong);
     Tcong:=Conjugate(sl2Lift(T,N),b);
-
-
     assert Tcong eq sl2Lift(FAM[o]`B,N);
 
 
-        
-
+    
 return o,FAM[o],Gcong,gl2Lift(FAM[o]`calG,N),Tcong;
 
 end function;
