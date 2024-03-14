@@ -12,7 +12,7 @@ function IsConjugateToSubgroup(G,H1,H2)
     return #[H:H in Subgroups(H2:IndexEqual:=n)|IsConjugate(G,H`subgroup,H1)] ne 0;
 end function;
 
-
+/*
 //We load all of our families. The file size will be much lower.
 load "../FamilyData/familycreatecodewithanarrayfosubgroup.m";
 I:=Open("../FamilyData/Genus0Families.dat", "r");
@@ -35,8 +35,25 @@ repeat
 	end if;
     a:=a+1;
 until not b;
+*/
 
+I:=Open("/homes/ek693/Main/NewFamiliesWithAuts1.dat", "r");
+FAM:=AssociativeArray();
+a:=1;
+repeat
+	b,y:=ReadObjectCheck(I);
+	if b then
+		FAM[a]:=y;
+	end if;
+    a:=a+1;
+until not b;
 
+//Thansk to David Roe.
+function lift_hom(f, M)
+    R := BaseRing(Domain(f));
+    GM := gl2Lift(Domain(f), M);
+    return hom<GM -> Codomain(f) | [<GM.i, ChangeRing(GM.i, R) @ f> : i in [1..Ngens(GM)]] >;
+end function;
 
 
 
@@ -86,7 +103,7 @@ function FindModelNew(G,T)
     xi,K:=GroupToCocycle(famG`calG,famG`H,G,T,M,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
-    psi:=Twist(M,xi,K, famG`calG);
+    psi,MAT:=Twist(M,xi,K, famG`calG);
 
-    return psi;
+    return psi,MAT;
 end function; 
