@@ -111,8 +111,6 @@ coeff2:=[];
         Append(~I2G,f);   
     end for; 
 
-    //I2G:=ReduceQuadrics(I2G);
-
 
 
 end if;
@@ -296,7 +294,7 @@ end if;
 
 
 
-return I2G cat I3G cat I4G, MAT;
+return I2G cat I3G cat I4G, MAT,s;
 
 
 
