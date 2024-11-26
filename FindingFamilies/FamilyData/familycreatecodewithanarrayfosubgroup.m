@@ -1,4 +1,4 @@
-
+AttachSpec("../../DrewMagma/magma.spec");
 //This a record for the families we will use. I think most entries are clear.
 FamilyRec := recformat<
     calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index :RngIntElt,                     
@@ -26,8 +26,8 @@ function CreateFamilyRecSubgroup(calG, B  : compute_comm:=false, compute_calgmee
  */
 
     F := rec<FamilyRec | calG:= calG ,B:=B >;	 
-    calG_level:=gl2Level(calG);
-    B_level:=sl2Level(B);
+    calG_level:=GL2Level(calG);
+    B_level:=SL2Level(B);
     //calG_index:=Index(GL(2,Integers(calG_level)),ChangeRing(calG,Integers(calG_level)));
     //B_index:=Index(SL(2,Integers(B_level)),ChangeRing(B,Integers(B_level)));
     genus:=GL2Genus(B);

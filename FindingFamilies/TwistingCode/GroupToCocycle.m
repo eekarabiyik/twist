@@ -1,5 +1,5 @@
 
-function GroupToCocycle(calG,G,H,T,M,AOfMF)
+function GroupToCocycle(calG,G,H,T,AOfMF,M)
     /*
         Input:  calG: This is an open subgroup of GL2(Zhat), containing negative identity with full determinant.
                 G: A representative in the family F(calG,G)=F(calG,B) for some B arising from our calculations. Check Zywina-Explicit Open Image-Chapter 14 for details.
@@ -13,14 +13,15 @@ function GroupToCocycle(calG,G,H,T,M,AOfMF)
     //Arranging the levels
     N1:=#BaseRing(calG);
     N2:=#BaseRing(G);
-    calGAut:=gl2Lift(calG,LCM([N1,N2]));
+    calGAut:=GL2Lift(calG,LCM([N1,N2]));
     N3:=#BaseRing(H);
     N4:=#BaseRing(T);
     N:=LCM([N1,N2,N3,N4]);
-    calG:=gl2Lift(calG,N);
-    G:=gl2Lift(G,N);
-    H:=gl2Lift(H,N);
-    T:=sl2Lift(T,N);
+    calG:=GL2Lift(calG,N);
+    G:=GL2Lift(G,N);
+    H:=GL2Lift(H,N);
+    T`SL:=true;
+    T:=SL2Lift(T,N);
 
     UN,iotaN:=UnitGroup(Integers(N));
     SL2:=SL(2,Integers(N));
@@ -53,7 +54,7 @@ function GroupToCocycle(calG,G,H,T,M,AOfMF)
     gallist:=[];
     for i in [1..Ngens(UN)] do
         Append(~genlist,UN.i);
-        _:=exists(g0){g0: g0 in GAL | sigma(g0)(a) eq a^(Integers()!iotaN(UN.i)) };
+        _:=exists(g0){g0: g0 in GAL | sigma(g0)(a) eq a^(Integers()!iotaN(UN.i)) };//This should not be negative. There were some instances it were. Be careful!!!
         Append(~gallist,g0);
     end for;
 
@@ -77,10 +78,10 @@ function GroupToCocycle(calG,G,H,T,M,AOfMF)
        
     //xi:=map<GAL1-> MatrixRing(Kfield,#M`F0) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
     
-    aut1:=hom<calGAut ->GL(#M`F0,Kfield) | [AOfMF[i]:i in [1..Ngens(calGAut)]]>;
+    aut1:=hom<calGAut ->GL(Nrows(AOfMF[1]),Kfield) | [GL(Nrows(AOfMF[1]),Kfield)!(GL(Nrows(AOfMF[1]),Rationals())!AOfMF[i]):i in [1..Ngens(calGAut)]]>;
     aut:=lift_hom(aut1,N);
 
-    xi:=hom<GAL1-> GL(#M`F0,Kfield) | [<d,aut(xi2(d))>: d in GAL1]>;
+    xi:=hom<GAL1-> GL(Nrows(AOfMF[1]),Kfield) | [<d,aut(xi2(d))>: d in GAL1]>;
 
 
 

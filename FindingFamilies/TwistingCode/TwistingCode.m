@@ -1,4 +1,4 @@
-function Twist(M,xi,K, calG)   
+function TwistCurve(M,xi,K, calG)   
 // Input: M: a modular curve in the sense of Zywina. 
 // xi: Gal(K/Q)-> GL(M`genus,K) 1-cocycle. This is a cocycle that extends from the Aut(M) (usually via AutomorphismOfModularForms function of Zywina).    
 // It factors through the field K.
@@ -9,7 +9,7 @@ function Twist(M,xi,K, calG)
 I:=M`psi;
 g:=M`genus;
 GAL,iota,sigma:=AutomorphismGroup(K);
-s:=#M`F0;
+s:= Nrows(Id(Codomain(xi)));
 //Transpose matrix because of Galois action used.   
 MAT:=Transpose(H90(s,K,Rationals(),GAL,sigma,xi));
 Pol<[x]>:=PolynomialRing(K,s); 
@@ -21,48 +21,184 @@ for i in [1..#I] do
 end for;
 
 
-//Get the coefficent vectors of polynomials in I2tw to do Galois descent. 
+//Get the coefficent vectors of polynomials in Itw to do Galois descent.
 mon2:=MonomialsOfDegree(Pol,2);
 mon3:=MonomialsOfDegree(Pol,3);
 mon4:=MonomialsOfDegree(Pol,4);
 mon:=mon2 join mon3 join mon4;
 
-coef:=[];
+
+coef2:=[];
 for f in Itw do 
-   Append(~coef,[MonomialCoefficient(f,m): m in mon]);
+   Append(~coef2,[MonomialCoefficient(f,m): m in mon2]);
 end for; 
 
-//We will scale the coordinate vectors a little to be able to do Galois Descent
-coeff:=[];
+coef3:=[];
+for f in Itw do 
+   Append(~coef3,[MonomialCoefficient(f,m): m in mon3]);
+end for; 
+
+
+coef4:=[];
+for f in Itw do 
+   Append(~coef4,[MonomialCoefficient(f,m): m in mon4]);
+end for; 
 
 
 
+//We now do Galois descent separately for quadrics, cubics and quartics.
 
 
-
-for j in [1..#coef] do //This is so that the trace map is never zero.
-    coeff[j]:=[];
-    for k in [1..#coef[j]] do
-        if coef[j][k] ne 0 then
-            x:=coef[j][k];
-            break k;
-        end if;
+UU2 := VectorSpace(K,#mon2);
+VV2:=sub<UU2| coef2>; 
+// use this dimension
+    
+I2G:=[];
+B:=Basis(K);
+if not Dimension(VV2) eq 0 then
+    coeff2:=[];
+    i:=1;
+    for j in [1..#coef2] do //This is so that the trace map is never zero. However I am not sure if I am sure to get the correct dimension. over Q[x]?
+        for b in B do
+            coeff2[i]:=[];
+            for k in [1..#coef2[j]] do
+                coeff2[i]:= coeff2[i] cat [coef2[j][k]*b];
+            end for;
+            i:=i+1;
+        end for;
     end for;
-    for k in [1..#coef[j]] do
-        coeff[j][k]:=coef[j][k]/x;
+
+//Starting Galois descent now
+    U2 := VectorSpace(K,#mon2);
+    V2:=sub<U2| coeff2>; 
+
+    
+     
+
+    S2:={}; 
+
+
+
+    i:=1; 
+    while i lt #coeff2+1 do 
+
+ 
+
+        v:=coeff2[i]; 
+        tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] / #GAL; 
+        tr:=V2!Transpose(tr); 
+        if Dimension(sub<V2|S2 join {tr}>) gt Dimension(sub<V2|S2>) then 
+          S2:=S2 join {tr}; 
+            if Dimension(sub<V2|S2>) eq #coeff2 then i:=#coeff2+1; end if;
+        end if; 
+        i:=i+1; 
+    end while; 
+
+
+
+
+
+    I2G:=[];
+
+
+    for v in S2 do 
+        f:=0;
+        for i in [1..#mon2] do
+            f:=f+v[i]*mon2[i];
+        end for;
+        Append(~I2G,f);   
+    end for; 
+
+
+
+end if;
+
+
+
+
+
+
+
+
+
+UU3 := VectorSpace(K,#mon3);
+VV3:=sub<UU3| coef3>; 
+// use this dimension
+    
+
+I3G:=[];
+
+
+if not Dimension(VV3) eq 0 then
+    coeff3:=[];
+    i:=1;
+    for j in [1..#coef3] do //This is so that the trace map is never zero. However I am not sure if I am sure to get the correct dimension. over Q[x]?
+        for b in B do
+            coeff3[i]:=[];
+            for k in [1..#coef3[j]] do
+                coeff3[i]:= coeff3[i] cat [coef3[j][k]*b];
+            end for;
+            i:=i+1;
+        end for;
     end for;
 
-end for;
+//Starting Galois descent now
+    U3 := VectorSpace(K,#mon3);
+    V3:=sub<U3| coeff3>; 
+
+    
+     
+
+    S3:={}; 
+
+
+
+    i:=1; 
+    while i lt #coeff3+1 do 
+
+ 
+
+        v:=coeff3[i]; 
+        tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] / #GAL; 
+        tr:=V3!Transpose(tr); 
+        if Dimension(sub<V3|S3 join {tr}>) gt Dimension(sub<V3|S3>) then 
+          S3:=S3 join {tr}; 
+            if Dimension(sub<V3|S3>) eq #coeff3 then i:=#coeff3+1;; end if;
+        end if; 
+        i:=i+1; 
+    end while; 
 
 
 
 
-/*
-Note to David Roe/LMFDB
-The matrix we get from the H90 code has coefficients in the number field we use. Resulting polynomals/Ideal are actually defined
-over Rationals, but we need to do a Galois descent to get polynomials over Rationals.
-When we act on the map to the j-line via 
 
+    I3G:=[];
+
+
+    for v in S3 do 
+        f:=0;
+        for i in [1..#mon3] do
+            f:=f+v[i]*mon3[i];
+        end for;
+        Append(~I3G,f);   
+    end for; 
+    /*
+    FIX LATER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if not Dimension(VV2) eq 0 and not Dimension(VV2) eq 0 then
+        V:=VectorSpace(Rationals(),#mon3);
+        W:=sub<V| [V![MonomialCoefficient(x[i]*f,m): m in mon3] : i in [1..s], f in I2G]>;
+        V3:=sub<V| [V![MonomialCoefficient(f,m): m in mon3] : f in I3G]>;
+        J:=[];
+        i:=1;
+        while Dimension(W) lt Dimension(V3) do
+            v:=V![MonomialCoefficient(I3G[i],m): m in mon3];
+            if v notin W then 
+                W:=sub<V|Generators(W) join {v}>; 
+                J:=J cat [I3G[i]];
+            end if;
+            i:=i+1;
+        end while;
+    end if;
 */
 
 
@@ -72,52 +208,89 @@ When we act on the map to the j-line via
 
 
 
+end if;
 
 
+
+
+
+
+
+
+
+
+
+
+
+UU4 := VectorSpace(K,#mon4);
+VV4:=sub<UU4| coef4>; 
+// use this dimension
+    
+
+I4G:=[];
+
+
+if not Dimension(VV4) eq 0 then
+ coeff4:=[];
+    i:=1;
+    for j in [1..#coef4] do //This is so that the trace map is never zero. However I am not sure if I am sure to get the correct dimension. over Q[x]?
+        for b in B do
+            coeff4[i]:=[];
+            for k in [1..#coef4[j]] do
+                coeff4[i]:= coeff4[i] cat [coef4[j][k]*b];
+            end for;
+            i:=i+1;
+        end for;
+    end for;
 //Starting Galois descent now
-   U := VectorSpace(K,#mon);
-    V:=sub<U| coeff>; 
+    U4 := VectorSpace(K,#mon4);
+    V4:=sub<U4| coeff4>; 
 
     
      
 
-S:={}; 
+    S4:={}; 
 
 
 
-
-
- 
-//Assuming V is Galois invariant
     i:=1; 
-    while i lt #coeff+1 do 
+    while i lt #coeff4+1 do 
 
  
 
-        v:=coeff[i]; 
-        tr:=&+[ Matrix(K,#mon,1,[sigma(g)(v[i]): i in [1..#mon]]) : g in GAL] / #GAL; 
-        tr:=V!Transpose(tr); 
-        if Dimension(sub<V|S join {tr}>) gt Dimension(sub<V|S>) then 
-          S:=S join {tr}; 
-
+        v:=coeff4[i]; 
+        tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] / #GAL; 
+        tr:=V4!Transpose(tr); 
+        if Dimension(sub<V4|S4 join {tr}>) gt Dimension(sub<V4|S4>) then 
+          S4:=S4 join {tr}; 
+            if Dimension(sub<V4|S4>) eq #coeff4 then  i:=#coeff4+1; end if;
         end if; 
         i:=i+1; 
     end while; 
 
-I2G:=[];
-
-
-for v in S do 
-   f:=0;
-   for i in [1..#mon] do
-   f:=f+v[i]*mon[i];
-   end for;
-   Append(~I2G,f);   
-end for; 
 
 
 
 
+    I4G:=[];
 
-return I2G, MAT,s;
+
+    for v in S4 do 
+        f:=0;
+        for i in [1..#mon4] do
+            f:=f+v[i]*mon4[i];
+        end for;
+        Append(~I4G,f);   
+    end for; 
+
+
+
+end if;
+
+
+
+return I2G cat I3G cat I4G, MAT,s;
+
+
+
 end function; 
