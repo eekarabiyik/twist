@@ -3,6 +3,8 @@
 -There might be mistakes, however, I am testing this on huge amounts of data. 
 -This is pretty fast, much much faster than the previous version.
 -The coefficients, well, they are messy. The jmap coefficents can be huge. This is partially needed, partially will be fixed.
+-Meaning that I will do LLL+Saturations ot make things look nicer. Models are usually good enough, jmaps on the other hand are not nice.
+DISCLAIMER: I have not fact checked the jmaps yet! Do not trust this version (althoug I have computed them by changing the old LMFDB code. So the idea for computing them are there. Any mistakes should be easily fixable.)
 
 
 -load the main.m file. Make sure the directory is MainCode. The main function is FindModelNew. It takes a group G and its SL2 intersection T as inputs.
