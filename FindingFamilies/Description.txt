@@ -1,13 +1,16 @@
--This is an early version of my twisting code that classifies modualr curves up to genus 6. No j-map is included. The resulting polynomials have unnecessary cubic relations sometimes.
+-This is an early version of my twisting code that classifies modualr curves up to genus 6. No j-map is included. No! Now the j map is also included!
+-The resulting polynomials have unnecessary cubic relations sometimes.
 -There might be mistakes, however, I am testing this on huge amounts of data. 
 -This is pretty fast, much much faster than the previous version.
+-The coefficients, well, they are messy. The jmap coefficents can be huge. This is partially needed, partially will be fixed.
 
 
 -load the main.m file. Make sure the directory is MainCode. The main function is FindModelNew. It takes a group G and its SL2 intersection T as inputs.
 -An example file is included. 
 
 -This entire repository will be updated a bunch. Let me know if you have any ideas, questions, suggestions.
--Data Files can be and will be made better: It will have less file size hopefully.
+-I will make things intrinsics, too! First I have to understand what can be improved.
+-What is the slowest part? At most finding the family a group lies in takes 3 seconds (on our computers). Other parts are usually very fast! Except when the coefficients are huge!
 
 The families here are not minimal. They even contain "families" of fine modular curves i.e. -I \notin G.
 
