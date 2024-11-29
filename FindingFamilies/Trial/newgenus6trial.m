@@ -1,3 +1,4 @@
+//Load  this to run the code on all curves in LMFDB
 AttachSpec("../../DrewMagma/magma.spec");
 load "main.m";
 load "../Trial/lmfdbgenusupto6.m";
