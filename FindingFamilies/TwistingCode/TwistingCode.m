@@ -3,9 +3,9 @@ function TwistCurve(M,xi,K, calG)
 // xi: Gal(K/Q)-> GL(M`genus,K) 1-cocycle. This is a cocycle that extends from the Aut(M) (usually via AutomorphismOfModularForms function of Zywina).    
 // It factors through the field K.
 // calG: calG is the group which contains G as a normal group and F(calG,G) is the family that G lies in.
-// Output: a sequence "psi" of homogeneous polynomials in Q[x_1,..,x_#M`F0], defining the twisted curve.
+// Output: a sequence "psi" of homogeneous polynomials in Q[x_1,..,x_#M`F0], defining the twisted curve. And the H90 matrix used.
 //For now we are working over Q.
-//Assuming H90 and Z's FindOpenImage are loaded.
+//Assuming A lot of things are loaded.
 I:=M`psi;
 g:=M`genus;
 GAL,iota,sigma:=AutomorphismGroup(K);
@@ -71,19 +71,9 @@ if not Dimension(VV2) eq 0 then
 //Starting Galois descent now
     U2 := VectorSpace(K,#mon2);
     V2:=sub<U2| coeff2>; 
-
-    
-     
-
     S2:={}; 
-
-
-
     i:=1; 
     while i lt #coeff2+1 do 
-
- 
-
         v:=coeff2[i]; 
         tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] / #GAL; 
         tr:=V2!Transpose(tr); 
@@ -94,13 +84,7 @@ if not Dimension(VV2) eq 0 then
         i:=i+1; 
     end while; 
 
-
-
-
-
     I2G:=[];
-
-
     for v in S2 do 
         f:=0;
         for i in [1..#mon2] do
@@ -108,27 +92,13 @@ if not Dimension(VV2) eq 0 then
         end for;
         Append(~I2G,f);   
     end for; 
-
-
-
 end if;
 
-
-
-
-
-
-
-
-
+//Now for cubics.
 UU3 := VectorSpace(K,#mon3);
 VV3:=sub<UU3| coef3>; 
 // use this dimension
-    
-
 I3G:=[];
-
-
 if not Dimension(VV3) eq 0 then
     coeff3:=[];
     i:=1;
@@ -145,19 +115,9 @@ if not Dimension(VV3) eq 0 then
 //Starting Galois descent now
     U3 := VectorSpace(K,#mon3);
     V3:=sub<U3| coeff3>; 
-
-    
-     
-
     S3:={}; 
-
-
-
     i:=1; 
     while i lt #coeff3+1 do 
-
- 
-
         v:=coeff3[i]; 
         tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] / #GAL; 
         tr:=V3!Transpose(tr); 
@@ -167,14 +127,7 @@ if not Dimension(VV3) eq 0 then
         end if; 
         i:=i+1; 
     end while; 
-
-
-
-
-
     I3G:=[];
-
-
     for v in S3 do 
         f:=0;
         for i in [1..#mon3] do
@@ -200,36 +153,12 @@ if not Dimension(VV3) eq 0 then
         end while;
     end if;
 */
-
-
-
-
-
-
-
-
 end if;
-
-
-
-
-
-
-
-
-
-
-
-
+//Quartics:
 
 UU4 := VectorSpace(K,#mon4);
 VV4:=sub<UU4| coef4>; 
-// use this dimension
-    
-
 I4G:=[];
-
-
 if not Dimension(VV4) eq 0 then
  coeff4:=[];
     i:=1;
@@ -245,19 +174,9 @@ if not Dimension(VV4) eq 0 then
 //Starting Galois descent now
     U4 := VectorSpace(K,#mon4);
     V4:=sub<U4| coeff4>; 
-
-    
-     
-
     S4:={}; 
-
-
-
     i:=1; 
     while i lt #coeff4+1 do 
-
- 
-
         v:=coeff4[i]; 
         tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] / #GAL; 
         tr:=V4!Transpose(tr); 
@@ -267,14 +186,8 @@ if not Dimension(VV4) eq 0 then
         end if; 
         i:=i+1; 
     end while; 
-
-
-
-
-
+    
     I4G:=[];
-
-
     for v in S4 do 
         f:=0;
         for i in [1..#mon4] do
@@ -282,15 +195,7 @@ if not Dimension(VV4) eq 0 then
         end for;
         Append(~I4G,f);   
     end for; 
-
-
-
 end if;
 
-
-
 return I2G cat I3G cat I4G, MAT,s;
-
-
-
 end function; 

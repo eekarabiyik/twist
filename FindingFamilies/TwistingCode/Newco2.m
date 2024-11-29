@@ -20,26 +20,25 @@ function GroupToCocycleNew(calG,H,G,T,AOfMF)
         Output: 
                 xi: Gal(K/Q)-> GL(#M`F0,K) 1-cocycle arising from the map H-> calG/G
     */
+    
     //Arranging the levels
-    
-    
     N1:=#BaseRing(calG);
     N3:=#BaseRing(H);
     calGAut:=GL2Lift(calG,LCM([N1,N3]));
     N:=LCM([N1,N3]);
     NG:=#BaseRing(G);
+    //When N divides NG everything is easier.
     if not IsDivisibleBy(NG,N) then
         G:=GL2Lift(G,LCM([NG,N]));
     end if;
     H:=GL2Lift(H,N);
     NG:=#BaseRing(G);
-    
-    T:=SL2Intersection(G);
+    T:=SL2Intersection(G);//This is fast now.
     UNG,iotaN:=UnitGroup(Integers(NG));
     SL2:=SL2Ambient(NG);
-    //Forming the quotient calG/G. We have to make it into an abelian group so that the kernels actually work.
+    //Forming the quotient calG/H. We have to make it into an abelian group so that the kernels actually work.
     
-    //Defining the necessary map like inclusions and so on.
+    //Defining the necessary map like quotientss and so on.
     
     calG:=GL2Lift(calG,N);
     quocalG,quomapG:= quo<calG|H>;
@@ -52,17 +51,13 @@ function GroupToCocycleNew(calG,H,G,T,AOfMF)
    
     
     //Abelian work. gammadd here is an homomorphism whose kernel will be useful. 
-    gammad:=map<{iotaN(d): d in UNG}-> quocalGG | [<Determinant(t),quomapGG(quomapG((xii(Determinant(t)))))>: t in K]>; //This gamma for now gives what? it gives in the quotient as  permutations 
+    gammad:=map<{iotaN(d): d in UNG}-> quocalGG | [<Determinant(t),quomapGG(quomapG((xii(Determinant(t)))))>: t in K]>; 
 
     gammadd:=hom<UNG-> quocalGG | [gammad(iotaN(UNG.i)): i in [1..Ngens(UNG)]]>;// This is a homomorphism. With this new concept it is not a homomorphism anymore, is there a problem with the finite lift thing or something else. Would it be a homomorphism if I choose nice lifts? Do I need a lift hom with respect to codomain? 
 
-    
-    //These are only with quocalG. Migt be useful. map gamma gives matrices which can be useful to calculate the ambient automorphism matrices.
-    //gammad1:=map<{iotaN(d): d in UN}-> quocalG | [<Determinant(t),quomapG(phi(xi(Determinant(t))))>: t in K]>; //This gamma for now gives what? it gives in the quotient as  permutations 
-    //gammadd1:=hom<UN-> quocalG | [gammad1(iotaN(UN.i)): i in [1..Ngens(UN)]]>;// This is a homomorphism
-    //gamma:=map<UN-> calG | [ <d,gammadd1(d) @@ quomapG>: d in UN]>;//this gives the matrices so that i can put the images into autofmodcurves
-
     //Now we have some of the maps we needed. We will put all these in nice forms. 
+
+    //First we create Cyclotomic field and write the above maps from the Galois group.
     KNG<a>:=CyclotomicField(NG);
     GAL,iota,sigma:=AutomorphismGroup(KNG);
 
@@ -97,7 +92,7 @@ function GroupToCocycleNew(calG,H,G,T,AOfMF)
     aut:=hom<calGAut ->GL(ro,Kfield) | [AOfMF[i]:i in [1..Ngens(calGAut)]]>;
     //aut:=lift_hom(aut1,N);
 
-    xi:=hom<GAL1-> GL(ro,Kfield) | [<d,aut(xi2(d))>: d in GAL1]>;
+    xi:=hom<GAL1-> GL(ro,Kfield) | [<d,aut(xi2(d))>: d in GAL1]>;//Note that the way we did the precomputation makes the levels match.
 
 
 

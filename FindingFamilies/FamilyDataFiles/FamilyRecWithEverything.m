@@ -1,13 +1,13 @@
 AttachSpec("../../DrewMagma/magma.spec");
 //This a record for the families we will use. I think most entries are clear.
 FamilyRecFinal := recformat<
-    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index :RngIntElt,                     
-    calG_gens, B_gens, subgroupsofH :SeqEnum,   
+    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,                     
+    calG_gens, B_gens, subgroupsofH,jmap :SeqEnum,   
     works: BoolElt,                                                              
     calG,B,H, commutator_sub, W :GrpMat,   
     onelementpossibly: BoolElt, 
     CPname: MonStgElt ,  
-    M, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, transversals, nolift
+    M, calGModCurve, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, transversals, nolift
     >;	 
 
 

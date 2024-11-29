@@ -41,24 +41,23 @@ function FamilyFinderNew(G, T)
 	    G       : a subgroup of GL2(Zhat) full det, -I in G
 	    T       : G meet SL2
     Output:  
-        A family that G lies in. 
+        The family that G lies in. 
             
     Note: Assumes that the families.
 
  */
     
-
-
- time0:=Realtime();
     N:=#BaseRing(G);
     M:=#BaseRing(T);
     g:=GL2Genus(T);
     T_level:=SL2Level(T);
+    //Level 1 is not liked by magma so deal with it separately.
     if T_level eq 1 then 
         exists(s){s: s in Keys(FAM)| SL2Level(FAM[s]`B) eq 1};
         assert FAM[s]`B eq SL2Project(T,2);
         return s,FAM[s], G, FAM[s]`calG, T;
     end if;
+    //We compute the level to compute the agreeable closure. Level of calG has the same odd divisors asT_level.
     T:=SL2Project(T,T_level);
     X:=AssociativeArray();
     G_level:=GL2Level(G);
@@ -67,48 +66,30 @@ function FamilyFinderNew(G, T)
     G:=GL2Lift(G,LCM([G_level,2]));
     T:=SL2Lift(T,LCM([T_level,2]));
     callevel:=1;
-    Realtime(time0);
-    time1:=Realtime();
-    time4:=Realtime();
     for p in PrimeDivisors(#BaseRing(T)) do
         callevel:=callevel*p^(Maximum(Valuation(levelneededT,p),Valuation(levelneededG,p)));
     end for;
     calG:=GL2Project(G,callevel);
     if not ContainsScalars(calG) then calG:=AdjoinScalars(calG); end if;
     calG_level:=GL2Level(calG);
-        if calG_level eq 1 then
+    //Now agreeable closure is computed, we deal with level 1 case separately.
+    if calG_level eq 1 then
         exists(s){s: s in Keys(FAM)| GL2Level(FAM[s]`calG) eq 1 and not SL2Level(FAM[s]`B) eq 1};
         assert T eq FAM[s]`B;
         return s,FAM[s], G, FAM[s]`calG, T;
     end if;
+    
     calG:=GL2Project(calG,calG_level);
     T:=SL2Project(T,T_level);
     G:=GL2Project(G,N);
     Y:=AssociativeArray();
-    M:=LCM([calG_level,T_level]);
-    Realtime(time4);
-
-
-
-
-
-
-
-
-
-    time10:=Realtime();
-   
+    M:=LCM([calG_level,T_level]);   
+    //We now search for the family it lies in. We check if the agreeable closure and T matches.
     for k in Keys(FAM) do
-       //if not FAM[k]`genus eq g or not FAM[k]`B_level eq T_level or not FAM[k]`calG_level eq calG_level then continue; end if;
-       
-       //time0:=Realtime();
-        if FAM[k]`B_level eq T_level  and g eq FAM[k]`genus and FAM[k]`calG_level eq calG_level and IsConjugate(GL(2,Integers(T_level)),T,FAM[k]`B) then
-            
+        if FAM[k]`B_level eq T_level  and g eq FAM[k]`genus and FAM[k]`calG_level eq calG_level and IsConjugate(GL(2,Integers(T_level)),T,FAM[k]`B) then  
             A,b:=IsConjugate(GL(2,Integers(calG_level)),calG,FAM[k]`calG);
             if A then 
                 Y[k]:=<k,b>;
-                //break k;
-                //print(k);
             end if;
         end if;
         //print(Realtime(time0));
@@ -119,16 +100,17 @@ function FamilyFinderNew(G, T)
    // "number of keys is";
     //#Y;
     //Keys(Y);
-    print(Realtime(time10));
+    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. If non of them
         for t in Keys(Y) do
             b:=FiniteLift(Y[t][2],calG_level,M);
             Tcong:=Conjugate(SL2Lift(T,M),b);
             Tcong`SL:=true;
-            
+            //we check if the SL2 intersection are the same.
             if SL2Project(Tcong,T_level) eq FAM[t]`B then;
                 o:=t;
                 break t;
             else
+            //If not, it is possible that T is conjugate in the normalizer of calG, we check if this is the case. Either one of these cases will happen.
                 norm:=Normalizer(GL2Ambient(M),GL2Lift(FAM[t]`calG,M));
                 for i in [1..#FAM[t]`conjugacyofB] do
                     conB:=FAM[t]`conjugacyofB[i];
@@ -144,8 +126,9 @@ function FamilyFinderNew(G, T)
         end for;
 
    
-
+    
     if not o eq -1 then
+        //If we have found the family with correct SL2intersection:
         b:=FiniteLift(Y[o][2],calG_level,N);
         bm:=FiniteLift(Y[o][2],calG_level,M);
         Gcong:=Conjugate(G,b);
@@ -153,6 +136,7 @@ function FamilyFinderNew(G, T)
 
         return o,FAM[o],Gcong,FAM[o]`calG,Tcong;
     else
+        //Otherwise T is conjugate to a normalizer conjugate.
         bm:=FiniteLift(Y[u][2],calG_level,M);
         Tcong:=Conjugate(SL2Lift(T,M),bm);//figure out conjugation
         Tcong:=Conjugate(Tcong,neededb);
