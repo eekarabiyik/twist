@@ -18,7 +18,7 @@ for k in Keys(curves) do
         
         T:=SL(2,Integers(#BaseRing(G))) meet G;
         T`SL:=true;
-        FindModelNew(G,T);
+        FindModelNew(G,T: redcub:=true);
 
         print(Realtime(time0));
 end for;

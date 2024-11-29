@@ -59,7 +59,7 @@ load "../TwistingCode/TwistingCode.m";//Twisting code
 
 
 
-function FindModelNew(G,T)   
+function FindModelNew(G,T: redcub:=false)   
     //Input: G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
     //       T is G intersection SL2(Z/NZ)
     //Output: psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above. n is depends on the model of the family representative that is twist of G,
@@ -81,7 +81,7 @@ function FindModelNew(G,T)
     xi,K:=GroupToCocycleNew(famG`calG,famG`H,Gcong,Tcong,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
-    psi,MAT:=TwistCurve(famG`M,xi,K, famG`calG);
+    psi,MAT:=TwistCurve(famG`M,xi,K, famG`calG: redcub:=redcub);
 	//Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
     printf "Computing the jmap...\n";
     mapss := FAM[famkey]`jmap;

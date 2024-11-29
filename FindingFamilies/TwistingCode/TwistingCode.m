@@ -1,4 +1,4 @@
-function TwistCurve(M,xi,K, calG)   
+function TwistCurve(M,xi,K, calG: redcub:=false)   
 // Input: M: a modular curve in the sense of Zywina. 
 // xi: Gal(K/Q)-> GL(M`genus,K) 1-cocycle. This is a cocycle that extends from the Aut(M) (usually via AutomorphismOfModularForms function of Zywina).    
 // It factors through the field K.
@@ -135,24 +135,9 @@ if not Dimension(VV3) eq 0 then
         end for;
         Append(~I3G,f);   
     end for; 
-    /*
-    FIX LATER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if not Dimension(VV2) eq 0 and not Dimension(VV2) eq 0 then
-        V:=VectorSpace(Rationals(),#mon3);
-        W:=sub<V| [V![MonomialCoefficient(x[i]*f,m): m in mon3] : i in [1..s], f in I2G]>;
-        V3:=sub<V| [V![MonomialCoefficient(f,m): m in mon3] : f in I3G]>;
-        J:=[];
-        i:=1;
-        while Dimension(W) lt Dimension(V3) do
-            v:=V![MonomialCoefficient(I3G[i],m): m in mon3];
-            if v notin W then 
-                W:=sub<V|Generators(W) join {v}>; 
-                J:=J cat [I3G[i]];
-            end if;
-            i:=i+1;
-        end while;
-    end if;
-*/
+    
+   
+   
 end if;
 //Quartics:
 
@@ -196,6 +181,27 @@ if not Dimension(VV4) eq 0 then
         Append(~I4G,f);   
     end for; 
 end if;
+
+
+
+ if redcub eq true then
+        if not Dimension(VV2) eq 0 and not Dimension(VV3) eq 0 then
+            V:=VectorSpace(Rationals(),#mon3);
+            W:=sub<V| [V![MonomialCoefficient(x[i]*f,m): m in mon3] : i in [1..s], f in I2G]>;
+            V3:=sub<V| [V![MonomialCoefficient(f,m): m in mon3] : f in I3G]>;
+            J:=[];
+            i:=1;
+            while Dimension(W) lt Dimension(V3) do
+                v:=V![MonomialCoefficient(I3G[i],m): m in mon3];
+                if v notin W then 
+                    W:=sub<V|Generators(W) join {v}>; 
+                    J:=J cat [I3G[i]];
+                end if;
+                i:=i+1;
+            end while;
+            return I2G cat J cat I4G,MAT,s;
+        end if;
+    end if;
 
 return I2G cat I3G cat I4G, MAT,s;
 end function; 
