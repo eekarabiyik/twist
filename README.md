@@ -1,12 +1,12 @@
 # Genus6
 This repository contains the classification of modular curves upto genus 6 in terms of families. 
 
-It also contains a set of codes for the computation of models of modular curves upto genus 1. 
+It also contains a set of codes for the computation of models of modular curves upto genus 6. 
 The main function is `FindModelNew` in the file main.m in the folder `FindingFamilies/MainCode`. Make sure that your directory is `FindingFamilies/MainCode`.
 
 Some explanations:
 
-- There is now the jmap functionality. Also the code will say whether the curve computed has gonality 2 or not.
+- There is now the jmap functionality. Also the code will say whether the curve computed has QQ-gonality 2 or not.
 
 - Ignore the folders which are to be ignored.
 
