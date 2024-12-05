@@ -1,8 +1,9 @@
--This is an early version of my twisting code that classifies modualr curves up to genus 6. No j-map is included. No! Now the j map is also included!
--The resulting polynomials have unnecessary cubic relations sometimes.
+-This is an early version of my twisting code that classifies modualr curves up to genus 6. J-map is included. It also determines if the input has QQ-Gonality 2.
+-The resulting polynomials may have unnecessary cubic relations sometimes. I will fix it soon.
 -There might be mistakes, however, I am testing this on huge amounts of data. 
 -This is pretty fast, much much faster than the previous version.
 -The coefficients, well, they are messy. The jmap coefficents can be huge. This is partially needed, partially will be fixed.
+-Update: This can be the best coefficents we can get.
 -Meaning that I will do LLL+Saturations ot make things look nicer. Models are usually good enough, jmaps on the other hand are not nice.
 DISCLAIMER: I have not fact checked the jmaps yet! Do not trust this version (althoug I have computed them by changing the old LMFDB code. So the idea for computing them is there. Any mistakes should be easily fixable.)
 

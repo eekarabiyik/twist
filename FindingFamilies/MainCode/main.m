@@ -1,4 +1,4 @@
-//This is a rudimantary version of the Twisting Code. The j-map is not included (yet). 
+//This is a rudimantary version of the Twisting Code. The j-map is included, as well as a boolean for being QQ-gonality 2
 //The final polynomials are ugly in the sense that there are many unnecessary cubic relations.
 //However it is very fast and uses the last version of GL2 magma intrinsics. This will be updated soon. 
 AttachSpec("../../DrewMagma/magma.spec");
@@ -30,34 +30,6 @@ function IsConjugateToSubgroup(G,H1,H2)
     return #[H:H in Subgroups(H2:IndexEqual:=n)|IsConjugate(G,H`subgroup,H1)] ne 0;
 end function;
 //We load Families. They are in pieces so I can uplaod them to the Github.
-/*
-I:=Open("/homes/ek693/qw/FamilyDataFiles/a.dat", "r");
-FAM:=AssociativeArray();
-a:=1;
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-*/
-
-/*
-I:=Open("//homes/ek693/OptimizingTheProject/FindingFamilies/FamilyDataFiles/AllGenus6WithModelsG0UsedAndAutMFNew3.dat", "r");
-FAM:=AssociativeArray();
-a:=1;
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-*/
-
-
-
 
 I:=Open("../FamilyDataFiles/Gon1.dat", "r");
 FAM:=AssociativeArray();
@@ -78,79 +50,6 @@ repeat
 	end if;
     a:=a+1;
 until not b;
-/*
-I:=Open("../FamilyDataFiles/Families5.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families6.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families7.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families8.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families9.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families10.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families11.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-
-I:=Open("../FamilyDataFiles/Families12.dat", "r");
-repeat
-	b,y:=ReadObjectCheck(I);
-	if b then
-		FAM[a]:=y;
-	end if;
-    a:=a+1;
-until not b;
-*/
 
 
 
@@ -166,11 +65,9 @@ end function;
 
 
 load "../TwistingCode/H90.m";//H90 matrix function
-load "../FamilyFinder/aggclosurecreator2.m";//Function for Finding the family
-load "../TwistingCode/Newco2.m";//Cocycle Cretor
-load "../TwistingCode/GroupToCocycle.m";
+load "../FamilyFinder/FamilyFinder.m";//Function for Finding the family
+load "../TwistingCode/Newco2.m";//Cocycle Creator
 load "../TwistingCode/TwistingCode.m";//Twisting code
-//load "../Jmapandprocessmodel/precision.m";
 
 
 
@@ -182,7 +79,8 @@ load "../TwistingCode/TwistingCode.m";//Twisting code
 
 
 
-function FindModelNew(G,T)   
+
+function FindModelNew(G,T: redcub:=false)   
     //Input: G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
     //       T is G intersection SL2(Z/NZ)
     //Output: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above. n is depends on the model of the family representative that is twist of G,
@@ -202,7 +100,7 @@ function FindModelNew(G,T)
     xi,K:=GroupToCocycleNew(famG`calG,famG`H,Gcong,Tcong,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
-    psi,MAT:=TwistCurve(famG`M,xi,K, famG`calG);
+    psi,MAT:=TwistCurve(famG`M,xi,K, famG`calG: redcub:=redcub);
 
 
 

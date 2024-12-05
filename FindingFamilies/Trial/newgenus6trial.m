@@ -18,8 +18,9 @@ for k in [15000..16000] do
         
         T:=SL(2,Integers(#BaseRing(G))) meet G;
         T`SL:=true;
-        psi,MAT,jmap:=FindModelNew(G,T: redcub:=true);
+        psi,MAT,jmap,gon_2:=FindModelNew(G,T: redcub:=true);
         print(psi);
+        print(gon_2);
         print(Realtime(time0));
 end for;
 //358 was problem fixed it
