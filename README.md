@@ -10,7 +10,7 @@ Some explanations:
 
 - Ignore the folders which are to be ignored.
 
-- FamilyData fodler contains, as data files, the families we have up to genus 1.  Families with models and representatives computed is not here! Because github did not allow!
+- FamilyData fodler contains, as data files, the families we have up to genus 6. 
 
 - FamilyFinder folder contains code for, given a group G, finding the family it lies in. This is done first by computing the agreeable closure of the group and then searching that agreeable subgroup in our data.
 
