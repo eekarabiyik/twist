@@ -8,7 +8,7 @@ curves:=make_data();
 
 
 
-for k in Keys(curves) do
+for k in [15000..16000] do
         print(k);
         time0:=Realtime();
         G:=curves[k]`subgroup;
@@ -18,8 +18,8 @@ for k in Keys(curves) do
         
         T:=SL(2,Integers(#BaseRing(G))) meet G;
         T`SL:=true;
-        FindModelNew(G,T: redcub:=true);
-
+        psi,MAT,jmap:=FindModelNew(G,T: redcub:=true);
+        print(psi);
         print(Realtime(time0));
 end for;
 //358 was problem fixed it

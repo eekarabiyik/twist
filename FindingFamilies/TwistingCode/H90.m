@@ -35,7 +35,7 @@ function H90(n,L,K,G,sigma,xi)
  
 
     // LLL of A to make the maps look nicer! If the user wants to use this feature, just uncomment the code.
-    /*AQ:=[];
+    AQ:=[];
     for i in [1..n] do;
     for j in [1..n] do;
         AQ:= AQ cat Eltseq(A[i,j]);
@@ -50,7 +50,8 @@ function H90(n,L,K,G,sigma,xi)
         Ared:= Ared cat [L![Latt[i,k]: k in [(Degree(L)*(j-1)+1)..Degree(L)*j]]];
     end for;
     end for;
-    Ared:=Matrix(L,n,n,Ared);*/
+    Ared:=Matrix(L,n,n,Ared);
+    A:=Ared;
 
 
 
