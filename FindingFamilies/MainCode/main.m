@@ -96,8 +96,8 @@ function FindModelNew(G,T: redcub:=false)
 
 
 
-
-   
+    printf "Computing the jmap...\n";
+   //Computing the jmap. The jmap of the representative is precomputed.
 	
     mapss:=FAM[famkey]`jmap;
     s:=NumberOfRows(MAT);
@@ -107,21 +107,16 @@ function FindModelNew(G,T: redcub:=false)
     denum:=Pol!mapss[2]^MAT;
     CurveComputed:=Curve(PP, psi);  
     
-
-
     d:=Degree(num);
     mond:=MonomialsOfDegree(Pol,d);
 
-        numcoef:=[MonomialCoefficient(num,m): m in mond];
-        //exists(w){w: w in [1..#numcoef]| not numcoef[w] eq 0};
-        //x:=numcoef[w];
-        denumcoef:=[MonomialCoefficient(denum,m): m in mond];
-        //numcoef:=[numcoef[i]/x: i in [1..#numcoef]];
-        //denumcoef:=[denumcoef[i]/x: i in [1..#denumcoef]];
+    numcoef:=[MonomialCoefficient(num,m): m in mond];
+    denumcoef:=[MonomialCoefficient(denum,m): m in mond];
+
         
-        UUd := VectorSpace(K,#mond);
+    UUd := VectorSpace(K,#mond);
  
-        GAL,iota,sigma:=AutomorphismGroup(K);
+    GAL,iota,sigma:=AutomorphismGroup(K);
     B:=Basis(K);
 
     //For numerator
@@ -153,13 +148,6 @@ function FindModelNew(G,T: redcub:=false)
         end if;
     end for;
 
-
-
-
-        newnum:=0;
-        for i in [1..#mond] do
-            newnum:=newnum+newnumcoef[i]*mond[i];
-        end for;
              
         newdenum:=0;
         for i in [1..#mond] do
@@ -168,6 +156,8 @@ function FindModelNew(G,T: redcub:=false)
 
         jmap1:=newnum;
         jmap2:=newdenum;
+
+        printf "Computing QQ-gonality...\n";
         //Following computes if the curve is hyperelliptic
         if famG`M`CPname in gonality_equals_2 then
             assert assigned famG`nolift;
