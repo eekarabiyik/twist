@@ -62,28 +62,20 @@ function lift_hom(f, M)
 end function;
 
 
-
-
 load "../TwistingCode/H90.m";//H90 matrix function
 load "../FamilyFinder/FamilyFinder.m";//Function for Finding the family
 load "../TwistingCode/Newco2.m";//Cocycle Creator
 load "../TwistingCode/TwistingCode.m";//Twisting code
 
 
-
-
-
-
-
-
-
-
-
-
 function FindModelNew(G,T: redcub:=false)   
     //Input: G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
     //       T is G intersection SL2(Z/NZ)
-    //Output: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above. n is depends on the model of the family representative that is twist of G,
+    //Output: psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above. n is depends on the model of the family representative that is twist of G,
+    //         MAT: H90 matrix used for twisting
+    //          [jmap1,jmap2]: numerator and denumerator of the jmap
+    //         T: Boolean indicating if the curve has Q-gonality 2
+    //          g: genus of the curve
     
     //We first start with finding the family in our database that contains G. 
     print("Finding the family...");
@@ -174,6 +166,8 @@ function FindModelNew(G,T: redcub:=false)
             newdenum:=newdenum+newdenumcoef[i]*mond[i];
         end for;
 
+        jmap1:=newnum;
+        jmap2:=newdenum;
         //Following computes if the curve is hyperelliptic
         if famG`M`CPname in gonality_equals_2 then
             assert assigned famG`nolift;
@@ -195,7 +189,7 @@ function FindModelNew(G,T: redcub:=false)
             C:=Curve(PP,gonpsi);
             C,mapo:=Conic(C);
             T:=HasRationalPoint(C);
-            return psi,MAT,[newnum,newdenum], T,famG`genus;
+            return psi,MAT,[jmap1,jmap2], T,famG`genus;
         end if;
-    return psi,MAT,[newnum,newdenum],false,famG`genus;
+    return psi,MAT,[jmap1,jmap2],false,famG`genus;
 end function; 
