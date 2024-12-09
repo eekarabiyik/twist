@@ -20,8 +20,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
 {
     Input:
-    - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ)
-      where N is a multiple of the level of G.
+    - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
     - T is the intersection of G with SL2(Z/NZ)
 
     Keywords:
@@ -29,11 +28,11 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
     - test_hyperelliptic, test if X_G is hyperelliptic over Q
 
     Output:
-    - homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above.
+    - psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above.
       n depends on the model of the family representative used to twist G from.
-    - a matrix describing the twist from the family representative to G.
+    - MAT: H90 matrix describing the twist from the family representative to G.
     - a sequence of length 2 giving the numerator and denominator of the absolute j-map
-    - a boolean, whether X_G is hyperelliptic over Q (only returned if test_hyperelliptic is true
+    - a boolean, whether X_G is hyperelliptic over Q (only returned if test_hyperelliptic is true)
     - the genus of X_G
 }
 
@@ -55,23 +54,22 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
     psi,MAT:=TwistCurve(famG`M,xi,K,famG`calG: redcub:=redcub);
     //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
 
+    printf "Computing the jmap...\n";
+    //Computing the jmap. The jmap of the representative is precomputed.
+
     mapss:=FAM[famkey]`jmap;
     s:=NumberOfRows(MAT);
     Pol<[x]>:=PolynomialRing(K,s);
     PP:=ProjectiveSpace(Rationals(),s-1);
     num:=Pol!mapss[1]^MAT;
     denum:=Pol!mapss[2]^MAT;
-    //CurveComputed:=Curve(PP, psi);
+    CurveComputed:=Curve(PP, psi);
 
     d:=Degree(num);
     mond:=MonomialsOfDegree(Pol,d);
 
     numcoef:=[MonomialCoefficient(num,m): m in mond];
-    //exists(w){w: w in [1..#numcoef]| not numcoef[w] eq 0};
-    //x:=numcoef[w];
     denumcoef:=[MonomialCoefficient(denum,m): m in mond];
-    //numcoef:=[numcoef[i]/x: i in [1..#numcoef]];
-    //denumcoef:=[denumcoef[i]/x: i in [1..#denumcoef]];
 
     UUd := VectorSpace(K,#mond);
 
@@ -105,21 +103,19 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
         end if;
     end for;
 
-    //Get the polynomials back.
-    newnum:=0;
-    for i in [1..#mond] do
-        newnum:=newnum+newnumcoef[i]*mond[i];
-    end for;
-
     newdenum:=0;
     for i in [1..#mond] do
         newdenum:=newdenum+newdenumcoef[i]*mond[i];
     end for;
 
+    jmap1:=newnum;
+    jmap2:=newdenum;
+
     if not test_hyperelliptic then
         return psi,MAT,[newnum,newdenum],_,_;
     end if;
 
+    printf "Computing QQ-gonality...\n";
     //Following computes if the curve is hyperelliptic
     if famG`M`CPname in gonality_equals_2 then
         assert assigned famG`nolift;
@@ -138,7 +134,7 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,[newnum,newdenum],T,famG`genus;
+        return psi,MAT,[jmap1,jmap2], T,famG`genus;
     end if;
-    return psi,MAT,[newnum,newdenum],false,famG`genus;
-end intrinsic;
+    return psi,MAT,[jmap1,jmap2],false,famG`genus;
+end function;
