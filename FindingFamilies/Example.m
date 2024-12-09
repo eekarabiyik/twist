@@ -1,4 +1,4 @@
-AttachSpec("spec");
+AttachSpec("../spec");
 //We load Families. They are in pieces so I can upload them to the Github.
 FAM := LoadFamilies(["FamilyDataFiles/Gon1.dat", "FamilyDataFiles/Gon2.dat"]);
 
