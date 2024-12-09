@@ -52,7 +52,7 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
     xi,K:=GroupToCocycleNew(famG`calG,famG`H,Gcong,Tcong,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
-    psi,MAT:=TwistCurve(famG`M,xi,K, famG`calG: redcub:=redcub);
+    psi,MAT:=TwistCurve(famG`M,xi,K,famG`calG: redcub:=redcub);
     //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
 
     mapss:=FAM[famkey]`jmap;
