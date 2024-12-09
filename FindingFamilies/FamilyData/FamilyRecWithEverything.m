@@ -1,4 +1,3 @@
-AttachSpec("../../DrewMagma/magma.spec");
 //This a record for the families we will use. I think most entries are clear.
 FamilyRecFinal := recformat<
     calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,
@@ -15,7 +14,7 @@ FamilyRecFinal := recformat<
 
 //Creates a family once we already have calG and B.
 
-intrinsic CreateFamilyRecFinal(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname::MonStgElt : compute_comm:=false, compute_calgmeetsl2:=false)
+intrinsic CreateFamilyRecFinal(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname::MonStgElt : compute_comm:=false, compute_calgmeetsl2:=false) -> Rec
  {
     Input:
         calG   : an agreeable subgroup of GL2(Zhat)

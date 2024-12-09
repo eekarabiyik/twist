@@ -36,7 +36,7 @@ end intrinsic;
 
 //This is the code for, given a subgroup G of GL_2(Zhat) containing identity and having full determinant, finding the family it lies in.
 //We first compute its agreeable closure calG', using this we find the family F(calG,B) such that calG' is conjugate to calG.
-intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::Assoc) -> RngIntElt, Rec, GrpMat, GrpMat, GrpMat
+intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec, GrpMat, GrpMat, GrpMat
 {
     Input:
 	    G       : a subgroup of GL2(Zhat) full det, -I in G
@@ -52,7 +52,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::Assoc) -> RngIntElt, Rec, G
     T_level:=SL2Level(T);
     //Level 1 is not liked by magma so deal with it separately.
     if T_level eq 1 then
-        exists(s){s: s in Keys(FAM)| SL2Level(FAM[s]`B) eq 1};
+        exists(s){s: s in [1..#FAM]| SL2Level(FAM[s]`B) eq 1};
         assert FAM[s]`B eq SL2Project(T,2);
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
@@ -73,7 +73,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::Assoc) -> RngIntElt, Rec, G
     calG_level:=GL2Level(calG);
     //Now agreeable closure is computed, we deal with level 1 case separately.
     if calG_level eq 1 then
-        exists(s){s: s in Keys(FAM)| GL2Level(FAM[s]`calG) eq 1 and not SL2Level(FAM[s]`B) eq 1};
+        exists(s){s: s in [1..#FAM]| GL2Level(FAM[s]`calG) eq 1 and not SL2Level(FAM[s]`B) eq 1};
         assert T eq FAM[s]`B;
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
@@ -84,7 +84,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::Assoc) -> RngIntElt, Rec, G
     Y:=AssociativeArray();
     M:=LCM([calG_level,T_level]);
     //We now search for the family it lies in. We check if the agreeable closure and T matches.
-    for k in Keys(FAM) do
+    for k in [1..#FAM] do
         if FAM[k]`B_level eq T_level and g eq FAM[k]`genus and FAM[k]`calG_level eq calG_level and IsConjugate(GL(2,Integers(T_level)),T,FAM[k]`B) then
             A,b:=IsConjugate(GL(2,Integers(calG_level)),calG,FAM[k]`calG);
             if A then
