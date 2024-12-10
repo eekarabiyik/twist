@@ -1,32 +1,34 @@
-AttachSpec("../../DrewMagma/magma.spec");
 //This a record for the families we will use. I think most entries are clear.
 FamilyRecFinal := recformat<
-    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,                     
-    calG_gens, B_gens, subgroupsofH,jmap :SeqEnum,   
-    works: BoolElt,                                                              
-    calG,B,H, commutator_sub, W :GrpMat,   
-    onelementpossibly: BoolElt, 
-    CPname: MonStgElt ,  
+    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,
+    calG_gens, B_gens, subgroupsofH,jmap :SeqEnum,
+    works: BoolElt,
+    calG,B,H, commutator_sub, W :GrpMat,
+    onelementpossibly: BoolElt,
+    CPname: MonStgElt,
     M, calGModCurve, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, transversals, nolift
-    >;	 
+    >;
 
 
 
 
 //Creates a family once we already have calG and B.
 
-function CreateFamilyRecFinal(calG, B ,Hc,W,CPname : compute_comm:=false, compute_calgmeetsl2:=false)   
- /*
+intrinsic CreateFamilyRecFinal(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname::MonStgElt : compute_comm:=false, compute_calgmeetsl2:=false) -> Rec
+ {
     Input:
-	    calG    : an agreeable subgroup
-	    B       : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG
-    Output:  
-        A record of type "FamilyRec" with the following entries computed: 
-            calG, B, calG_level, B_level, calG_gens, B_gens
-            
- */
+        calG   : an agreeable subgroup of GL2(Zhat)
+	B      : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG
+        Hc     : the commutator subgroup of calG
+        W      : ?
+        CPname : the name of the intersection with SL2 in the Cummings-Pauli database
+    Output:
+        A record of type "FamilyRec" with the following entries computed:
+            calG, B, calG_level, B_level, calG_gens, B_gens, W, genus, AOfMF, commutator_sub, CPname
 
-      F := rec<FamilyRecFinal | calG:= calG ,B:=B >;	 
+ }
+
+    F := rec<FamilyRecFinal | calG:= calG, B:=B >;
     calG_level:=GL2Level(calG);
     B_level:=SL2Level(B);
     //calG_index:=Index(GL(2,Integers(calG_level)),ChangeRing(calG,Integers(calG_level)));
@@ -47,4 +49,4 @@ function CreateFamilyRecFinal(calG, B ,Hc,W,CPname : compute_comm:=false, comput
     F`CPname:=CPname;
 
     return F;
-end function;
+end intrinsic;

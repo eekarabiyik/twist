@@ -1,0 +1,28 @@
+{
+  DrewMagma
+  {
+    +magma.spec
+  }
+  FindingFamilies
+  {
+    FamilyData
+    {
+      FamilyRecWithEverything.m
+      LoadData.m
+    }
+    FamilyFinder
+    {
+      FamilyFinder.m
+    }
+    TwistingCode
+    {
+      H90.m
+      Newco2.m
+      TwistingCode.m
+    }
+    MainCode
+    {
+      main.m
+    }
+  }
+}
