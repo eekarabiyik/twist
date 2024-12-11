@@ -1,4 +1,4 @@
-intrinsic TwistCurve(M::Rec, xi::HomGrp, K::FldNum, calG::GrpMat : redcub:=false) -> SeqEnum[RngMPolElt], AlgMatElt, RngIntElt
+intrinsic TwistCurve(M::Rec, xi::HomGrp, K::FldNum : redcub:=false) -> SeqEnum[RngMPolElt], AlgMatElt, RngIntElt
 {
     Input:
       - M: a modular curve in the sense of Zywina.

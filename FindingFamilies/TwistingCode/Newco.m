@@ -1,5 +1,5 @@
 
-intrinsic GroupToCocycleNew(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfMF::Assoc) -> HomGrp, FldNum, GrpPerm, Map
+intrinsic GroupToCocycle(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfMF::Assoc) -> HomGrp, FldNum, GrpPerm, Map
 {
         Input:  calG: This is an open subgroup of GL2(Zhat), containing negative identity with full determinant.
                 G: A representative in the family F(calG,G)=F(calG,B) for some B arising from our calculations. Check Zywina-Explicit Open Image-Chapter 14 for details.
