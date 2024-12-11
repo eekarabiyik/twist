@@ -41,8 +41,9 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
     Input:
 	    G       : a subgroup of GL2(Zhat) full det, -I in G
 	    T       : G meet SL2
+        FAM     : The list of families
     Output:
-        A family containing G
+        The family containing G
 
 }
 
@@ -56,7 +57,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
         assert FAM[s]`B eq SL2Project(T,2);
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
-    //We compute the level to compute the agreeable closure. Level of calG has the same odd divisors asT_level.
+    //We compute the level to compute the agreeable closure. Level of calG has the same odd divisors as T_level.
     T:=SL2Project(T,T_level);
     X:=AssociativeArray();
     G_level:=GL2Level(G);
@@ -77,7 +78,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
         assert T eq FAM[s]`B;
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
-
+    //Adjusting the levels.
     calG:=GL2Project(calG,calG_level);
     T:=SL2Project(T,T_level);
     G:=GL2Project(G,N);
@@ -95,10 +96,8 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
 
     o:=-1;
     u:=-1;
-    //"number of keys is";
-    //#Y;
-    //Keys(Y);
-    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. If none of them
+    //Y is an array of possible families that contains G.
+    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. 
     for t in Keys(Y) do
         b:=FiniteLift(Y[t][2],calG_level,M);
         Tcong:=Conjugate(SL2Lift(T,M),b);
@@ -147,5 +146,3 @@ end intrinsic;
 
 
 
-
-//This should be completely fine at this point.

@@ -35,9 +35,9 @@ intrinsic CreateFamilyRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname
  {
     Input:
         calG   : an agreeable subgroup of GL2(Zhat)
-	B      : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG
+	    B      : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG
         Hc     : the commutator subgroup of calG
-        W      : ?
+        W      : calG meet SL2
         CPname : the name of the intersection with SL2 in the Cummings-Pauli database
     Output:
         A record of type "FamilyRec" with the following entries computed:
