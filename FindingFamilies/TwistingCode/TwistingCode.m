@@ -1,18 +1,15 @@
-intrinsic TwistCurve(M::Rec, xi::HomGrp, K::FldNum, calG::GrpMat : redcub:=false) -> SeqEnum[RngMPolElt], AlgMatElt, RngIntElt
+intrinsic TwistCurve(M::Rec, xi::HomGrp, K::FldNum : redcub:=false) -> SeqEnum[RngMPolElt], AlgMatElt, RngIntElt
 {
     Input:
       - M: a modular curve in the sense of Zywina.
       - xi: Gal(K/Q)-> GL(M`genus,K) 1-cocycle. This is a cocycle that extends from the Aut(M) (usually via AutomorphismOfModularForms function of Zywina).
       - K: the number field through which K factors
-      - calG: calG is the group which contains G as a normal group and F(calG,G) is the family that G lies in.
-
+      - redcube: if this is true simplified cubics are produced. It is suggested that this is almost always set to true.
     Output:
       - a sequence "psi" of homogeneous polynomials in Q[x_1,..,x_#M`F0], defining the twisted curve.
       - the H90 matrix used
       - the size of the H90 matrix, which is the same as #M`F0
 }
-    //For now we are working over Q.
-    //Assuming A lot of things are loaded.
     I:=M`psi;
     g:=M`genus;
     GAL,iota,sigma:=AutomorphismGroup(K);

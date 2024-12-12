@@ -7,7 +7,7 @@ assert GL2ContainsNegativeOne(G);
 assert GL2DeterminantIndex(G) eq 1;
 T:=SL2Intersection(G);
 T`SL:=true;
-psi,Mat,jmap,hyper,g:=FindModelNew(G,T,FAM);
+psi,Mat,jmap,hyper,g:=FindModel(G,T,FAM);
 print(psi);
 print(Mat);
 print(jmap);

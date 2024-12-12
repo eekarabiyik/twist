@@ -17,7 +17,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 "58A5", "59A5", "60A5", "96A5", "48A6", "71A6", "32E7", "48N7", "56B7", "64D7", "82B7",
 "96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 
-intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -48,10 +48,11 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
     Tcong`SL:=true;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
     printf "Computing the cocycle\n";
-    xi,K:=GroupToCocycleNew(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,AOfMF);
     //Now the twist
     printf "Twisting the curve...\n";
-    psi,MAT:=TwistCurve(famG`M,xi,K,famG`calG: redcub:=redcub);
+    psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
+    //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
 
     printf "Computing the jmap...\n";
     //Computing the jmap. The jmap of the representative is precomputed.
@@ -125,9 +126,9 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
             gonAOfMF[i]:=Transpose(famG`transversals[i]);
         end for;
 
-        xi,K:=GroupToCocycleNew(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
+        xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
 
-        gonpsi,gonMAT:=TwistCurve(gonmodel,xi,K, famG`calG);
+        gonpsi,gonMAT:=TwistCurve(gonmodel,xi,K);
         Pol<x>:=Parent(gonpsi[1]);
         PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
         C:=Curve(PP,gonpsi);
@@ -136,4 +137,4 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
         return psi,MAT,[jmap1,jmap2], T,famG`genus;
     end if;
     return psi,MAT,[jmap1,jmap2],false,famG`genus;
-end function;
+end intrinsic;
