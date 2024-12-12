@@ -24,5 +24,9 @@
     {
       main.m
     }
+    Jmap
+    {
+      Jmap.m
+    }
   }
 }
