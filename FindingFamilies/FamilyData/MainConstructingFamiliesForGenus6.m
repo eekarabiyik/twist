@@ -2,16 +2,34 @@
 /*
 This is the code for finding all groups that contain the agreeable groups up to a certain genus. 
 */
+//Details will be added.
+//Fork of zywina's code will come soon.
 
 AttachSpec("../spec");
-AttachSpec("/homes/ek693/ReduxModular/modcurves.spec");
+
 
 filename:="CummingsPauli/CPdata.dat";  
 I:=Open(filename, "r"); 
 _,cp_data:=ReadObjectCheck(I);
 //Code by David Zywina
+ChangeDirectory("/homes/ek693/ReduxModular");
+AttachSpec("/homes/ek693/ReduxModular/modcurves.spec");
 
 
+gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H3", "12K3",
+"12L3", "14A3", "14C3", "14F3", "15F3", "15G3", "16B3", "16C3", "16D3", "16E3", "16F3",
+"16I3", "16J3", "16M3", "16S3", "18A3", "18C3", "18F3", "18G3", "20C3", "20F3", "20G3",
+"20H3", "20I3", "20J3", "20M3", "20O3", "21A3", "21B3", "21D3", "24A3", "24B3", "24C3",
+"24G3", "24I3", "24K3", "24L3", "24M3", "24S3", "24U3", "24V3", "24W3", "28C3", "28E3",
+"30B3", "30G3", "30J3", "30K3", "30L3", "32B3", "32C3", "32D3", "32H3", "32K3", "32M3",
+"33C3", "34B3", "35A3", "36E3", "36F3", "36G3", "39A3", "40D3", "40E3", "40F3", "40I3",
+"41A3", "42E3", "48C3", "48E3", "48F3", "48H3", "48I3", "48J3", "48M3", "50A3", "54A3",
+"60C3", "60D3", "64A3", "96A3", "18B4", "25A4", "25D4", "32B4", "36C4", "42A4", "44B4",
+"47A4", "48C4", "50A4", "50D4", "10A5", "14C5", "16G5", "18A5", "24A5", "24D5", "26A5",
+"30C5", "30F5", "36A5", "36B5", "36H5", "40A5", "42A5", "44B5", "45A5", "45C5", "46A5",
+"48A5", "48E5", "48F5", "48G5", "48H5", "50A5", "50D5", "50F5", "52B5", "54A5", "57A5",
+"58A5", "59A5", "60A5", "96A5", "48A6", "71A6", "32E7", "48N7", "56B7", "64D7", "82B7",
+"96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 //By David Zywina
 function ContainsScalars(G)
     // For a subgroup of GL(2,Z/N) with N>1, return true if G contains all the scalar matrices and false otherwise.
@@ -505,11 +523,15 @@ end for;
 "Changing levels";
 
 for k in Keys(BS) do
-    if BS[k]`calG_level eq 1 or BS[k]`B_level eq 1 then continue; end if;
+    if BS[k]`calG_level eq 1 then 
+         BS[k]`calG:=GL2Project(BS[k]`calG,2); 
+         if BS[k]`B_level eq 1 then BS[k]`B`SL:=true; BS[k]`B:=SL2Project(BS[k]`B,2); end if;  
+    else
     time0:=Realtime();
     BS[k]`B`SL:=true;
     BS[k]`calG:=GL2Project(BS[k]`calG,BS[k]`calG_level);  
     BS[k]`B:=SL2Project(BS[k]`B,BS[k]`B_level);  
+    end if;
     print(k);
     print(Realtime(time0));
 end for;    
@@ -528,7 +550,8 @@ for k in Keys(FAM) do
         FAM[k]`B`SL:=true;
         H:=FindSpecialSubgroup(FAM[k]`calG,FAM[k]`B);
         if GL2DeterminantIndex(H) eq 1 then 
-            FAM[k]`H:=GL2Project(H,GL2Level(H));
+            if GL2Level(H) eq 1 then FAM[k]`H:=GL2Project(H,2); else            
+            FAM[k]`H:=GL2Project(H,GL2Level(H)); end if;
         end if;
         Realtime(time0);
     end if;
@@ -642,6 +665,7 @@ for k in Keys(FAM) do
         print(k);
         G:=FAM[k]`H;
         calG:=FAM[k]`calG;
+        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if; //The family consisting of only the j line.
         printf "Level is %o\n", #BaseRing(G);
         if assigned G`SL then delete G`SL; end if;
         if assigned calG`SL then delete calG`SL; end if;
@@ -679,6 +703,9 @@ for k in Keys(FAM) do
     if assigned FAM[k]`H and GL2ContainsNegativeOne(FAM[k]`H) then
         time0:=Realtime();
         print(k);
+         G:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
         M:=FAM[k]`M;
         C, jmap, model_type, F0, M1,mind,maxd, maxprec:=AbsoluteJmap(M);
         FAM[k]`jmap:=jmap;
@@ -695,9 +722,51 @@ end for;
 
 
 
+for k in Keys(FAM) do
+print(k);
+    if assigned FAM[k]`H and GL2ContainsNegativeOne(FAM[k]`H) then
+         G:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
+     if FAM[k]`M`CPname in gonality_equals_2 then
+        print(k);
+        FAM[k]`nolift:=FindCanonicalModel(CreateModularCurveRec(FAM[k]`H));
+    end if; 
+    end if;
+end for;
 
 
 
+
+
+
+for k in Keys(FAM) do
+    if assigned FAM[k]`H and assigned FAM[k]`nolift then
+        time0:=Realtime(); 
+        print(k);
+        H:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        FAM[k]`transversals:=AssociativeArray();
+        printf "Level is %o\n", #BaseRing(H);
+        if assigned H`SL then delete H`SL; end if;
+        if assigned calG`SL then delete calG`SL; end if;
+        M:=FAM[k]`nolift;
+        "Computing AutOfMF";
+        calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+        M`H`SL:=true;
+        M:=IncreaseModularFormPrecision(M,[Maximum(M`prec[i]+1,((M`prec_sturm[i]-1) * (M`sl2level div M`widths[i]))+5) : i in [1..M`vinf]]);
+        for i in [1..Ngens(calG)] do
+            FAM[k]`transversals[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+        end for;    
+        
+
+        print(Realtime(time0));
+
+    end if;
+end for;
+
+//First family is the family of Serre Curves.
+//Second family is the family consisting of j-line.
 
 
 
