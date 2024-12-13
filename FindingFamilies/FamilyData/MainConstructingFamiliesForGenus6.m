@@ -12,8 +12,7 @@ filename:="CummingsPauli/CPdata.dat";
 I:=Open(filename, "r"); 
 _,cp_data:=ReadObjectCheck(I);
 //Code by David Zywina
-ChangeDirectory("/homes/ek693/ReduxModular");
-AttachSpec("/homes/ek693/ReduxModular/modcurves.spec");
+AttachSpec("../Modular/spec");
 
 
 gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H3", "12K3",
@@ -310,7 +309,7 @@ end function;
 comm_map:=AssociativeArray();
 comm_level:=AssociativeArray();  
 for Gamma in cp_data do  // run over Cummins-Pauli data
-    if Gamma`genus gt 0 then continue Gamma; end if;
+    if Gamma`genus gt 0 then continue Gamma; end if;//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
 
     Gamma`name;
     if Gamma`level ne 1 then 
@@ -362,7 +361,7 @@ X:=AssociativeArray();
 AllAgreeableGroups:=AssociativeArray();
 a:=1;
 for r in cp_data do
-    if r`genus gt 0 then continue r; end if;
+    if r`genus gt 0 then continue r; end if;//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
     print(r`name);
     if r`level eq 1 then
         N0:=2;
@@ -511,7 +510,7 @@ for k in Keys(FAM1) do
     else
         for i in [1..#FAM1[k][2]] do
             g:=GL2Genus(FAM1[k][2][i]);
-            if g gt 0 then continue i; //change g gt x accordingly
+            if g gt 0 then continue i; //change g gt x accordingly//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
             else 
                 BS[a]:=CreateFamilyRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]); //first coordinate is B, second is calG, third one is calG's key in CP
                 a:=a+1;
