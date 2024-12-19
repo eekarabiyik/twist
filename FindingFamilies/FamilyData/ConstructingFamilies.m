@@ -633,30 +633,15 @@ for k in Keys(FAM) do
 end for;
 
 redundant:=removed;
-
-
-
-
-
-
 NonRedFam:=AssociativeArray();
 
 for k in Keys(FAM) do 
     if k in redundant then continue k; end if;
     print(k);
     NonRedFam[k]:=FAM[k];
-
 end for;
 
-
 FAM:=NonRedFam;
-
-
-
-
-
-
-
 
 for k in Keys(FAM) do
     if assigned FAM[k]`H then
