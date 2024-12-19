@@ -1,43 +1,3 @@
-intrinsic IdentifyAffinePatch(KC::FldFunFracSch) -> Any
-  {Return the index of the variable used to create affine patch, i.e., the one used as a denominator}
-  dens := [Denominator(ProjectiveRationalFunction(KC.i)) : i in [1..Rank(KC)]];
-  R := Parent(dens[1]);
-  proj_vars := GeneratorsSequence(R);
-  ds := [el : el in dens | el in proj_vars];
-  assert #Seqset(ds) eq 1; // should all have same denominator, if it's one of the variables
-  return Index(proj_vars,ds[1]);
-end intrinsic;
-
-intrinsic MakeAffineVariableList(KC::FldFunFracSch, ind::RngIntElt) -> Any
-  {}
-  return [KC.i : i in [1..(ind-1)]] cat [KC!1] cat [KC.i : i in [ind..Rank(KC)]];
-end intrinsic;
-
-intrinsic RationalFunctionToFunctionFieldElement(C::Crv, j::FldFunRatMElt) -> Any
-  {Convert FldFunRatMElt to FldFunFracSchElt}
-  KC := FunctionField(C);
-  ind := IdentifyAffinePatch(KC);
-  j_Cs := [];
-  for f in [Numerator(j), Denominator(j)] do
-    f_C := Evaluate(f, MakeAffineVariableList(KC,ind));
-    Append(~j_Cs,f_C);
-  end for;
-  return j_Cs[1]/j_Cs[2];
-end intrinsic;
-
-intrinsic JMapSanityCheck(j::FldFunFracSchElt) -> BoolElt
-  {Make sure that the j-map is only ramified above 0, 1728, oo}
-
-  pts, mults := Support(Divisor(Differential(j)));
-  for el in pts do
-    val := j(RepresentativePoint(el));
-    if not ((val eq 0) or (val eq 1728) or (val eq Infinity())) then
-      return false;
-    end if;
-  end for;
-  return true;
-end intrinsic;
-
 intrinsic DegreeLowerBound(g::RngIntElt) -> RngIntElt
   {A lower bound for the degree of the plane model for a curve of genus g}
   assert g ge 0;
@@ -69,37 +29,14 @@ intrinsic HasIndeterminacy(Igens::SeqEnum, lin_forms::SeqEnum) -> BoolElt
     return not IsProper(I);
 end intrinsic;
 
-// These two methods were slower approaches for checking whether a plane model was valid
-
-intrinsic ValidPlaneModel(f::RngMPolElt, g::RngIntElt) -> BoolElt
-{A quick check for whether the plane curve defined by f is a valid reduction}
-    p := reduction_prime;
-    fbar := ChangeRing(f, GF(p));
-    return IsIrreducible(fbar) and Genus(Curve(Proj(Parent(f)), f)) eq g;
-end intrinsic;
-/*
-intrinsic ValidPlaneModel2(f::RngMPolElt, X::Crv, proj::ModMatRngElt) -> BoolElt
-{A quick check for whether the plane curve defined by f is a valid reduction}
-    p := reduction_prime;
-    fbar := ChangeRing(f, GF(p));
-    if not IsIrreducible(fbar) then return false; end if;
-    C := Curve(Proj(Parent(f)), f);
-    R := Parent(DefiningEquations(X)[1]);
-    Rgens := [R.i : i in [1..NumberOfGenerators(R)]];
-    coords := [&+[Rgens[i] * proj[j,i] : i in [1..#Rgens]] : j in [1..3]];
-    pi := map<X -> C | coords>;
-    return Degree(pi) eq 1;
-end intrinsic;
-*/
-
-intrinsic ValidModel(proj::MapSch : num_tests:=3, show_reason:=false) -> BoolElt
+intrinsic ValidModel(proj::MapSch, p::RngIntElt : num_tests:=3, show_reason:=false) -> BoolElt
 {
 Input:
     proj - a map between irreducible curves
+    p - a prime to use for the reduction (should be larger than the level of the modular curve)
 Output:
     whether proj is birational.  Can return a false negative with low probability but shouldn't return false positives
 }
-    p := reduction_prime;
     X := Domain(proj);
     C := Codomain(proj);
     Xbar := ChangeRing(X, GF(p));
@@ -213,25 +150,21 @@ intrinsic NextProjector(~state::Rec, ~M::ModMatRngElt)
     end if;
 end intrinsic;
 
-function planemodel_gonbound(f)
-    fP := Parent(f);
-    degrees := [Degree(f, fP.i): i in [1..Ngens(fP)]];
-    return Min([d: d in degrees | d ne 0]);
-end function;
+intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, giveup_time:=600, success_time:=60, ctr_bound:=728) -> SeqEnum
+{
+    Input:
+      - rec: a ModularCurveRec, not hyperelliptic with genus larger than 3
+      - Can: The canonical model as found by FindCanonicalModel
+      - success_amount: The number of distinct projections sought (default 25)
+      - giveup_time: how long to run before returning an empty sequence (default 600 seconds)
+      - success_time: how long to run before returning a nonempty sequence with fewer than success_amount entries (default 60 seconds)
+      - ctr_bound: A bound on the size of the projector matrix; this should not get triggered (default 728)
 
-intrinsic planemodel_sortkey(f::RngMPolElt) -> Tup
-{}
-    return <planemodel_gonbound(f), #sprint(f)>;
-end intrinsic;
-
-
-intrinsic PlaneModelFromQExpansions(rec::Rec, Can::Crv : prec:=0) -> BoolElt, Crv, SeqEnum
-{rec should be of type ModularCurveRec, genus larger than 3 and not hyperelliptic}
+    Output:
+      - a sequence of pairs <f, proj>, where proj is a 3 by g array of integers defining a projection from rec`F0 to a projective plane and f is the defining equation of the image of the canonical model under this projection.
+}
     assert reduction_prime gt rec`N;
-    
-    if prec eq 0 then
-        prec := rec`prec;
-    end if;
+
     if not assigned rec`F0 then
         if not assigned rec`F then
             rec := FindModularForms(2,rec);
@@ -240,176 +173,54 @@ intrinsic PlaneModelFromQExpansions(rec::Rec, Can::Crv : prec:=0) -> BoolElt, Cr
     end if;
 
     g := rec`genus;
+    assert g gt 3; // For genus 3 curves, the canonical model is already a plane model
     low := DegreeLowerBound(g);
     high := DegreeUpperBound(g);
-    rels := [];
     state := InitProjectorRec(g);
     M := ZeroMatrix(Integers(), 3, g);
-    nvalid := 0;
     R<X,Y,Z> := PolynomialRing(Rationals(), 3);
-    Rg := PolynomialRing(Rationals(), g); // variable names assigned in LMFDBWritePlaneModel
+    Rg := PolynomialRing(Rationals(), g); // variable names should be assigned later
     CanEqs := DefiningEquations(Can);
 
-    list:=[];
+    t0:=Cputime();
+    ans:=[];
     repeat
         NextProjector(~state, ~M);
         MF := F0Combination(rec`F0, M);
         for m in [low..high] do
-        t0:=Cputime();
 
-            rels := FindRelationsOverKG(rec,MF, m);
-        
+            rels := FindRelationsOverKG(rec, MF, m);
+
             if #rels gt 0 then
                 f := R!rels[1];
                 proj := [&+[M[i,j] * Rg.j : j in [1..g]] : i in [1..3]];
-                // Note that FindRelations is inexact: the modular forms may not actually satisfy the relations exactly, but instead only up to some precision which is lower than the precision of the forms themselves.  As a consequence, proj may not actually define a map from Can to the plane model.  This is checked in RecordPlaneModel.
-                X:=CanEqs;
-                // First check whether the model is valid (to catch bugs elsewhere)
-                XC := Curve(Proj(Universe(X)), X);
+                // Note that FindRelations is inexact: the modular forms may not actually satisfy the relations exactly, but instead only up to some precision which is lower than the precision of the forms themselves.  As a consequence, proj may not actually define a map from Can to the plane model.  This is checked in ValidModel below.
+                XC := Curve(Proj(Universe(CanEqs)), CanEqs);
                 C := Curve(Proj(Parent(f)), f);
 
                 try
                     projection := map<XC -> C | proj>;
+                    valid := ValidModel(projection);
+                    if valid then
+                        Append(~ans, <f,proj>);
+                        break;
+                    else
+                        vprint User1: "invalid model, continuing to next m";
+                    end if;
                 catch e
-                      print e;
+                    vprint User1: e;
                 end try;
-                valid := ValidModel(projection);
-                if not valid then
-                    "invalid model";
-                      
-               
-                else
-                    nvalid:=nvalid+1;
-                    list:=list cat [<f,proj>];
-                end if;
-                break;
-            elif Cputime() - t0 gt 600 then
+            elif Cputime() - t0 gt giveup_time then
                 break;
             end if;
         end for;
+        if state`nonpiv_ctr[1] ge ctr_bound then
+            print "ctr_bound reached, terminating";
+            break;
+        end if;
         // Since this is part of the process where we compute the canonical model (and we give that a long timeout), we don't want this to spin forever.
-    until nvalid ge 25 or state`nonpiv_ctr[1] ge 728 or (nvalid gt 0 and Cputime() - t0 gt 60) or (Cputime() - t0 gt 600);
-    //ReportEnd(label, "searching for plane models", t0);
-    //ReportEnd(label, "plane model relations", trel : elapsed:=trel);
-    //ReportEnd(label, "plane model validations", tval : elapsed:=tval);
-    //ReportEnd(label, "plane model reductions", tred : elapsed:=tred);
+    until #ans ge success_amount or (#ans gt 0 and Cputime() - t0 gt success_time) or (Cputime() - t0 gt giveup_time);
 
-    f, M := Explode(list[1]);
-    C := Curve(Proj(Parent(f)), f);
-    vprint User1: Sprintf("Plane model: %o model(s) found\n", nvalid);
-    return true, list;
+    vprint User1: Sprintf("Plane model: %o model(s) found\n", #ans);
+    return ans;
 end intrinsic;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-intrinsic RecordPlaneModel(fproj::Tup, X::SeqEnum, best::SeqEnum, bestkey::Tup, alg::MonStgElt, label::MonStgElt : warn_invalid:=true) -> SeqEnum, Tup, BoolElt, FldReElt, FldReElt
-{
-Input:
-    fproj - a pair, with the first value a polynomial in X,Y,Z defining a plane curve, and the second a sequence of length 3 giving the projection map from the canonical model
-    X - the sequence of defining equations for the canonical model (or some other smooth model in the hyperelliptic case)
-    best - the current best option, as a sequence of length 0 or 1 of records like fproj
-    bestkey - the value of planemodel_sortkey for the best option
-    label - the label of the modular curve (for writing to disc)
-    warn_invalid - whether a warning should be printed if the model is invalid
-Output:
-    best - the new best option, which may be fproj or the old best option
-    bestkey - the value of planemodel_sortkey on the best option
-    valid - whether fproj was a valid model
-    time_val - time spent on model validation
-    time_red - time spent on reducemodel_padic
-File input:
-    gonality bounds from LMFDBReadGonalityBounds
-File output:
-    If the model is better than the currently known model, writes to disc using LMFDBWritePlaneModel
-    If gonality bounds are improved, writes new ones using LMFDBWriteGonalityBounds
-}
-    f, proj := Explode(fproj);
-    // First check whether the model is valid (to catch bugs elsewhere)
-    XC := Curve(Proj(Universe(X)), X);
-    C := Curve(Proj(Parent(f)), f);
-    tval := Cputime();
-    try
-        projection := map<XC -> C | proj>;
-    catch e
-        if warn_invalid then
-            print e;
-        end if;
-        return best, bestkey, false, Cputime(tval), 0.0;
-    end try;
-    valid := ValidModel(projection : show_reason:=warn_invalid);
-    tval := Cputime(tval);
-    if not valid then
-        if warn_invalid then
-            // We want the traceback
-            try
-                print C`invalid; // User errors don't have tracebacks
-            catch e
-                if assigned e`Traceback then
-                    print e`Traceback;
-                end if;
-                print "Invalid";
-                print "fproj", fproj;
-                print "X", X;
-                print "best", best;
-                print "error: invalid model", assigned e`Position select e`Position else "";
-            end try;
-        end if;
-        return best, bestkey, false, tval, 0.0;
-    end if;
-    tred := Cputime();
-    f, adjust := reducemodel_padic(f);
-    tred := Cputime(tred);
-    skey := planemodel_sortkey(f);
-    if #best eq 0 or skey lt bestkey then
-        gonbounds := LMFDBReadGonalityBounds(label);
-        QQ := Rationals(); // entries of adjust may be in degree 1 extension of Q
-        proj := [proj[i] / QQ!adjust[i] : i in [1..3]];
-        best := [<f, proj>];
-        bestkey := skey;
-        LMFDBWritePlaneModel(f, proj, alg, label);
-        if skey[1] lt gonbounds[2] then // improvement to the Q-gonality (and possibly Qbar-gonality)
-            gonbounds[2] := skey[1];
-            gonbounds[4] := Min(gonbounds[4], skey[1]);
-            LMFDBWriteGonalityBounds(gonbounds, label);
-        end if;
-    end if;
-    return best, bestkey, true, tval, tred;
-end intrinsic;
-
-*/
