@@ -1,6 +1,6 @@
 intrinsic F0Twister(F0::SeqEnum, M::ModMatRngElt) -> SeqEnum //ERAY: this one should be useful for me as well.
-{F0 is as in ModularCurveRec, M is a 3 by n matrix over the integers with full rank, where n is the length of F0.
-Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (given by expansions at cusps as normal)}
+{F0 is as in ModularCurveRec, M is m 3 by n matrix over the integers with full rank, where n is the length of F0.
+Applies the matrix M to the expansions, projecting F0 onto m modular forms (given by expansions at cusps as normal)}
     // I can't get matrix vector multiplication working reasonably, so we do this by hand
     //vecs := [Vector([F0[i][j] : i in [1..#F0]]) : j in [1..#F0[1]]];
     //vec3s := [v * Transpose(M) : v in vecs];

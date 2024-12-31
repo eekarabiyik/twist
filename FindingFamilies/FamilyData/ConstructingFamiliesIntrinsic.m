@@ -285,6 +285,10 @@ end function;
 
 
 function gl2QImagesForFamiliiesEray(GGG,H)
+//Input:
+    //GGG: An open subgroup of SL2(Zhat)
+    //  H: An open subgroup of SL2(Zhat) contained in GGG
+    //Output: List of 
     GGG`SL:=true;
     H`SL:=true;
     N1:=SL2Level(GGG);
@@ -306,7 +310,7 @@ end function;
 
 
 intrinsic FindAllFamilies(r::Rec, genus::RngIntElt) -> SeqEnum
-{Given a Congruence subgroup (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
+{Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
     if r`genus gt genus then return []; end if;
     if r`level ne 1 then 
         level:=r`level;

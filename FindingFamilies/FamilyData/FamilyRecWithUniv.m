@@ -1,4 +1,4 @@
-//This a record for the families we will use. I think most entries are clear.
+//This is currently the main record we use. Might change in the future.
 FamilyRecUniv := recformat<
     calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,
     //k: the weight of modular forms used.  Not used.
