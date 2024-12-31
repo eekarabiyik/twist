@@ -6,7 +6,7 @@ The main function is `FindModel` in the file main.m in the folder `FindingFamili
 
 Some explanations:
 
-- There is now the jmap functionality. Also the code will say whether the curve computed has QQ-gonality 2 or not.
+- There is now the jmap functionality. Also the code will say whether the curve computed has QQ-gonality 2 or not. Soon a collection of plane models will be computed by the function and there will be functionality to compute universal elliptic curves.
 
 - Ignore the trial folder.
 
@@ -19,4 +19,4 @@ Some explanations:
 - TwistingCode contains three important files: Newco.m, H90.m, and TwistingCode.m They have enough comments in it to explain what they do. But also, ASK ME!
 
 Constructing the families:
-- If you would like to construct all the families from the beginning using the Cummins-Pauli database then go to the file FindingFamilies/FamilyData/ConstructingFamilies.m. This contains all the necessary steps. You need to edit the code to change the genus bound for calculation. 
+- There is now a function "FindAllFamilies" that computes the families up to a genus associated to a fixed congruence subgroup.

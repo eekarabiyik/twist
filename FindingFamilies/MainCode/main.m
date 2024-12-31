@@ -17,7 +17,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 "58A5", "59A5", "60A5", "96A5", "48A6", "71A6", "32E7", "48N7", "56B7", "64D7", "82B7",
 "96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 
-intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -118,12 +118,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_hyp
     printf "Computing QQ-gonality...\n";
     //Following computes if the curve is hyperelliptic
     if famG`M`CPname in gonality_equals_2 then
-        assert assigned famG`nolift;
-        gonmodel:=famG`nolift;
+        assert assigned famG`CanModelForHyp;
+        gonmodel:=famG`CanModelForHyp;
 
         gonAOfMF:=AssociativeArray();
-        for i in Keys(famG`transversals) do
-            gonAOfMF[i]:=Transpose(famG`transversals[i]);
+        for i in Keys(famG`AOfMFCanModel) do
+            gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
         end for;
 
         xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);

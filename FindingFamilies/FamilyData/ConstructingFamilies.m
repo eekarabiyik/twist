@@ -512,7 +512,7 @@ for k in Keys(FAM1) do
             g:=GL2Genus(FAM1[k][2][i]);
             if g gt 0 then continue i; //change g gt x accordingly//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
             else 
-                BS[a]:=CreateFamilyRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]); //first coordinate is B, second is calG, third one is calG's key in CP
+                BS[a]:=CreateFamilyUnivRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]); //first coordinate is B, second is calG, third one is calG's key in CP
                 a:=a+1;
             end if;
         end for;

@@ -154,7 +154,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
   chosenmult := [ M`mult[c] : c in chosencusps];
 
   modforms0 := [ [ M`F0[i][c] : c in chosencusps] : i in [1..#M`F0]];
-
+  /*
   modforms00:=[];
   for j in [1..#M`F0] do
     K:=Parent(Coefficient(modforms0[1][1],0));
@@ -167,7 +167,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
     modforms00:=modforms00 cat [cc];
   end for;
   modforms0:=modforms00;
-
+*/
   // Step 2 - Rewrite modular coefficients as elements of smaller subfield
   //ERAY: We are actually not doing that. For high levels it hurts more. Will make this nicer.
 
@@ -184,12 +184,12 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
       KK:=Parent(z);
       prim:=z;
       vprint User1: Sprintf("For cusp %o, Fourier coefficient field is %o.", c, R!DefiningPolynomial(KK));
-      PP<qN> := LaurentSeriesRing(KK);
+      PP<qw> := LaurentSeriesRing(KK);
       Embed(KK,Parent(z),prim);
-      totalprec := totalprec + maxprec*Degree(KK);
+      totalprec := totalprec + M`prec[chosencusps[c]]*Degree(KK);
       curfour := <>;
       for i in [1..#modforms0] do
-	  newfourier := &+[ KK!Coefficient(modforms0[i][c],l)*qN^l : l in [0..AbsolutePrecision(modforms0[i][c])-1]] + BigO(qN^AbsolutePrecision(modforms0[i][c]));
+	  newfourier := &+[ KK!Coefficient(modforms0[i][c],l)*qw^l : l in [0..AbsolutePrecision(modforms0[i][c])-1]] + BigO(qw^AbsolutePrecision(modforms0[i][c]));
 	  Append(~curfour,newfourier);
       end for;
       Append(~fourierlist,curfour);
@@ -248,11 +248,16 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
   end for;
 
 
-  FFFF<qN> := LaurentSeriesRing(Rationals());
-  j := (1728*Eisenstein(4,qN : Precision := Ceiling((maxprec+2*N)/N))^3)/(Eisenstein(4,qN : Precision := Ceiling((maxprec+2*N)/N))^3 - Eisenstein(6,qN : Precision := Ceiling((maxprec+2*N)/N))^2);
-  j := Evaluate(j,qN^N);
+  jin:=[];
+  for c in chosencusps do
+  w:=M`widths[c];
+  FFFF<qw> := LaurentSeriesRing(Rationals());
+  j := (1728*Eisenstein(4,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^3)/(Eisenstein(4,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^3 - Eisenstein(6,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^2);
+  j := Evaluate(j,qw^w);
+  jin:=jin cat [j];
+  end for;
 
-  func := j;
+  func := jin;
   done := false;
   
 
@@ -261,8 +266,8 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
   for i in [1..#canring[curd][1]] do
       vecseq := [];
       for jj in [1..#chosencusps] do
-	  pp := (func*canring[curd][1][i][jj]);
-	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+	  pp := (func[jj]*canring[curd][1][i][jj]);
+	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
       end for;
       jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
@@ -271,7 +276,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
       vecseq := [];
       for jj in [1..#chosencusps] do
 	  pp := -canring[curd][1][i][jj];
-	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
       end for;
       jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
@@ -287,8 +292,8 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
       for i in [1..#canring[curd][1]] do
 	  vecseq := [];
 	  for jj in [1..#chosencusps] do
-	      pp := (func*canring[curd][1][i][jj]);
-	      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+	      pp := (func[jj]*canring[curd][1][i][jj]);
+	      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
 	  end for;
 	  jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
       end for;
@@ -297,7 +302,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
 	  vecseq := [];
 	  for jj in [1..#chosencusps] do
 	      pp := -canring[curd][1][i][jj];
-	      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
 	  end for;
 	  jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
       end for;
@@ -312,7 +317,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
   v := (changemat*nullmat)[1];
   denom := &+[ (polyring!v[i])*canring[curd][2][i] : i in [1..canringdim]];
   num := &+[ (polyring!v[i+canringdim])*canring[curd][2][i] : i in [1..canringdim]];
-  weakzero := [ &+[ v[i]*canring[curd][1][i][j] : i in [1..canringdim]]*func - &+[ v[i+canringdim]*canring[curd][1][i][j] : i in [1..canringdim]] : j in [1..#chosencusps]];
+  weakzero := [ &+[ v[i]*canring[curd][1][i][j] : i in [1..canringdim]]*func[j] - &+[ v[i+canringdim]*canring[curd][1][i][j] : i in [1..canringdim]] : j in [1..#chosencusps]];
   assert &and [ IsWeaklyZero(weakzero[i]) : i in [1..#chosencusps]];
 
   jmap := map<C -> ProjectiveSpace(Rationals(),1) | [num,denom]>;
@@ -458,14 +463,13 @@ intrinsic RewriteFourierExpansion(M::Rec, chosencusps::SeqEnum[RngIntElt], maxpr
       KK:=Parent(z);
       prim:=z;
       vprint User1: Sprintf("For cusp %o, Fourier coefficient field is %o.", c, R!DefiningPolynomial(KK));
-      PP<qN> := LaurentSeriesRing(KK);
+      PP<qw> := LaurentSeriesRing(KK);
       Embed(KK,Parent(z),prim);
-      Append(~KKlist,<KK,prim>);
-      totalprec := totalprec + maxprec*Degree(KK);
+      totalprec := totalprec + M`prec[chosencusps[c]]*Degree(KK);
       curfour := <>;
       for i in [1..#modforms0] do
-	      newfourier := &+[ KK!Coefficient(modforms0[i][c],l)*qN^l : l in [0..AbsolutePrecision(modforms0[i][c])-1]] + BigO(qN^AbsolutePrecision(modforms0[i][c]));
-	      Append(~curfour,newfourier);
+	      newfourier := &+[ KK!Coefficient(modforms0[i][c],l)*qw^l : l in [0..AbsolutePrecision(modforms0[i][c])-1]] + BigO(qw^AbsolutePrecision(modforms0[i][c])); 
+        Append(~curfour,newfourier);
       end for;
       Append(~fourierlist,curfour);
   end for;
@@ -537,63 +541,69 @@ end intrinsic;
 intrinsic jMap(polyring::RngMPol, M::Rec, chosencusps::SeqEnum[RngIntElt], canring::Tup, modforms::Tup, prec::SeqEnum[RngIntElt]) -> RngMPolElt, RngMPolElt, Crv
 {Compute the j-map as an element of the function field of M}
   totalprec := prec[1]; maxprec := prec[2]; maxd := prec[3]; mind := prec[4];
-  N := M`N;
-  FFFF<qN> := LaurentSeriesRing(Rationals());
-  j := (1728*Eisenstein(4,qN : Precision := Ceiling((maxprec+2*N)/N))^3)/(Eisenstein(4,qN : Precision := Ceiling((maxprec+2*N)/N))^3 - Eisenstein(6,qN : Precision := Ceiling((maxprec+2*N)/N))^2);
-  j := Evaluate(j,qN^N);
+  
+  jin:=[];
+  for c in chosencusps do
+  w:=M`widths[c];
+  FFFF<qw> := LaurentSeriesRing(Rationals());
+  j := (1728*Eisenstein(4,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^3)/(Eisenstein(4,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^3 - Eisenstein(6,qw : Precision := Ceiling((M`prec[c]+2*w)/w))^2);
+  j := Evaluate(j,qw^w);
+  jin:=jin cat [j];
+  end for;
 
-  func := j;
+  func := jin;
   done := false;
+  
 
   curd := mind;
   jmat := ZeroMatrix(Rationals(),0,totalprec);
   for i in [1..#canring[curd][1]] do
-    vecseq := [];
-    for jj in [1..#chosencusps] do
-      pp := (func*canring[curd][1][i][jj]);
-      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
-    end for;
-    jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
+      vecseq := [];
+      for jj in [1..#chosencusps] do
+	  pp := (func[jj]*canring[curd][1][i][jj]);
+	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
+      end for;
+      jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
 
   for i in [1..#canring[curd][1]] do
-    vecseq := [];
-    for jj in [1..#chosencusps] do
-      pp := -canring[curd][1][i][jj];
-      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
-    end for;
-    jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
+      vecseq := [];
+      for jj in [1..#chosencusps] do
+	  pp := -canring[curd][1][i][jj];
+	  vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
+      end for;
+      jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
   NN := NullSpace(jmat);
   dimdim := Dimension(NN);
-  printf "For d = %o, dimension of null space is %o.\n",curd,dimdim;
   if dimdim ge 1 then
-    done := true;
+      done := true;
   end if;
 
   if (done eq false) then
-    curd := maxd;
-    jmat := ZeroMatrix(Rationals(),0,totalprec);
-    for i in [1..#canring[curd][1]] do
-      vecseq := [];
-      for jj in [1..#chosencusps] do
-        pp := (func*canring[curd][1][i][jj]);
-        vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+      curd := maxd;
+      jmat := ZeroMatrix(Rationals(),0,totalprec);
+      for i in [1..#canring[curd][1]] do
+	  vecseq := [];
+	  for jj in [1..#chosencusps] do
+	      pp := (func[jj]*canring[curd][1][i][jj]);
+	      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
+	  end for;
+	  jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
       end for;
-      jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
-    end for;
 
-    for i in [1..#canring[curd][1]] do
-      vecseq := [];
-      for jj in [1..#chosencusps] do
-        pp := -canring[curd][1][i][jj];
-        vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-N..-N+maxprec-1]]);
+      for i in [1..#canring[curd][1]] do
+	  vecseq := [];
+	  for jj in [1..#chosencusps] do
+	      pp := -canring[curd][1][i][jj];
+vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosencusps[jj]]..-M`widths[chosencusps[jj]]+M`prec[chosencusps[jj]]-1]]);
+	  end for;
+	  jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
       end for;
-      jmat := VerticalJoin(jmat,Matrix(Rationals(),1,totalprec,vecseq));
-    end for;
-    NN := NullSpace(jmat);
-    printf "For d = %o, dimension of null space is %o.\n",curd,Dimension(NN);
+      NN := NullSpace(jmat);
   end if;
+
+  // Now actually write down the map to the j-line
 
   canringdim := #canring[curd][1];
   nullmat := Matrix(Basis(NN));
@@ -601,13 +611,12 @@ intrinsic jMap(polyring::RngMPol, M::Rec, chosencusps::SeqEnum[RngIntElt], canri
   v := (changemat*nullmat)[1];
   denom := &+[ (polyring!v[i])*canring[curd][2][i] : i in [1..canringdim]];
   num := &+[ (polyring!v[i+canringdim])*canring[curd][2][i] : i in [1..canringdim]];
-  weakzero := [ &+[ v[i]*canring[curd][1][i][j] : i in [1..canringdim]]*func - &+[ v[i+canringdim]*canring[curd][1][i][j] : i in [1..canringdim]] : j in [1..#chosencusps]];
+  weakzero := [ &+[ v[i]*canring[curd][1][i][j] : i in [1..canringdim]]*func[j] - &+[ v[i+canringdim]*canring[curd][1][i][j] : i in [1..canringdim]] : j in [1..#chosencusps]];
   assert &and [ IsWeaklyZero(weakzero[i]) : i in [1..#chosencusps]];
 
   C := Curve(ProjectiveSpace(Rationals(),#modforms-1),M`psi);
   return num, denom, C;
 end intrinsic;
-
 intrinsic RatioFromWeight3Form(M::Rec, M2::Rec, arg::List) ->
  RngMPolElt, RngMPolElt
 {Compute f^2/E_6 as an element of the function of M, where f is a weight 3 modular form for the fine curve
@@ -618,9 +627,9 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
   polyring := arg[1]; geomhyper := arg[2]; KKlist := arg[3]; canring := arg[4]; chosencusps := arg[5]; degL := arg[6];
   irregcusps := arg[7]; totalprec := arg[8]; maxprec := arg[9];
   N := M`N;
-  print(N);
+  //print(N);
   N2 := M2`N;
-  print(N2);
+  //print(N2);
   GL2 := GL(2,Integers(N));
   U,pi:=UnitGroup(Integers(N));
   newmaxprec := (maxprec-1)*Ceiling((N2/N))+1;//NEED LCM NEEDED
@@ -630,27 +639,22 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
   //M2 := FindModularForms(3,M2,(maxprec-1)*Ceiling((N2/N))+1);
   M2 := IncreaseModularFormPrecision(FindModularForms(3, M2),newmaxprec);//G0 THING MIGHT BE A PROBLEM here TRY DAVIDS CORRESPONDING PART
   modforms0 := [ [ M2`F[i][c] : c in [1..#M2`cusps]] : i in [1..#M2`F]];
-  modforms00:=[];
-  for j in [1..#M2`F] do
-    K:=Parent(Coefficient(modforms0[1][1],0));
-    PP<qN>:=LaurentSeriesRing(K);
-    cc:=[];
-    for c in [1..#M2`cusps] do
-    t:=Evaluate(M2`F[j][c],qN^(M2`N/M2`widths[c]));
-    cc:=cc cat [t];
-    end for;
-    modforms00:=modforms00 cat [cc];
-  end for;
   
-  FFFF<qN> := LaurentSeriesRing(Rationals());
-  E6 := 0;
-  E6 := Eisenstein(6,qN : Precision := Ceiling((maxprec+2*N)/N));
-  E6 := Evaluate(E6,qN^N);
 
-  modforms3 := [ modforms00[1][c]^2 : c in [1..#M2`cusps]]; // weight 6
+    E6list:=[];
+    for c in [1..#M2`cusps] do
+  w:=M2`widths[c];
+  FFFF<qw> := LaurentSeriesRing(Rationals());
+  E6 := Eisenstein(6,qw : Precision := Ceiling((M2`prec[c]+2*w)/w));
+  E6 := Evaluate(E6,qw^w);
+  E6list:=E6list cat [E6];
 
+  end for;
 
-  modforms3_new := [f/E6: f in ConvertModularFormExpansions(M, M2, [modforms3],[1,0,0,1])[1]];
+  modforms3 := [ modforms0[1][c]^2 : c in [1..#M2`cusps]]; // weight 6
+
+  f:=ConvertModularFormExpansions(M, M2, [modforms3],[1,0,0,1])[1];
+  modforms3_new := [f[t]/E6list[t]: t in [1..#M2`cusps]];
   printf "Rewriting Fourier expansions over smaller fields.\n";
   GL2Galois := sub<GL2 | [[1,0,0,pi(u)] : u in Generators(U)]>;
   z := Parent(Coefficient(modforms3_new[1],0)).1;
@@ -663,13 +667,19 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
     // The subfield of Q(zeta_N) corresponding to galoiscusp is the field of definition of the Fourier coeffs.
     galoiscusp := Sort([g[2][2] : g in galoiscusp0]);
     //printf "For cusp %o, Galois group is %o.\n",c,galoiscusp;
-    KK := Parent(z);
-    prim := z;
-    PP<qN> := LaurentSeriesRing(KK);
+    KK := KKlist[c][1];
+    //print(KK);
+    //print(Parent(z));
+    prim := KKlist[c][2];
+    //print(prim);
+    //print(PrimitiveElement(KK));
+    //print(PrimitiveElement(Parent(z)));
+    PP<qw> := LaurentSeriesRing(KK);
+    if Degree(KK) eq 1 then KK:=Rationals(); prim:=1; end if;
     Embed(KK,Parent(z),prim);
-    totalprec := totalprec + maxprec*Degree(KK);
-    print(totalprec);
-    newfourier := &+[ KK!Coefficient(modforms3_new[chosencusps[c]],l)*qN^l : l in [0..AbsolutePrecision(modforms3_new[chosencusps[c]])-1]] + BigO(qN^AbsolutePrecision(modforms3_new[chosencusps[c]]));
+    totalprec := totalprec + M2`prec[chosencusps[c]]*Degree(KK);
+    //print(totalprec);
+    newfourier := &+[ KK!Coefficient(modforms3_new[chosencusps[c]],l)*qw^l : l in [0..AbsolutePrecision(modforms3_new[chosencusps[c]])-1]] + BigO(qw^AbsolutePrecision(modforms3_new[chosencusps[c]]));
     Append(~fourierlist,newfourier);
   end for;
   modf := fourierlist;
@@ -678,29 +688,27 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
   // A modular form of weight k has (k/12)*Index(subgroup) many zeros in H/subgroup.
   // This means that the ratio of two holomorphic modular forms of weight 6
   // is a modular function of degree <= (1/2)*index.
-
-  curd := 1;
+  
+  curd := 0;
   if geomhyper then
     curd := Floor(((M`index/2) + M`genus - 1)/degL) + 1;;
   else  
-    curdd := Floor((M`index)/(4*M`genus-4) + 3/2);
-    if curdd ge curd then curd:=curdd; end if;
+    curd := Floor((M`index)/(4*M`genus-4) + 3/2);
   end if;
-  print(curd);
+  dimdim:=0;
+  
+  while dimdim lt 1 do
+  
   fmat := ZeroMatrix(Rationals(),0,totalprec);
-  print(fmat);
-  print(totalprec);
+  //print(fmat);
   for i in [1..#canring[curd][1]] do
     vecseq := [];
     for jj in [1..#chosencusps] do
       pp := (modf[jj]*canring[curd][1][i][jj]);
-      print(maxprec);
-      print(pp);
-      print(AbsolutePrecision(modf[jj]));
-      [ Eltseq(Coefficient(pp,m)) : m in [0..maxprec-1]];
-      [ Parent(Coefficient(pp,m)) : m in [0..maxprec-1]];
-      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [0..maxprec-1]]);
-      print(vecseq);
+      //print(maxprec);
+      //print(AbsolutePrecision(modf[jj]));
+      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [0..M2`prec[chosencusps[jj]]-1]]);
+      //print(vecseq);
     end for;
     fmat := VerticalJoin(fmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
@@ -709,20 +717,19 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
     vecseq := [];
     for jj in [1..#chosencusps] do
       pp := -canring[curd][1][i][jj];
-      print(maxprec);
-      print(pp);
-      print(AbsolutePrecision(pp));
-      [ Eltseq(Coefficient(pp,m)) : m in [0..maxprec-1]];
-      [ Parent(Coefficient(pp,m)) : m in [0..maxprec-1]];
-      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [0..maxprec-1]]);
-      print(vecseq);
+      //print(maxprec);
+      //print(pp);
+      //print(AbsolutePrecision(pp));
+      vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [0..M2`prec[chosencusps[jj]]-1]]);
+      //print(vecseq);
     end for;
     fmat := VerticalJoin(fmat,Matrix(Rationals(),1,totalprec,vecseq));
   end for;
   NN := NullSpace(fmat);
   dimdim := Dimension(NN);
   printf "For d = %o, dimension of null space is %o.\n",curd,dimdim;
-  assert dimdim ge 1;
+  if not dimdim ge 1 then curd:=curd+1; end if;
+  end while;
 
   canringdim := #canring[curd][1];
   nullmat := Matrix(Basis(NN));
@@ -734,6 +741,8 @@ arg::[polyring::RngMPol, geomhyper::BoolElt, KKlist::Tup, canring::Tup,
   assert &and [ IsWeaklyZero(weakzero[i]) : i in [1..#chosencusps]];
   return fnum, fdenom,M2;
 end intrinsic; 
+
+
 
 
 
@@ -749,8 +758,7 @@ intrinsic Jmap(M::Rec, calG::GrpMat) -> Tup
     G:=M`G;
     U,pi:=UnitGroup(Integers(M`N));
     chosenmult := [ M`mult[c] : c in chosencusps];
-    modforms0 := [ [ M`F0[i][c] : c in chosencusps] : i in [1..#M`F0]];
-    modforms:=OldNewConverterF0(M, modforms0, chosencusps); 
+    modforms := [ [ M`F0[i][c] : c in chosencusps] : i in [1..#M`F0]];
     modforms, totalprec, KKlist:=RewriteFourierExpansion(M, chosencusps, maxprec,modforms);
     polyring<[x]> := PolynomialRing(Rationals(),#modforms,"grevlex");
     canring, vars:=CanonicalRing(polyring, M, chosencusps, modforms, maxd);

@@ -1,23 +1,23 @@
 
 //By David Zywina
-function ContainsScalars(G)
-    // For a subgroup of GL(2,Z/N) with N>1, return true if G contains all the scalar matrices and false otherwise.
+intrinsic ContainsScalars(G::GrpMat)-> BoolElt
+{    For a subgroup of GL(2,Z/N) with N>1, return true if G contains all the scalar matrices and false otherwise.}
     N:=#BaseRing(G);
     GL2:=GL(2,Integers(N));
     U,iota:=UnitGroup(Integers(N));
     return &and [ (GL2![iota(U.i),0,0,iota(U.i)]) in G : i in [1..Ngens(U)] ];
-end function;
+end intrinsic;
 
 //By David Zywina
-function AdjoinScalars(G)
-    // For a subgroup of GL(2,Z/N) with N>1, return the group obtained by adding all the scalar matrices to G.
+intrinsic AdjoinScalars(G::GrpMat)->GrpMat
+    { For a subgroup of GL(2,Z/N) with N>1, return the group obtained by adding all the scalar matrices to G.}
     N:=#BaseRing(G);
     GL2:=GL(2,Integers(N));
     gens:=[G.i: i in [1..Ngens(G)]];
     U,iota:=UnitGroup(Integers(N));
     gens:= gens cat [ GL2![iota(U.i),0,0,iota(U.i)] : i in [1..Ngens(U)] ];
     return sub<GL2|gens>;
-end function;
+end intrinsic;
 
 
 
