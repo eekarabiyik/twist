@@ -33,6 +33,7 @@ if #BaseRing(G) eq Infinity() then continue; end if;
         //assert GL2Project(AgreeableClosure(G),GL2Level(AgreeableClosure(G))) eq GL2Project(GL2AgreeableClosure(G),GL2Level(GL2AgreeableClosure(G)));
         psi,MAT,jmap,gon_2:=FindModel(G,T,FAM: redcub:=true);
         print(psi);
+        print(jmap);
         //print(gon_2);
         //print(Realtime(time0));
         

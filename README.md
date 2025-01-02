@@ -2,7 +2,8 @@
 This repository contains the classification of modular curves upto genus 6 in terms of families. 
 
 It also contains a set of codes for the computation of models of modular curves upto genus 6. 
-The main function is `FindModel` in the file main.m in the folder `FindingFamilies/MainCode`. Make sure that your directory is `FindingFamilies/MainCode`.
+The main function is `FindModel` in the file main.m in the folder `FindingFamilies/MainCode`.
+It takes an arbitrary subgroup G of GL_2(Z/NZ) with full determinant and its SL2Intersection T as inputs. In turn it computes a set of equations for the modular curve, computes its jmap. It also camputes whether the curve has Q-gonality 2.  Make sure that your directory is `FindingFamilies/MainCode`.
 
 Some explanations:
 
