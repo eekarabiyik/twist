@@ -19,3 +19,13 @@
     calG:=GL2Project(calG,calG_level);
     return calG;
 end intrinsic;
+
+intrinsic GL2AgreeableClosure(H::GrpMat)->GrpMat
+{ Computes the agreeable closure }
+     require GL2DeterminantIndex(H) eq 1: "H must have determinant index
+1";
+     N,H := GL2Level(H); if N eq 1 then return H; end if;
+     L := &*[p^Valuation(N,p):p in PrimeDivisors(2*SL2Level(H))];
+     L,A := GL2Level(AdjoinScalars(GL2Project(H,L)));
+     return A;
+end intrinsic;
