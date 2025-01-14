@@ -137,4 +137,4 @@ intrinsic FindModelNew(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=false, test_
         return psi,MAT,[jmap1,jmap2], T,famG`genus;
     end if;
     return psi,MAT,[jmap1,jmap2],false,famG`genus;
-end function;
+end intrinsic;
