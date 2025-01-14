@@ -1,4 +1,4 @@
-// Load data from saved files to a format used in calling FindModelNew.
+// Load data from saved files to a format used in calling FindModel.
 
 intrinsic LoadFamilies(filenames::SeqEnum[MonStgElt]) -> SeqEnum
 {Load family data from a sequence of files}

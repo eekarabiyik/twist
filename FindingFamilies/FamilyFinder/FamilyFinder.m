@@ -1,23 +1,23 @@
 
 //By David Zywina
-function ContainsScalars(G)
-    // For a subgroup of GL(2,Z/N) with N>1, return true if G contains all the scalar matrices and false otherwise.
+intrinsic ContainsScalars(G::GrpMat)-> BoolElt
+{    For a subgroup of GL(2,Z/N) with N>1, return true if G contains all the scalar matrices and false otherwise.}
     N:=#BaseRing(G);
     GL2:=GL(2,Integers(N));
     U,iota:=UnitGroup(Integers(N));
     return &and [ (GL2![iota(U.i),0,0,iota(U.i)]) in G : i in [1..Ngens(U)] ];
-end function;
+end intrinsic;
 
 //By David Zywina
-function AdjoinScalars(G)
-    // For a subgroup of GL(2,Z/N) with N>1, return the group obtained by adding all the scalar matrices to G.
+intrinsic AdjoinScalars(G::GrpMat)->GrpMat
+    { For a subgroup of GL(2,Z/N) with N>1, return the group obtained by adding all the scalar matrices to G.}
     N:=#BaseRing(G);
     GL2:=GL(2,Integers(N));
     gens:=[G.i: i in [1..Ngens(G)]];
     U,iota:=UnitGroup(Integers(N));
     gens:= gens cat [ GL2![iota(U.i),0,0,iota(U.i)] : i in [1..Ngens(U)] ];
     return sub<GL2|gens>;
-end function;
+end intrinsic;
 
 
 
@@ -41,8 +41,9 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
     Input:
 	    G       : a subgroup of GL2(Zhat) full det, -I in G
 	    T       : G meet SL2
+        FAM     : The list of families
     Output:
-        A family containing G
+        The family containing G
 
 }
 
@@ -56,7 +57,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
         assert FAM[s]`B eq SL2Project(T,2);
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
-    //We compute the level to compute the agreeable closure. Level of calG has the same odd divisors asT_level.
+    //We compute the level to compute the agreeable closure. Level of calG has the same odd divisors as T_level.
     T:=SL2Project(T,T_level);
     X:=AssociativeArray();
     G_level:=GL2Level(G);
@@ -77,7 +78,7 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
         assert T eq FAM[s]`B;
         return s, FAM[s], G, FAM[s]`calG, T;
     end if;
-
+    //Adjusting the levels.
     calG:=GL2Project(calG,calG_level);
     T:=SL2Project(T,T_level);
     G:=GL2Project(G,N);
@@ -95,10 +96,8 @@ intrinsic FamilyFinderNew(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec,
 
     o:=-1;
     u:=-1;
-    //"number of keys is";
-    //#Y;
-    //Keys(Y);
-    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. If none of them
+    //Y is an array of possible families that contains G.
+    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. 
     for t in Keys(Y) do
         b:=FiniteLift(Y[t][2],calG_level,M);
         Tcong:=Conjugate(SL2Lift(T,M),b);
@@ -147,5 +146,3 @@ end intrinsic;
 
 
 
-
-//This should be completely fine at this point.

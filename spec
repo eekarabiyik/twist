@@ -1,28 +1,43 @@
 {
   DrewMagma
   {
-    +magma.spec
+  +magma.spec
   }
   FindingFamilies
   {
     FamilyData
     {
-      FamilyRecWithEverything.m
+      ConstructingFamiliesIntrinsic.m
+      FamilyRecWithUniv.m
       LoadData.m
     }
     FamilyFinder
     {
+      AgreeableClosure.m
       FamilyFinder.m
     }
     TwistingCode
     {
       H90.m
-      Newco2.m
+      Newco.m
       TwistingCode.m
     }
     MainCode
     {
       main.m
     }
+    Jmap
+    {
+
+    }
+    PlaneModels
+    {
+      planemodels.m
+    }
   }
+  Modular
+  {
+    Modular.m
+  }
+  jampandunivell.m
 }

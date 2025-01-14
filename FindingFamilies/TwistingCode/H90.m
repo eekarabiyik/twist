@@ -1,7 +1,7 @@
 //Code by Rakvi
 
 
-intrinsic H90(n::RngIntElt, L::FldNum, K::Any, G::GrpPerm, sigma::Map, xi::HomGrp : do_LLL:=true) -> AlgMatElt
+intrinsic H90(n::RngIntElt, L::Fld, K::Any, G::GrpPerm, sigma::Map, xi::HomGrp : do_LLL:=true) -> AlgMatElt
 {
    Input: xi: G=Gal(L/K)-> GL(n,L) 1-cocycle.
    Output: matrix A in GL(n,L) such that xi_g = A^(-1) g(A) for all g in G.
