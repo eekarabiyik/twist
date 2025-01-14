@@ -465,6 +465,7 @@ intrinsic RewriteFourierExpansion(M::Rec, chosencusps::SeqEnum[RngIntElt], maxpr
       vprint User1: Sprintf("For cusp %o, Fourier coefficient field is %o.", c, R!DefiningPolynomial(KK));
       PP<qw> := LaurentSeriesRing(KK);
       Embed(KK,Parent(z),prim);
+      Append(~KKlist,<KK,prim>);
       totalprec := totalprec + M`prec[chosencusps[c]]*Degree(KK);
       curfour := <>;
       for i in [1..#modforms0] do
@@ -768,18 +769,278 @@ end intrinsic;
 
 
 
-/*
-intrinsic RatioWeight3(G::GrpMat, calG::GrpMat, M::Rec, arg::List) -> RngMPolElt, RngMPolElt
-    polyring := arg[1]; geomhyper := arg[2]; KKlist := arg[3]; canring := arg[4]; chosencusps := arg[5]; degL := arg[6];
-   totalprec := arg[8]; maxprec := arg[9];
-    CG:=M`G;
-    M2:=CreateModularCurveRec(G);
-    irregcusps := not (&and M2`regular);
+
+//func element given by a seq of expansions at the cusps.
+//want to write it as a ratio
+
+intrinsic FindRatio(M,M0, tryingdegs : homogeneous:=true, prec0:=0, prec_delta:=10, Id:=[* *], mon1:=[* *],mon:=[* *],AA:=[* *])-> SeqEnum
+    {
+        Warning: this function is still very experimental!
+
+        Input: 
+                Modular curves M and M0 corresponding to open subgroups G and G0 of 
+                GL(2,Zhat), respectively.  Assume that G0:=[\pm I G]
+
+                We assume that model of X_G0 is already computed
+        Output: With respect to their model, we give two homomogenous polynomials 
+                that corresponds to f^2/E6 where f is a modular form of weight three and E6 is the normal E6.
+
+        Suppose that the parameter "homogenous" is set to false and the model of X_G or X_G0 is not canonical. Then a tuple of 
+        the form [1,F_1,...,F_n] is returned with F_i in the function field of X_G. 
+        Clearing denominators will give a tuple of homogenous polynomials as above.   The 
+        function works by computing these F_i first and this express may me nicer for many purposes.
+
+        The parameters "prec0" and "prec_delta" are for initial precision and how much to increase it when more is needed;
+        these should be left alone at first.
+        The parameters "Id" and "mon1" should be left alone; they are for keeping computations when we apply the function
+        recursively.
+    }
+
+    M0:=FindModularForms(3,M0);
+    prec:=Minimum([ (M`sl2level div M`widths[i])*M`prec[i] : i in [1..M`vinf]]) ;
+    prec:=Maximum(prec,prec0);
+    M0:=IncreaseModularFormPrecision(M0,prec);
+    assert assigned M`psi and assigned M`model_degree and assigned M`F0;
+     E6list:=[];
+    for c in [1..#M0`cusps] do
+        w:=M0`widths[c];
+        FFFF<qw> := LaurentSeriesRing(Rationals());
+        E6 := Eisenstein(6,qw : Precision := Ceiling((M0`prec[c]+2*w)/w));
+        E6 := Evaluate(E6,qw^w);
+        E6list:=E6list cat [E6];
+    end for;
+        "E6";
+        E6list;
+        modforms3 := [ M0`F[1][c]^2 : c in [1..#M0`cusps]]; // weight 6
+
+        f:=ConvertModularFormExpansions(M, M0, [modforms3],[1,0,0,1])[1];
+        "f is";
+        f;
+        modforms3_new := [f[t]/E6list[t]: t in [1..#M`cusps]];
+        toc:=modforms3_new;
+        "toc is";
+        toc;
+
+    // We will look for a morphism defined over K_G.   For many of the computations,
+    // it will be useful to work modulo a well chosen prime Q.
+    //TODO: choice??  ensure no issues
+    OO:=RingOfIntegers(M`KG);
+    disc:=Integers()!Discriminant(M`KG);
+    q:=2;
+    repeat
+        q:=NextPrime(q);
+    until M`N mod q ne 0 and disc mod q ne 0;    
+    Q:=Factorization(ideal<OO|[q]>)[1][1];
+    FF_Q,iota:=ResidueClassField(Q);
+
+    // We increase the precision
+    prec:=Minimum([ (M`sl2level div M`widths[i])*M`prec[i] : i in [1..M`vinf]]) ;
+    prec:=Maximum(prec,prec0);
+    M:=IncreaseModularFormPrecision(M,prec);
+
+    // Modular forms describing model of M0 converted to M
+    printf "prec is %o\n",prec;
+
+    //deg_h:=M0`model_degree * (M`index div M0`index);
+    deg_toc:=M`model_degree * tryingdegs;
+    // Consider the quotient of two modular forms in the sequence h;
+    // then "deg_h" bounds the total number of zeros and poles as a rational function on M
+
+    n:=#M`F0 div M`KG_degree;
+    K:=M`KG;
+    Pol_K<[y]>:=PolynomialRing(K,n); 
+
+    // ideal of Pol_K given by our model of M
+    // I_gen:=[Pol_K!p: p in M`psi];
+    // Now work over finite field instead!
+
+    Pol_FF<[x]>:=PolynomialRing(FF_Q,n);
+    I_gen:=[Pol_FF!pol :pol in M`psi];
+ 
+  
+        //For now, we compute the Hilbert series when we do not have a canonical model.
+        //TODO: check running time
+        I:=ideal<Pol_FF|I_gen>;
+        Rs<t>:=PowerSeriesRing(Rationals());
+        HS:=HilbertSeries(Submodule(I));
+
+
+    /*  
+        Idea:
+            Let f_1,..,f_r be the basis of modular forms that give rise to the model of M.
+            Let h_1,..,h_s be the basis of modular forms that give rise to the model of M0.
+            For i=2,..s, we consider h_i/h_1 which gives a rational functions on M.  We will have
+                    h_i/h_1 = F_1(f_1,..,f_r)/F_2(f_1,..,f_r)
+            where F_1,F_2 are homomogenous polynomials of the same degree d.
+            We start with d=0 and increase d until we find such a relation!
+
+            Observations:
+                We need only look at F_1 and F_2 in the space of homogenous polynomials of 
+                degree d modulo the space of degree d relations of M.
+
+                We can look at the q-expansion of the cusps for the expression:
+                    h_i*F_2(f_1,..,f_r) - h_1*F_1(f_1,..,f_r);
+                since these are cusp forms, enough vanishing will prove that it is 0. 
+    */
+
+
+
+    d:=0;
     
+    //Id  :=[* *];
+    //mon1:=[* *];
+
+    //mon :=[* *];
+    //AA:=[* *];
+
+    /*
+        Consider the ideal I in Pol_K corresponding to the model of the curve M.
+        For each integer m, we have the graded component I_m of degree m.
+
+        We compute a sequence "Id" so that Id[m] is a basis of I_m over M`KG.
+        We compute a sequence "mon1" so that mon1[m] is a basis of (Pol_K)_m/I_m.
+    */
+
+    M_F0:=[M`F0[i]: i in [1..#M`F0 div M`KG_degree]];
+    assert #M_F0 * M`KG_degree eq #M`F0;
+
+    morphism:=[];  //Keep track of F_1/F_2 
 
 
+    
+        done:=false;
+
+        while not done do
+            d:=d+1;
+            printf "increased d to %o\n",d;
+
+                dQ:=Integers()!Coefficient(Rs!Evaluate(HS,t+O(t^(d+1))),d);
+                // dimension of homogeneous relations of degree d 
+
+            //Find the next Id (if needed)
+            if #Id eq d-1 then
+                mon:= mon cat [* MonomialsOfWeightedDegree(Pol_FF,d) *];
+                assert #mon eq d;
+                //A:=[ Vector([MonomialCoefficient(p,m) : m in mon[d]]) : p in I_gen | Degree(p) eq d];  
+
+                B:=[ [MonomialCoefficient(p,m) : m in mon[d]] : p in I_gen | Degree(p) eq d];  
+
+                if d gt 1 and dQ ne 0 then
+                    B:=B cat [[MonomialCoefficient(x[i]*p,m) : m in mon[d]] :  i in [1..n], p in Id[d-1]];
+                    B:=Matrix(B);
+                    C:=EchelonForm(Transpose(B));
+                    //assert Rank(C) eq dQ;  TODO: CHECK?!
+                    pivots:=[ Minimum([j: j in [1..Ncols(C)] | C[i,j] ne 0]) :  i in [1..dQ]];
+                    B:=[B[i]: i in pivots]; // chose rows of B that span a space of the same dimension
+
+                end if;
+
+                assert #B eq dQ;
+                AA:=AA cat [* B *];
+                Id:=Id cat [* [ Pol_FF!(&+[w[i]*mon[d][i]: i in [1..#mon[d]]]) : w in B] *];
+            end if;
+            
+            if #mon1 lt d then //ERAY WHAT IS GOING ON HERE
+                if d*M`model_degree ge deg_toc then
+
+                    // Find a basis mon1[d] of (Pol_K)_d/I_d. 
+                    V:=KSpace(FF_Q,#mon[d]);
+                    W:=sub<V|AA[d]>;
+                    mon_:=[];
+                    for p in mon[d] do
+                        v:=Vector([MonomialCoefficient(p,m) : m in mon[d]]);
+                        if v notin W then
+                            W:=W + sub<V|[v]>;
+                            mon_:=mon_ cat [p];
+                        end if;
+                        if Dimension(W) eq Dimension(V) then
+                            break p; 
+                        end if;
+                    end for;
+                    assert Dimension(W) eq Dimension(V);
+                    exponents_mon_:=[Exponents(m): m in mon_];
+                    mon1:= mon1 cat [* [&*[y[i]^a[i]: i in [1..n]] : a in exponents_mon_] *];
+                else
+                    mon1:=mon1 cat [* [] *];
+                end if;
+            end if;         
 
 
+            if d*M`model_degree ge deg_toc then
+                
+                B:=[];
+                J:=Sort([O[1]:O in M`cusp_orbits]); 
+                for j in J do
+                    beta:=[Evaluate(m,[f[j]: f in M_F0]) : m in mon1[d]];
+                    beta:=&cat[ [b*f: b in M`KG_integral_basis_cyclotomic] : f in beta];
+
+                    s:=[E6list[j]*b : b in beta] cat [-f[j]*b : b in beta];
+                    e:=Minimum([AbsolutePrecision(f): f in s]);
+                    B:=B cat [ [ Coefficient(f,i)[k]: f in s] : i in [0..e-1], k in [1..EulerPhi(M`N)] ];  
+                    //could use coefficients over smaller field here
+                end for;
+            
+
+                B:=Matrix(B);
+                B:=ChangeRing(Denominator(B)*B,Integers());
+
+                C:=Matrix(Basis(NullspaceOfTranspose(B)));
+                C:=LLL(C : Proof:=false);
+                S:=[ [&+[v[M`KG_degree*(i-1)+j] * M`KG_integral_basis[j]*mon1[d][i]: i in [1..#mon1[d]], j in [1..M`KG_degree]],
+                      &+[v[M`KG_degree*(i-1)+j + #mon1[d]*M`KG_degree] * M`KG_integral_basis[j]*mon1[d][i]: i in [1..#mon1[d]], j in [1..M`KG_degree]]] : v in Rows(C)];
+                      
+                if #S ge 1 then
+                    // number of poles is at most  
+                    upper_bound_on_number_of_poles:= d*M`model_degree + deg_toc;
+                    "sda";
+                    upper_bound_on_number_of_poles;
+                    a:=S[1];
+                    "wht is this";
+                    S;
+                    "first term";
+                    print(a);
+                    zeros:=0;
+                    for j in J do
+                        den:=Evaluate(a[2],[f[j]: f in M_F0]);
+                        if IsWeaklyZero(den) then 
+                            continue j; 
+                        end if;
+                        num:=Evaluate(a[1],[f[j]: f in M_F0]);
+                        //h[r][j]*den - h[1][j]*num;
+                        v:=Valuation(num/den  - toc[j])-1; 
+                        if v ge 1 then 
+                            orbit_size:= #M`cusp_orbits[M`cusp_to_orbit[j]];
+                            zeros:=zeros+ v * orbit_size;
+                        end if;                    
+                    end for;
+                    "zeros";
+                    zeros;
+                    if zeros le upper_bound_on_number_of_poles then
+                        // Not enough info to provable find morphism.
+                        // We increase precision and try again
+                        "bidaha";
+                        return FindRatio(M,M0,tryingdegs :homogeneous:=homogeneous, prec0:=prec+prec_delta, prec_delta:=prec_delta, Id:=Id, mon1:=mon1,mon:=mon,AA:=AA);
+                    end if;
+
+                    done:=true;
+                end if;
+            end if;
+        end while;
+
+        a:=S[1];
+        morphism:=morphism cat [a];
+        print(morphism);
+
+    
+    if not homogeneous then
+        return [a[1]/a[2]: a in morphism];
+    end if;
+
+    morphism:= [&*([1] cat [morphism[j][2]: j in [1..#morphism]]) : i in [1..#morphism]]
+    cat [ morphism[i][1]* &*([1] cat [morphism[j][2]: j in [1..#morphism] | j ne i]) : i in [1..#morphism]];
+
+    Pol_K<[x]>:=PolynomialRing(K,n); 
+    morphism:=[Pol_K!f: f in morphism];
+
+    return morphism;
 end intrinsic;
-*/
-
