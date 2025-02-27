@@ -15,12 +15,16 @@
     {
       AgreeableClosure.m
       FamilyFinder.m
+      FamilyFinderMain.m
+      FamilyFinderMainFine.m
     }
     TwistingCode
     {
       H90.m
       Newco.m
       TwistingCode.m
+      RandomCocycleCreator.m
+      GroupToCocycleTryingProjections.m
     }
     MainCode
     {
@@ -37,7 +41,7 @@
   }
   Modular
   {
-    Modular.m
+    ModularErayTry.m
   }
   jampandunivell.m
 }

@@ -38,8 +38,16 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
 
     //We first start with finding the family in our database that contains G.
     print("Finding the family...");
-    famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T,FAM);
-    N:=#BaseRing(G);
+    //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T,FAM);
+    /*
+    if not GL2ContainsNegativeOne(G) then
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderFine(G,T,FAM);
+    else
+        
+    end if;
+    */
+    famkey,famG,Gcong,calGlift,Tcong:=FamilyFinder(G,T,FAM);
+    //N:=#BaseRing(G);
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
@@ -48,11 +56,16 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
     Tcong`SL:=true;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
     printf "Computing the cocycle\n";
-    xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    //xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
     //Now the twist
     printf "Twisting the curve...\n";
     psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
     //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
+
+
+
+
 
     printf "Computing the jmap...\n";
     //Computing the jmap. The jmap of the representative is precomputed.
@@ -115,6 +128,11 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
         return psi,MAT,[newnum,newdenum],_,_;
     end if;
 
+
+
+
+
+
     printf "Computing QQ-gonality...\n";
     //Following computes if the curve is hyperelliptic
     if famG`M`CPname in gonality_equals_2 then
@@ -137,4 +155,59 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
         return psi,MAT,[jmap1,jmap2], T,famG`genus;
     end if;
     return psi,MAT,[jmap1,jmap2],false,famG`genus;
+end intrinsic;
+
+
+
+intrinsic Weight3Twister(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hyperelliptic:=true) -> SeqEnum
+{
+    Input:
+    - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
+    - T is the intersection of G with SL2(Z/NZ)
+
+    Keywords:
+    - redcub, whether to reduce the cubics (passed on to TwistCurve)
+    - test_hyperelliptic, test if X_G is hyperelliptic over Q
+
+    Output:
+    - psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above.
+      n depends on the model of the family representative used to twist G from.
+    - MAT: H90 matrix describing the twist from the family representative to G.
+    - a sequence of length 2 giving the numerator and denominator of the absolute j-map
+    - a boolean, whether X_G is hyperelliptic over Q (only returned if test_hyperelliptic is true)
+    - the genus of X_G
+}
+
+    //We first start with finding the family in our database that contains G.
+    print("Finding the family...");
+    //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T,FAM);
+    if not GL2ContainsNegativeOne(G) then
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderFine(G,T,FAM);
+    else
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinder(G,T,FAM);
+    end if;
+    
+
+    N:=#BaseRing(G);
+    printf "The family key in the database is %o\n",famkey;
+    AOfMF:=AssociativeArray();
+    for i in Keys(famG`AOfMF) do
+        AOfMF[i]:=Transpose(famG`AOfMF[i]);
+    end for;
+    Tcong`SL:=true;
+    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
+    printf "Computing the cocycle\n";
+    //xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    //Now the twist
+    NewWeight3F:=[];
+    if FAM[famkey]`fine eq true then
+        GAL,iota,sigma:=AutomorphismGroup(K);
+        s:= Nrows(Id(Codomain(xi)));
+        //Transpose matrix because of Galois action used.
+        MAT:=Transpose(H90(s,K,Rationals(),GAL,sigma,xi));
+        print(MAT);
+        NewWeight3F:=F0Twister(famG`M`F,MAT);
+    end if;
+    return NewWeight3F;
 end intrinsic;
