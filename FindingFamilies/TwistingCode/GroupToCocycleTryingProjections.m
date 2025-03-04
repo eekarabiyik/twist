@@ -47,39 +47,28 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     calGAut:=GL2Lift(calG,LCM([N1,N3]));
     N:=LCM([N1,N3]);
     NG:=#BaseRing(G);
-    //When N divides NG everything is easier. Figureouthow to fix this
+    //When N divides NG everything is easier. 
     if not IsDivisibleBy(NG,N) then
         G:=GL2Lift(G,LCM([NG,N]));
     end if;
     H:=GL2Lift(H,N);
     NG:=#BaseRing(G);
-    T:=SL2Intersection(G);//This is fast now.
+    //T:=SL2Intersection(G);//This is fast now.
     UNG,iotaN:=UnitGroup(Integers(NG));
     SL2:=SL2Ambient(NG);
     //Forming the quotient calG/H. We have to make it into an abelian group so that the kernels actually work.
-
-    //Defining the necessary quotient maps
     calG:=GL2Lift(calG,N);
     quocalG,quomapG:= quo<calG|H>;
     quocalGG,quomapGG:=AbelianGroup(quocalG);
-    //Transversals are representatives from the cosets. Very useful for many things. WROOOOOONG
+    //To be able to form a transversal easily for G/T we use the GenericAbelianGroup feature. This allows us to use chosen generators and so newgammadd function can be defined.
     GUNG:=GenericAbelianGroup(UNG);
     AA:=sub<GUNG|[Determinant(g) @@ iotaN : g in Generators(G)]:UseUserGenerators:=true>;
-    
     //newgammadd:=hom<AA->G | [<Determinant(g) @@ iotaN,g>: g in Generators(G)]>;
     newgammadd:=hom<AA->quocalGG | [<Determinant(g) @@ iotaN,quomapGG(quomapG(ChangeRing(g,BaseRing(calG))))>: g in Generators(G)]>;
+    //This function is basically our cocycle.
     gammadd:=hom<UNG->quocalGG|[newgammadd(UNG.i): i in [1..Ngens(UNG)]]>;
-    //xi:=map<{iotaN(d): d in UNG}-> G | [<Determinant(t),G!([Integers()!a:a in Eltseq(t)])>: t in K]>;
-    //xii:=map<{iotaN(d): d in UNG}-> calG|[<Determinant(t),ChangeRing((xi(Determinant(t))),BaseRing(calG))>:t in K]>;
-    //Abelian work. gammadd here is an homomorphism whose kernel will be useful.
-    //gammad:=map<{iotaN(d): d in UNG}-> quocalGG | [<Determinant(t),quomapGG(quomapG((xii(Determinant(t)))))>: t in K]>;
-
-    //gammadd:=hom<UNG-> quocalGG | [gammad(iotaN(UNG.i)): i in [1..Ngens(UNG)]]>;// This is a homomorphism. With this new concept it is not a homomorphism anymore, is there a problem with the finite lift thing or something else. Would it be a homomorphism if I choose nice lifts? Do I need a lift hom with respect to codomain?
-    //Now we have some of the maps we needed. We will put all these in nice forms.
-
-    //First we create Cyclotomic field and write the above maps from the Galois group.
+    //First we create Cyclotomic field. Then find the fixed field coming from our homomorphism. Afterwards the cocycle is transformed into an honest galois cocycle via the cyclotomic character.
     GL1:=GL1Ambient(NG);
-    //KNG<z>:=CyclotomicField(NG);
     KNG<z>:=NumberField(CyclotomicPolynomial(NG));
     kernell:=Kernel(gammadd);
     degneeded:=Index(UNG,kernell);
@@ -87,34 +76,10 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
    if not GL1Order(kerrr) eq GL1Order(GL1) then 
 
 
-    /*
-        TT:=[Integers()!iotaN(u): u in kernell];
-        L:=sub<KNG|[KNG!1]>;
-        i:=0;
-        while Degree(L) lt degneeded do
-            i:=i+1;
-            print(i);
-            a:=&+[ Conjugate(z^i,t): t in TT ]; // will lie in K_G
-            print(a);
-            "summed";
-            L:=sub<KNG| Generators(L) cat [a]>;
-        end while;
-          L:=OptimizedRepresentation(L); //improve presentation of field        
-        */
         L,prim:=fieldfind(kerrr,KNG);
             //L<zz>:=L;
-            L<zz>:=sub<KNG|[prim]>;
-
-            //assert L subset KNG;//just find something for this please
-        /*
-        OO:=RingOfIntegers(X`KG);
-        A:=ChangeRing(Matrix([Eltseq(KN!a): a in Basis(OO)]),Integers());
-        A:=LLL(A:Proof:=false);
-
-        X`KG_integral_basis_cyclotomic:=[KN!Eltseq(a): a in Rows(A)];
-        X`KG_integral_basis:=[X`KG!a: a in X`KG_integral_basis_cyclotomic];
-        */
-    
+        L<zz>:=sub<KNG|[prim]>;
+    //Find the Galois map via cyclotomic character.
     GAL,iota,sigma:=AutomorphismGroup(L);
     quotientgamma,quogammamap:=quo<UNG|kernell>;
     quogamma:=hom<quotientgamma->quocalGG| [gammadd(quotientgamma.i @@ quogammamap): i in [1..Ngens(quotientgamma)]]>;
@@ -129,31 +94,27 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
             a:=a+listinho[j]*(z^((j-1)*exponento));
         end for;
         Append(~genlist,quotientgamma.i);
-        _:=exists(g0){g0: g0 in GAL | sigma(g0)(zz) eq a };//This should not be negative. There were some instances it were. Be careful!!!
+        //This is a brute force way. But it seems fast enough because the degree of the Galois group is uniformly bounded for our twists.
+        _:=exists(g0){g0: g0 in GAL | sigma(g0)(zz) eq a };
         Append(~gallist,g0);
     end for;
     galiso:=hom<quotientgamma->GAL | [gallist[i]: i in [1..Ngens(quotientgamma)]]>;
     galisoa:=Inverse(galiso);
-    xi1:=hom<GAL-> calG | [(quogamma(galisoa(GAL.i))@@ quomapGG) @@ quomapG: i in [1..Ngens(GAL)]]>;//This is the cocycleish
+    xi1:=hom<GAL-> calG | [(quogamma(galisoa(GAL.i))@@ quomapGG) @@ quomapG: i in [1..Ngens(GAL)]]>;//This is the cocycleish/
 
     //This takes from the field of definition and gives matrices that can be put into autofmodularforms.
- 
-    //xi:=map<GAL1-> MatrixRing(Kfield,#M`F0) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
+
     else
+    //Separately handle if the cocycle is the trivial map.  
       L:=Rationals();
       GAL,iota,sigma:=AutomorphismGroup(L);
       xi1:=hom<GAL->calG|[<g,Id(calG)>: g in GAL]>;
     end if;
-    
-    
+    //Transform the cocycle into the form for H90. This uses how the matrices in calG acts on the space of modular forms.
     ro:=Nrows(AOfMF[1]);
     aut:=hom<calGAut ->GL(ro,L) | [AOfMF[i]:i in [1..Ngens(calGAut)]]>; //Be careful levels should match here.
     //aut:=lift_hom(aut1,N);
-
     xi:=hom<GAL-> GL(ro,L) | [<d,aut(xi1(d))>: d in GAL]>;//Note that the way we did the precomputation makes the levels match.
-
-    //xi:=hom<GAL1-> GL(#M`F0,Kfield) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
-
     return xi,L,GAL,sigma,UNG,kerrr,NG;
 end intrinsic;
 

@@ -21,3 +21,4 @@ Some explanations:
 
 Constructing the families:
 - There is now a function "FindAllFamilies" that computes the families up to a genus associated to a fixed congruence subgroup.
+- With the recent updates, the code is now much faster. Some data for fine families and universal elliptic curves has been added. A final functionality of computing Universal Elliptic Curves will be added. 
