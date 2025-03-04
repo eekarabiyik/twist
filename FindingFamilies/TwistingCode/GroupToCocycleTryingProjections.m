@@ -47,29 +47,21 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     calGAut:=GL2Lift(calG,LCM([N1,N3]));
     N:=LCM([N1,N3]);
     NG:=#BaseRing(G);
-    "1";
-    Cputime(time0);
     //When N divides NG everything is easier. Figureouthow to fix this
     if not IsDivisibleBy(NG,N) then
         G:=GL2Lift(G,LCM([NG,N]));
     end if;
-    "2";
-    Cputime(time0);
     H:=GL2Lift(H,N);
     NG:=#BaseRing(G);
     T:=SL2Intersection(G);//This is fast now.
     UNG,iotaN:=UnitGroup(Integers(NG));
     SL2:=SL2Ambient(NG);
-    "3";
-    Cputime(time0);
     //Forming the quotient calG/H. We have to make it into an abelian group so that the kernels actually work.
 
     //Defining the necessary quotient maps
     calG:=GL2Lift(calG,N);
     quocalG,quomapG:= quo<calG|H>;
     quocalGG,quomapGG:=AbelianGroup(quocalG);
-    "untiltrans:";
-    Cputime(time0);
     //Transversals are representatives from the cosets. Very useful for many things. WROOOOOONG
     GUNG:=GenericAbelianGroup(UNG);
     AA:=sub<GUNG|[Determinant(g) @@ iotaN : g in Generators(G)]:UseUserGenerators:=true>;
@@ -77,18 +69,12 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     //newgammadd:=hom<AA->G | [<Determinant(g) @@ iotaN,g>: g in Generators(G)]>;
     newgammadd:=hom<AA->quocalGG | [<Determinant(g) @@ iotaN,quomapGG(quomapG(ChangeRing(g,BaseRing(calG))))>: g in Generators(G)]>;
     gammadd:=hom<UNG->quocalGG|[newgammadd(UNG.i): i in [1..Ngens(UNG)]]>;
-    "aftertrans";
-    Cputime(time0);
     //xi:=map<{iotaN(d): d in UNG}-> G | [<Determinant(t),G!([Integers()!a:a in Eltseq(t)])>: t in K]>;
     //xii:=map<{iotaN(d): d in UNG}-> calG|[<Determinant(t),ChangeRing((xi(Determinant(t))),BaseRing(calG))>:t in K]>;
-    "some maps";
-    Cputime(time0);
     //Abelian work. gammadd here is an homomorphism whose kernel will be useful.
     //gammad:=map<{iotaN(d): d in UNG}-> quocalGG | [<Determinant(t),quomapGG(quomapG((xii(Determinant(t)))))>: t in K]>;
 
     //gammadd:=hom<UNG-> quocalGG | [gammad(iotaN(UNG.i)): i in [1..Ngens(UNG)]]>;// This is a homomorphism. With this new concept it is not a homomorphism anymore, is there a problem with the finite lift thing or something else. Would it be a homomorphism if I choose nice lifts? Do I need a lift hom with respect to codomain?
-    "gamma formed";
-    Cputime(time0);
     //Now we have some of the maps we needed. We will put all these in nice forms.
 
     //First we create Cyclotomic field and write the above maps from the Galois group.
@@ -98,9 +84,7 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     kernell:=Kernel(gammadd);
     degneeded:=Index(UNG,kernell);
     kerrr:=sub<GL1|[[iotaN(kernell.i)]: i in [1..Ngens(kernell)]]>;
-    "order of kerr";
-    GL1Order(kerrr);
-  if not GL1Order(kerrr) eq GL1Order(GL1) then 
+   if not GL1Order(kerrr) eq GL1Order(GL1) then 
 
 
     /*
@@ -117,18 +101,11 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
         end while;
           L:=OptimizedRepresentation(L); //improve presentation of field        
         */
-            "computing the fixed field";
         L,prim:=fieldfind(kerrr,KNG);
-            "computed";
-            "field is";
             //L<zz>:=L;
             L<zz>:=sub<KNG|[prim]>;
 
             //assert L subset KNG;//just find something for this please
-      Cputime(time0);
-      "find prim and check containment"; 
-        //assert L subset KNG;
-        Cputime(time0);
         /*
         OO:=RingOfIntegers(X`KG);
         A:=ChangeRing(Matrix([Eltseq(KN!a): a in Basis(OO)]),Integers());
@@ -137,27 +114,12 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
         X`KG_integral_basis_cyclotomic:=[KN!Eltseq(a): a in Rows(A)];
         X`KG_integral_basis:=[X`KG!a: a in X`KG_integral_basis_cyclotomic];
         */
-
-
-
-
-
-
-
-    "Auto and mops start";
-    Cputime(time0);
     
     GAL,iota,sigma:=AutomorphismGroup(L);
     quotientgamma,quogammamap:=quo<UNG|kernell>;
     quogamma:=hom<quotientgamma->quocalGG| [gammadd(quotientgamma.i @@ quogammamap): i in [1..Ngens(quotientgamma)]]>;
     jj:=KNG!zz;
     listinho:=Eltseq(jj);
-    "auto maps done";
-    Cputime(time0);
-//Burayakadargeldik
-
-    "field formed";
-    Cputime(time0);
     genlist:=[];
     gallist:=[];
     for i in [1..Ngens(quotientgamma)] do
@@ -170,8 +132,6 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
         _:=exists(g0){g0: g0 in GAL | sigma(g0)(zz) eq a };//This should not be negative. There were some instances it were. Be careful!!!
         Append(~gallist,g0);
     end for;
-    "exists stuff done";
-      Cputime(time0);
     galiso:=hom<quotientgamma->GAL | [gallist[i]: i in [1..Ngens(quotientgamma)]]>;
     galisoa:=Inverse(galiso);
     xi1:=hom<GAL-> calG | [(quogamma(galisoa(GAL.i))@@ quomapGG) @@ quomapG: i in [1..Ngens(GAL)]]>;//This is the cocycleish
@@ -191,11 +151,9 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     //aut:=lift_hom(aut1,N);
 
     xi:=hom<GAL-> GL(ro,L) | [<d,aut(xi1(d))>: d in GAL]>;//Note that the way we did the precomputation makes the levels match.
-    "end";
-    Cputime(time0);
 
     //xi:=hom<GAL1-> GL(#M`F0,Kfield) | [<d,AutomorphismOfModularForms(M,M`F0,xi2(d))>: d in GAL1]>;
 
-    return xi,L,GAL,sigma;
+    return xi,L,GAL,sigma,UNG,kerrr,NG;
 end intrinsic;
 

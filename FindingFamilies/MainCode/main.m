@@ -38,16 +38,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
 
     //We first start with finding the family in our database that contains G.
     print("Finding the family...");
-    //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderNew(G,T,FAM);
-    /*
-    if not GL2ContainsNegativeOne(G) then
-        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderFine(G,T,FAM);
-    else
-        
-    end if;
-    */
     famkey,famG,Gcong,calGlift,Tcong:=FamilyFinder(G,T,FAM);
-    //N:=#BaseRing(G);
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
@@ -56,7 +47,6 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
     Tcong`SL:=true;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
     printf "Computing the cocycle\n";
-    //xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,AOfMF);
     xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
     //Now the twist
     printf "Twisting the curve...\n";
@@ -138,23 +128,20 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
     if famG`M`CPname in gonality_equals_2 then
         assert assigned famG`CanModelForHyp;
         gonmodel:=famG`CanModelForHyp;
-
         gonAOfMF:=AssociativeArray();
         for i in Keys(famG`AOfMFCanModel) do
             gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
         end for;
-
-        xi,K:=GroupToCocycle(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
-
+        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
         gonpsi,gonMAT:=TwistCurve(gonmodel,xi,K);
         Pol<x>:=Parent(gonpsi[1]);
         PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,[jmap1,jmap2], T,famG`genus;
+        return psi,MAT,[jmap1,jmap2], T,famG`genus,K,famkey;
     end if;
-    return psi,MAT,[jmap1,jmap2],false,famG`genus;
+    return psi,MAT,[jmap1,jmap2],false,famG`genus,K,famkey;
 end intrinsic;
 
 

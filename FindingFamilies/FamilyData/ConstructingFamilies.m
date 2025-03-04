@@ -3,7 +3,7 @@
 This is the code for finding all groups that contain the agreeable groups up to a certain genus. 
 */
 //Details will be added.
-//Fork of zywina's code will come soon.
+//After the new intrinsic file, this one is now obsolete.
 
 AttachSpec("../spec");
 
