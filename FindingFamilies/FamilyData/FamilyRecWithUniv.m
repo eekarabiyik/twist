@@ -1,6 +1,6 @@
-//This is currently the main record we use. Might change in the future.
+//This is currently the main record we use.
 FamilyRecUniv := recformat<
-    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind :RngIntElt,
+    calG_level, B_level, calG_index, B_index, genus, sl2level, level, k, prec, commutator_index, maxprec,model_type, maxd,mind, index, numberofcusps :RngIntElt,
     //k: the weight of modular forms used.  Not used.
     //prec: the precision used for modular forms.
     //commutator_index: index of the commutator subgroup
