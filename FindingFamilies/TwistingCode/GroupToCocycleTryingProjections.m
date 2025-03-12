@@ -1,3 +1,7 @@
+//THIS IS THE MAIN ONE.
+
+
+
 // This function takes a subgroup of GL(1,Integers(N)) and an instance of Q(zeta_N)
 // and returns a simple representation of the corresponding subfield of
 // Q(zeta_N), as well as a primitive element for the extension.
