@@ -47,11 +47,12 @@ intrinsic FamilyFinder(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec, Gr
 
 }
 
-    N:=#BaseRing(G);
-    M:=#BaseRing(T);
+    
     g:=GL2Genus(T);
     T_level,T:=SL2Level(T);
     G_level,G:=GL2Level(G);
+    N:=#BaseRing(G);
+    M:=#BaseRing(T);
     //Level 1 is not liked by magma so deal with it separately.
     if T_level eq 1 then
         exists(s){s: s in [1..#FAM]| SL2Level(FAM[s]`B) eq 1};
