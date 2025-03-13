@@ -5,7 +5,7 @@ ChangeDirectory("./FindingFamilies");
 AttachSpec("../spec");
 // the file below doesn't exist 
 //FAM:=LoadFamilies(["/homes/ek693/Main/UnivEllCurve/unelcurvestuff/allfamincludingfinestuffLATEST.dat"]);
-FAM := LoadFamilies(["./FamilyDataFiles/Families1new.dat"]);
+FAM := LoadFamilies(["./FamilyDataFiles/Families1new.dat","./FamilyDataFiles/Families2new.dat"]);
 //It is enough to load Main/FindingFamilies/FamilyDataFiles/Families1new.dat and Main/FindingFamilies/FamilyDataFiles/Families2new.dat
 //for you
 //Will update these once things are optimized and clean.
@@ -16,9 +16,9 @@ k := 101;
 G := curves[k]`subgroup;
 M0 := CreateModularCurveRec(G);
 H := GL2IncludeNegativeOne(G);
-M := CreateModularCurveRec(H);
 TY := SL2Intersection(H);
-famkey := FamilyFinder(H, TY, FAM);
+famkey,_,H := FamilyFinder(H, TY, FAM);
+M := CreateModularCurveRec(H);
 M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
 _, jmap, _, _, _, _, _ := AbsoluteJmap(M);
 
