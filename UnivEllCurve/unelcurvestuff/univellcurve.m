@@ -1,9 +1,12 @@
+
+/*
 //Load  this to run the code on all curves in LMFDB
 ChangeDirectory("/homes/ek693/Main/FindingFamilies");
 AttachSpec("../spec");
 FAM:=LoadFamilies(["/homes/ek693/Main/UnivEllCurve/unelcurvestuff/allfamincludingfinestuffLATEST.dat"]);
 load "/homes/ek693/Main/UnivEllCurve/univellcurvedatalmfdb/lmfdbdatafine.m";
 curves:=make_data();
+*/
 
 //load "/homes/ek693/Main/FindingFamilies/TwistingCode/TwistingCode2.m";
 //okay it can find the family no problem.
@@ -543,7 +546,7 @@ function FindUnivECModel(G, model, j_map, f: verbose:=false)
 
 end function;
 
-
+/*
 for k in Keys(curves) do
 //if k in [190000..200000] then continue; end if;
 G:=curves[k]`subgroup;
@@ -552,7 +555,7 @@ H := GL2IncludeNegativeOne(G);
 M := CreateModularCurveRec(H);
 TY := SL2Intersection(H);
 famkey := FamilyFinder(H, TY, FAM);
-M := FindModelofXG(M : G0:=FAM[famkey]`calG);
+M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
 // Jmap or AbsoluteJmap
 
 if #BaseRing(G) eq Infinity() then continue; end if;
@@ -586,3 +589,4 @@ if #BaseRing(G) eq Infinity() then continue; end if;
         print(Realtime(time0));
         
 end for;
+*/ 
