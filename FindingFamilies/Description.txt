@@ -1,4 +1,4 @@
--This is an early version of my twisting code that classifies modualr curves up to genus 6. J-map is included. It also determines if the input has QQ-Gonality 2.
+-This is an early version of my twisting code that classifies modular curves up to genus 6. J-map is included. It also determines if the input has QQ-Gonality 2.
 -The resulting polynomials may have unnecessary cubic relations sometimes. I will fix it soon.
 -There might be mistakes, however, I am testing this on huge amounts of data. 
 -This is pretty fast, much much faster than the previous version.

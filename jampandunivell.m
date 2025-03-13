@@ -618,6 +618,8 @@ vecseq := vecseq cat (&cat [ Eltseq(Coefficient(pp,m)) : m in [-M`widths[chosenc
   C := Curve(ProjectiveSpace(Rationals(),#modforms-1),M`psi);
   return num, denom, C;
 end intrinsic;
+
+
 intrinsic RatioFromWeight3Form(M::Rec, M2::Rec, arg::List) ->
  RngMPolElt, RngMPolElt
 {Compute f^2/E_6 as an element of the function of M, where f is a weight 3 modular form for the fine curve
