@@ -41,7 +41,7 @@
   }
   Modular
   {
-    ModularErayTry.m
+    Modular.m
   }
   jampandunivell.m
 }

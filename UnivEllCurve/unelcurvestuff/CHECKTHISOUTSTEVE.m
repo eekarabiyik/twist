@@ -12,6 +12,7 @@ FAM := LoadFamilies(["./FamilyDataFiles/Families1new.dat","./FamilyDataFiles/Fam
 load "../UnivEllCurve/univellcurvedatalmfdb/lmfdbdatafine.m";
 curves:=make_data();
 
+/*
 k := 101;
 G := curves[k]`subgroup;
 M0 := CreateModularCurveRec(G);
@@ -22,11 +23,12 @@ M := CreateModularCurveRec(H);
 M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
 _, jmap, _, _, _, _, _ := AbsoluteJmap(M);
 
+*/
 
-/*
+//Here I loop over the fine curves
 for k in Keys(curves) do
-if k in [1..100] then continue; end if;
-G:=curves[k]`subgroup;
+if k in [1..100] then continue; end if;//Do not one very low level ones for trying
+G:=curves[k]`subgroup;//this is the curve
 if curves[k]`genus le 1 then continue; end if;
 if #BaseRing(G) eq Infinity() then continue; end if;
 //if GL2Index(G) eq GL2Index(GL2AgreeableClosure(G)) then continue; end if;
@@ -40,10 +42,10 @@ if #BaseRing(G) eq Infinity() then continue; end if;
         T:=SL2Intersection(G);
         H:=GL2IncludeNegativeOne(G);
         _,H:=GL2Level(H);
-        M0:=CreateModularCurveRec(G);
-        famkey,_,Hcong:=FamilyFinder(H,SL2Intersection(H),FAM);
-        M:=FindModelOfXG(CreateModularCurveRec(Hcong):G0:=FAM[famkey]`calG);
-
+        M0:=CreateModularCurveRec(G);//Modular curve of the fine group
+        famkey,_,Hcong:=FamilyFinder(H,SL2Intersection(H),FAM);//Find the family of the coarse group
+        M:=FindModelOfXG(CreateModularCurveRec(Hcong):G0:=FAM[famkey]`calG);//Compute the model for the course group. For the real computation this wont be needed since we will twist ratios.
+        //The following function should return a list of two polynomials, num and denom for the weight 3 modular form.
         FindRatio(M,M0,2: prec0:=100);//Change prec accordingly
       
       
@@ -52,4 +54,4 @@ if #BaseRing(G) eq Infinity() then continue; end if;
         print(Realtime(time0));
         
 end for;
-*/
+
