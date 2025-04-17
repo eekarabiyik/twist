@@ -510,9 +510,9 @@ end function;
 /* 
 Inputs: 
 * "G" -- congruence subgroup of SL2(Zhat) not containing -I
-* "model"
-* "j" -- list, [jnum, jdenom]
-* "f" -- list, weight 3 form in M_3(G) expressed as [fnum, fdenom]
+* "model" -- Crv 
+* "j" -- SeqEnum, [jnum, jdenom]
+* "f" -- SeqEnum, weight 3 form in M_3(G) expressed as [fnum, fdenom]
 */
 function FindUnivECModel(G, model, j_map, f: verbose:=false)
         jnum := j_map[1]; jdenom := j_map[2];
@@ -552,10 +552,11 @@ for k in Keys(curves) do
 G:=curves[k]`subgroup;
 M0 := CreateModularCurveRec(G);
 H := GL2IncludeNegativeOne(G);
-M := CreateModularCurveRec(H);
 TY := SL2Intersection(H);
-famkey := FamilyFinder(H, TY, FAM);
+famkey,_,H := FamilyFinder(H, TY, FAM);
+M := CreateModularCurveRec(H);
 M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
+C, jmap, _, _, _, _, _ := AbsoluteJmap(M);
 // Jmap or AbsoluteJmap
 
 if #BaseRing(G) eq Infinity() then continue; end if;

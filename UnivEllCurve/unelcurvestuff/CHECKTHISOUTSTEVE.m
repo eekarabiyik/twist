@@ -21,7 +21,7 @@ TY := SL2Intersection(H);
 famkey,_,H := FamilyFinder(H, TY, FAM);
 M := CreateModularCurveRec(H);
 M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
-_, jmap, _, _, _, _, _ := AbsoluteJmap(M);
+C, jmap, _, _, _, _, _ := AbsoluteJmap(M);
 
 */
 
