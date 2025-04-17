@@ -52,10 +52,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
     printf "Twisting the curve...\n";
     psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
     //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
-
-
-
-
+ 
+    //L:=FAM[k]`RelativeJMap;
+    //relmap:= PolynomialTwister(L, MAT, K);
 
     printf "Computing the jmap...\n";
     //Computing the jmap. The jmap of the representative is precomputed.
@@ -70,15 +69,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
 
     d:=Degree(num);
     mond:=MonomialsOfDegree(Pol,d);
-
     numcoef:=[MonomialCoefficient(num,m): m in mond];
     denumcoef:=[MonomialCoefficient(denum,m): m in mond];
-
     UUd := VectorSpace(K,#mond);
 
     GAL,iota,sigma:=AutomorphismGroup(K);
     B:=Basis(K);
-
     //For numerator
     for b in B do
         newnumcoef:=Matrix(K,#mond,1,[0: i in [1..#mond]]);
@@ -89,11 +85,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
             break b;
         end if;
     end for;
-
     newnum:=0;
     for i in [1..#mond] do
         newnum:=newnum+newnumcoef[i]*mond[i];
     end for;
+
+
 
     //For denomenator
     for b in B do
@@ -106,6 +103,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
         end if;
     end for;
 
+
     newdenum:=0;
     for i in [1..#mond] do
         newdenum:=newdenum+newdenumcoef[i]*mond[i];
@@ -115,11 +113,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hype
     jmap2:=newdenum;
 
     if not test_hyperelliptic then
-        return psi,MAT,[newnum,newdenum],_,_;
+        return psi,MAT,[newnum,newdenum],_,_,_,_;
     end if;
-
-
-
+   
 
 
 
@@ -198,3 +194,77 @@ intrinsic Weight3Twister(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test
     end if;
     return NewWeight3F;
 end intrinsic;
+
+/*
+
+intrinsic FindModelWithRelative(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
+{
+    Input:
+    - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
+    - T is the intersection of G with SL2(Z/NZ)
+
+    Keywords:
+    - redcub, whether to reduce the cubics (passed on to TwistCurve)
+    - test_hyperelliptic, test if X_G is hyperelliptic over Q
+
+    Output:
+    - psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above.
+      n depends on the model of the family representative used to twist G from.
+    - MAT: H90 matrix describing the twist from the family representative to G.
+    - a sequence of length 2 giving the numerator and denominator of the absolute j-map
+    - a boolean, whether X_G is hyperelliptic over Q (only returned if test_hyperelliptic is true)
+    - the genus of X_G
+}
+
+    //We first start with finding the family in our database that contains G.
+    print("Finding the family...");
+    famkey,famG,Gcong,calGlift,Tcong:=FamilyFinder(G,T,FAM);
+    printf "The family key in the database is %o\n",famkey;
+    AOfMF:=AssociativeArray();
+    for i in Keys(famG`AOfMF) do
+        AOfMF[i]:=Transpose(famG`AOfMF[i]);
+    end for;
+    Tcong`SL:=true;
+    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
+    printf "Computing the cocycle\n";
+    xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
+    //Now the twist
+    printf "Twisting the curve...\n";
+    psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
+    //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
+ 
+    L:=FAM[k]`RelativeJMap;
+    relmap:= PolynomialTwister(L, MAT, K);
+
+    printf "Computing the jmap...\n";
+    //Computing the jmap. The jmap of the representative is precomputed.
+
+   
+    if not test_hyperelliptic then
+        return psi,MAT,relmap,famG`JmapcalG,    _,_,_,_;
+    end if;
+   
+
+
+
+    printf "Computing QQ-gonality...\n";
+    //Following computes if the curve is hyperelliptic
+    if famG`M`CPname in gonality_equals_2 then
+        assert assigned famG`CanModelForHyp;
+        gonmodel:=famG`CanModelForHyp;
+        gonAOfMF:=AssociativeArray();
+        for i in Keys(famG`AOfMFCanModel) do
+            gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
+        end for;
+        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
+        gonpsi,gonMAT:=TwistCurve(gonmodel,xi,K);
+        Pol<x>:=Parent(gonpsi[1]);
+        PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
+        C:=Curve(PP,gonpsi);
+        C,mapo:=Conic(C);
+        T:=HasRationalPoint(C);
+        return psi,MAT,relmap,famG`JmapcalG, T,famG`genus,K,famkey;
+    end if;
+    return psi,MAT,relmap,famG`JmapcalG,false,famG`genus,K,famkey;
+end intrinsic;
+*/
