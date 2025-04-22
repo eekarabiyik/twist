@@ -11,6 +11,39 @@ curves:=make_data();
 //load "/homes/ek693/Main/FindingFamilies/TwistingCode/TwistingCode2.m";
 //okay it can find the family no problem.
 
+// Helper function
+// Input: C::Crv, g::RngIntElt -> DivCrvElt
+// Given a curve C of genus g, returns a divisor of low degree on C 
+function LowDegreeDivisor(C, g)
+  P1 := ProjectiveSpace(Rationals(),1);
+
+  // The P^1 case
+  E := 0;
+  phi := 0;
+  if (g eq 0) and (#DefiningEquations(C) eq 0) then
+    E := Divisor(C![1,0]);
+  end if;
+  // The pointless conic case
+  if (g eq 0) and (#DefiningEquations(C) gt 0) then
+    E := -CanonicalDivisor(C);
+  end if;
+
+  if (g ge 1) then
+    pts := PointSearch(C,100);
+    if #pts gt 0 then
+      E := Divisor(C!Eltseq(pts[1]));
+    else
+      if (g ge 1) then
+        phi := map<C -> P1 | [C.1,C.2]>;
+        D := Divisor(C,(P1![1,0])@@phi);
+        supp := Support(D);
+        E := Divisor(supp[1]);
+      end if;  
+    end if;
+  end if;
+  return E;
+end function;
+
 // Initial reduction of the coefficients A and B in V^2 = U^3 + A*U + B
 function FirstReduction(polyring, C, E, r, x, A, B)
   QC := FunctionField(C);
@@ -487,6 +520,9 @@ function KTform2(C,QC,polyring,A,B)
 end function;
 
 function FinalReduction(C,H0,QC,polyring,newA2num,newA2denom,newB2num,newB2denom)
+  Ffield := FieldOfFractions(polyring);
+  varsnames := ["x","y","z","w","t","u","v","r","s","a","b","c","d","e","f","g","h","i","k","l","m","n","o","p","q","j"];
+  AssignNames(~Ffield,[varsnames[j] : j in [1..Rank(polyring)]]);
   d := torsionorder(H0);
   a_inv := [];
   if d eq 1 then
@@ -495,29 +531,34 @@ function FinalReduction(C,H0,QC,polyring,newA2num,newA2denom,newB2num,newB2denom
   end if;
   if d eq 2 then
     lst := KTform2(C,QC,polyring,newA2num/newA2denom,newB2num/newB2denom);
-    a_inv := [0, lst[1]/lst[2], 0, lst[3]/lst[4], 0];
+    a_inv := [0, Ffield!(lst[1]/lst[2]), 0, Ffield!(lst[3]/lst[4]), 0];
     printf "Final model is a2 = (%o)/(%o), a4 = (%o)/(%o).\n",lst[1],lst[2],lst[3],lst[4];
   end if;
   if d ge 3 then
     use := Min([ e : e in Divisors(d) | e ge 3]);
     lst := KTform(C,QC,polyring,newA2num/newA2denom,newB2num/newB2denom,use);
-    a_inv := [lst[1]/lst[2], lst[3]/lst[4], lst[5]/lst[6], 0];
+    a_inv := [Ffield!(lst[1]/lst[2]), Ffield!(lst[3]/lst[4]), Ffield!(lst[5]/lst[6]), 0];
     printf "Final model is a1 = (%o)/(%o), a2 = (%o)/(%o), a3 = (%o)/(%o).\n",lst[1],lst[2],lst[3],lst[4],lst[5],lst[6];
   end if;
+
   return a_inv;
 end function;
 
 /* 
 Inputs: 
-* "G" -- congruence subgroup of SL2(Zhat) not containing -I
+* "M0" -- Rec, modular curve record for a subgroup of GL2(Z/NZ) not containing -I
 * "model" -- Crv 
 * "j" -- SeqEnum, [jnum, jdenom]
 * "f" -- SeqEnum, weight 3 form in M_3(G) expressed as [fnum, fdenom]
 */
-function FindUnivECModel(G, model, j_map, f: verbose:=false)
+function FindUnivECModel(M0, model, j_map, f: verbose:=false)
         jnum := j_map[1]; jdenom := j_map[2];
         fnum := f[1]; fdenom := f[2];
-        j := (Ffield!(num/denom));
+        polyring := PolynomialRing(Rationals(), M0`genus, "grevlex");
+        varsnames := ["x","y","z","w","t","u","v","r","s","a","b","c","d","e","f","g","h","i","k","l","m","n","o","p","q","j"];
+        AssignNames(~polyring,[varsnames[j] : j in [1..M0`genus]]);
+        Ffield := FieldOfFractions(polyring);
+        j := (Ffield!(jnum/jdenom));
         r := (Ffield!(fnum/fdenom));
         x := 1 - 1728/j;
         A := -27*r^2*x;
@@ -526,7 +567,7 @@ function FindUnivECModel(G, model, j_map, f: verbose:=false)
         // doing initial reduction
         C := model;
         QC := FunctionField(C);
-        E := LowDegreeDivisor(C, M`genus);
+        E := LowDegreeDivisor(C, M0`genus);
         if verbose then printf "Using effective divisor of degree %o", Degree(E); end if;
         newA2num, newA2denom, newB2num, newB2denom := FirstReduction(polyring, C, E, r, x, A, B);
 
@@ -540,7 +581,7 @@ function FindUnivECModel(G, model, j_map, f: verbose:=false)
                 printf "Starting B size = %o. Ending B size = %o.\n",#Sprintf("%o",B),#Sprintf("%o",newB2num/newB2denom);
         end if;
 
-        a_inv := FinalReduction(C,H0,QC,polyring,newA2num,newA2denom,newB2num,newB2denom);
+        a_inv := FinalReduction(C,M0`G,QC,polyring,newA2num,newA2denom,newB2num,newB2denom);
         if verbose then print(a_inv); end if;
         return a_inv;
 
