@@ -68,12 +68,12 @@ end for;
 
 
 k := 1000;
- G := curves[k]`subgroup;
- M0 := CreateModularCurveRec(G);
-  FamilyFinderFine(G,SL2Intersection(G),FAM);
-H := GL2IncludeNegativeOne(G);
+G := curves[k]`subgroup;
+_, _, Gcong := FamilyFinderFine(G,SL2Intersection(G),FAM);
+H := GL2IncludeNegativeOne(Gcong);
+M0 := CreateModularCurveRec(Gcong);
  TY := SL2Intersection(H);
-famkey,_,H := FamilyFinder(H, TY, FAM);
+famkey,_,H := FamilyFinder(H, SL2Intersection(H), FAM);
  M := CreateModularCurveRec(H);
  M := FindModelOfXG(M : G0:=FAM[famkey]`calG);
  C, jmap, _, _, _, _, _ := AbsoluteJmap(M);
