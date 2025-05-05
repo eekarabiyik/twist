@@ -1,19 +1,23 @@
 177,1
+V,ParallelJobs,1
 S,ProfileTimes,"Lists vertices in profile graph in order of time. You need to SetProfile(true), run something, then call this (which will SetProfile(false) before dumping)",0,0,0,0,0,0,0,82,-38,-38,-38,-38,-38
 S,PrintProfile,"Lists vertices in profile graph in order of time. You need to SetProfile(true), run something, then call this (which will SetProfile(false) before dumping)",0,0,0,0,1,0,0,-38,-38,-38,-38,-38,-38
 S,Factorization,The prime factorization of the rational number r,0,1,0,0,0,0,0,0,0,267,,82,-38,-38,-38,-38,-38
 S,GSp,The group of symplectic similitudes of degree d over F_q,0,2,0,0,0,0,0,0,0,148,,0,0,148,,178,-38,-38,-38,-38,-38
+S,PlaneCurve,"The curve in P^2 defined by f(x,y,z) = 0",0,1,0,0,0,0,0,0,0,63,,409,-38,-38,-38,-38,-38
+S,PlaneCurve,"The curve in P^2 defined by f(x,y,z) = 0, where f is specified as a list of binom(d+2,2) coefficients (in lex order matching MonomialsOfDegree so that c eq Coefficients(PlaneCurve(c)) holds)",0,1,0,0,0,0,0,0,0,82,,409,-38,-38,-38,-38,-38
 S,Eltseq,Sorted sequence of tuples representing a multiset of integers,1,0,1,198,0,148,1,0,0,0,0,0,0,0,198,,82,-38,-38,-38,-38,-38
-S,ReplaceCharacter,Efficiently replace every occurrence of the character c in s with the string d (c must be a single character but d need not be),0,3,0,0,0,0,0,0,0,298,,0,0,298,,0,0,298,,298,-38,-38,-38,-38,-38
-S,ReplaceString,Greedily replace each occurrence of string c in s with the string d,0,3,0,0,0,0,0,0,0,298,,0,0,298,,0,0,298,,298,-38,-38,-38,-38,-38
+S,ReplaceCharacter,"Efficiently replace every occurrence of the character c in s with the string d (c must be a single character but d need not be). This should be used as an alternative to SubstituteString, which scales non-linearly",0,3,0,0,0,0,0,0,0,298,,0,0,298,,0,0,298,,298,-38,-38,-38,-38,-38
+S,ReplaceString,"Greedily replace each occurrence of string c in s with the string d. This is a completely naive unoptimized implementation, but it still outperforms SubstituteString for large strings",0,3,0,0,0,0,0,0,0,298,,0,0,298,,0,0,298,,298,-38,-38,-38,-38,-38
 S,djb2,Returns the b-bit djb2 hash of s. Default value of b is 64,0,1,0,0,0,0,0,0,0,298,,148,-38,-38,-38,-38,-38
 S,PySplit,"Splits using Python semantics (different when #sep > 1, and different when sep at beginning or end)",0,2,0,0,0,0,0,0,0,298,,0,0,298,,82,-38,-38,-38,-38,-38
 S,split,"Splits the string s using the delimter d, including empty and trailing elements (equivalent to python r.split(d) in python)",0,2,0,0,0,0,0,0,0,298,,0,0,298,,82,-38,-38,-38,-38,-38
 S,getrecs,"Reads a delimited file, returns list of lists of strings (one list per line)",0,1,0,0,0,0,0,0,0,298,,82,-38,-38,-38,-38,-38
 S,putrecs,"Given a list of lists of strings, creates a colon delimited file with one list per line",1,1,1,82,1,82,0,298,2,0,0,1,0,0,0,0,82,,0,0,298,,-38,-38,-38,-38,-38,-38
+S,maxcerts,"Given a set S and a list of subsets T of S, returns a list of minimal subsets of S of cardinality at most Limit that are not contained in any of the T. This can be viewed as the floor of the lattice of subsets of S that not contained in any T",1,1,1,82,0,83,2,0,0,0,0,0,0,0,82,,0,0,83,,82,-38,-38,-38,-38,-38
 S,StringToStrings,"Given a string encoding a list of strings that do not contain commas or whitespace, e.g. ""[cat,dog]"", returns a list of the strings, e.g [ ""cat"", ""dog"" ]",0,1,0,0,0,0,0,0,0,298,,82,-38,-38,-38,-38,-38
 S,sum,Sum of a sequence (empty sum is 0),0,1,0,0,0,0,0,0,0,82,,-1,-38,-38,-38,-38,-38
-S,sum,Sum of a vector,0,1,0,0,0,0,0,0,0,192,,-1,-38,-38,-38,-38,-38
+S,sum,Sum over a vector,0,1,0,0,0,0,0,0,0,192,,-1,-38,-38,-38,-38,-38
 S,prod,Product of a sequence (empty product is 1),0,1,0,0,0,0,0,0,0,82,,-1,-38,-38,-38,-38,-38
 S,prod,Product of a vector,0,1,0,0,0,0,0,0,0,192,,-1,-38,-38,-38,-38,-38
 S,strip,"Strips spaces and carraige returns from string; used to be faster than StripWhiteSpace, now that StripWhiteSpace is faster we just call it",0,1,0,0,0,0,0,0,0,298,,298,-38,-38,-38,-38,-38
@@ -41,6 +45,7 @@ S,OrderStats,Multiset of order statistics of elements of the group G,0,1,0,0,0,0
 S,CyclicGenerators,A list of generators of the distinct cyclic subgroups of the finite abelian group G,0,1,0,0,0,0,0,0,0,107,,82,-38,-38,-38,-38,-38
 S,ConjugateIntersection,"Given finite subgroups H1 and H2 of a group G, returns a largest subgroup of G contained in a conjugate of H1 and a conjugate of H2",0,3,0,0,0,0,0,0,0,-27,,0,0,-27,,0,0,-27,,-27,-38,-38,-38,-38,-38
 S,ConjugateCompositum,"Given subgroups H1 and H2 of G, returns a smallest subgroup of G that contains a conjugate of H1 and a conjugate of H2",0,3,0,0,0,0,0,0,0,-27,,0,0,-27,,0,0,-27,,-27,-38,-38,-38,-38,-38
+S,getval,Returns X[k] if it is defined and [] (or whatever the optional argument missing is set to) otherwise (analog of the get method in Python),0,2,0,0,0,0,0,0,0,-1,,0,0,-1,,-1,-38,-38,-38,-38,-38
 S,IndexFibers,Given a list of objects S and a function f on S creates an associative array satisfying A[f(s)] = [t:t in S|f(t) eq f(s)],0,2,0,0,0,0,0,0,0,41,,0,0,82,,457,-38,-38,-38,-38,-38
 S,IndexFibers,Given a list of objects S and a function f on S creates an associative array satisfying A[f(s)] = [t:t in S|f(t) eq f(s)],0,2,0,0,0,0,0,0,0,41,,0,0,168,,457,-38,-38,-38,-38,-38
 S,IndexFile,"Loads file with colon-delimited columns (or as specified by Delimiter) creating an AssociativeArray with key specified by keys (a column index or list of column indexes) and contents determined by data, which should be either a column index or list of column indexes (empty list means entire record)",0,2,0,0,0,0,0,0,0,-1,,0,0,298,,457,-38,-38,-38,-38,-38
@@ -54,17 +59,26 @@ S,MinimizeGenerators,Given a finite group G tries to reduce the number of genera
 S,RegularRepresentation,The regular representation of H as a permutation group of degree #H,0,1,0,0,0,0,0,0,0,-27,,224,-38,-38,-38,-38,-38
 S,HurwitzClassNumber,"The Hurwitz class number of positive definite binary quadratic forms of discriminant -N with each class C counted with multiplicity 1/#Aut(C), extended by Zagier to H(0)=-1/12 and H(-u^2)=-u/2, with H(-n) = 0 for all nonsquare n>0",0,1,0,0,0,0,0,0,0,148,,267,-38,-38,-38,-38,-38
 S,KroneckerClassNumber,"The sum of the class numbers of the discriminants DD that divide the given imaginary quadratic discriminant D (this is not the same as the Hurwitz class number of -D, in particular, it is always an integer)",0,1,0,0,0,0,0,0,0,148,,148,-38,-38,-38,-38,-38
-S,Log,"Given a,b in (Z/nZ)* returns least nonnegative x such that a^x = b or -1 if no such x exists",0,2,0,0,0,0,0,0,0,321,,0,0,321,,148,-38,-38,-38,-38,-38
+S,split,"The multiset of pairs <d,e> where d is the residue field degree and e is the ramification index of the primes above p in the number field defined by the monic irreducible polynomial f",0,2,0,0,0,0,0,0,0,148,,0,0,312,,198,-38,-38,-38,-38,-38
+S,Log,"Given a,b in (Z/nZ)*, returns least nonnegative x such that a^x = b or -1 if no such x exists",0,2,0,0,0,0,0,0,0,321,,0,0,321,,148,-38,-38,-38,-38,-38
+S,MinimalContractions,"Given a multiset p of integers representing a partititon of n with k blocks, returns the set of partitions of n with k-1 blocks of which p is a refinement",1,0,1,198,0,148,1,0,0,0,0,0,0,0,198,,83,-38,-38,-38,-38,-38
+S,Contractions,"Given a multiset p of integers representing a partititon of n, returns the set of partitions of n with k blocks of which p is a refinement",1,0,1,198,0,148,2,0,0,0,0,0,0,0,148,,0,0,198,,83,-38,-38,-38,-38,-38
+S,Contractions,"Given a multiset p of integers representing a partititon of n, returns the set of partitions of n of which p is a refinement",1,0,1,198,0,148,1,0,0,0,0,0,0,0,198,,83,-38,-38,-38,-38,-38
+S,CommonContractions,"Given a sequence of multisets p of integers representing a partititon of n, returns the set of partitions of n that are refined by every element of S",1,0,1,82,1,198,0,148,1,0,0,0,0,0,0,0,82,,83,-38,-38,-38,-38,-38
+S,MinimalCommonContractions,"Given a sequence of multisets of integers representing partitions of some integer n, returns the set T of partitions of n with k blocks that are refined by every member of S with k maximized subject to ensuring T is non-empty. Note that there may be partitions with less than k blocks that are refined by every element of S but not by any element of T",1,0,1,82,1,198,0,148,1,0,0,0,0,0,0,0,82,,83,-38,-38,-38,-38,-38
 S,C4C6Invariants,Returns the c4 and c6 invariants of the specified elliptic curve E/Q (assumes E is defined by an integral model),1,0,1,334,0,262,1,0,0,0,0,0,0,0,334,,319,319,-38,-38,-38,-38
 S,GetFilenames,Return the filenames where such intrinsics are defined,0,1,0,0,0,0,0,0,0,96,,82,-38,-38,-38,-38,-38
 S,WriteStderr,write to stderr,0,1,0,0,1,0,0,0,0,298,,-38,-38,-38,-38,-38,-38
 S,WriteStderr,write to stderr,0,1,0,0,1,0,0,0,0,447,,-38,-38,-38,-38,-38,-38
+S,Coefficients,"Returns [Coefficients(f),Coefficients(h)] for the hyperelliptic curve y^+h(x)y = f(x)",0,1,0,0,0,0,0,0,0,338,,82,-38,-38,-38,-38,-38
+S,Coefficients,Returns dense list of coefficients of the defining polynomial of C (in lex order matching MonomialsOfDegree),0,1,0,0,0,0,0,0,0,409,,82,-38,-38,-38,-38,-38
+S,CoefficientString,Returns a string encoding the cofficients of the curve C,0,1,0,0,0,0,0,0,0,371,,82,-38,-38,-38,-38,-38
 S,NormalizedDixmierOhnoInvariants,"Normalized Dixmier-Ohno invaraints of smooth plane quartic f(x,y,z)=0 defined over Q",0,1,0,0,0,0,0,0,0,63,,82,-38,-38,-38,-38,-38
 S,NormalizedShiodaInvariants,"Normalized Shioda invariants of genus 3 hyperelliptic curve (the invariants must lie in Q, but the curve need not be defined over Q)",0,1,0,0,0,0,0,0,0,338,,82,-38,-38,-38,-38,-38
 S,NormalizedShiodaInvariants,"Normalized Shioda invariants of genus 3 hyperelliptic curve (the invariants must lie in Q, but the curve need not be defined over Q)",0,2,0,0,0,0,0,0,0,312,,0,0,312,,82,-38,-38,-38,-38,-38
 S,SPQInvariants,"Normalized Dixmier-Ohno invaraints of smooth plane quartic f(x,y,z)=0 defined over Q",0,1,0,0,0,0,0,0,0,63,,82,-38,-38,-38,-38,-38
 S,SPQInvariants,"Normalized Dixmier-Ohno invaraints of smooth plane quartic f(x,y,z)=0 defined over Q",0,1,0,0,0,0,0,0,0,298,,82,-38,-38,-38,-38,-38
-S,SPQIsIsomorphic,"Tests isomorphism of smooth plane curves f(x,y,z)=0 by computing a matrix M in GL(3,F) such that f1^M is a scalar multiple of f2",0,2,0,0,0,0,0,0,0,63,,0,0,63,,36,180,-38,-38,-38,-38
+S,SPQIsIsomorphic,"Tests isomorphism of smooth plane curves f(x,y,z)=0 by computing a matrix M in GL(3,F) such that f1^M is a scalar multiple of f2. Original implementation due to Michael Stoll",0,2,0,0,0,0,0,0,0,63,,0,0,63,,36,180,-38,-38,-38,-38
 S,MonicQuadraticRoots,Returns the complete list of solutions to x^2+bx+c = 0 in Z/p^eZ for p prime and e ge 1 (does not verify the primality of p),0,4,0,0,0,0,0,0,0,-1,,0,0,148,,0,0,148,,0,0,148,,82,-38,-38,-38,-38,-38
 S,MonicQuadraticRoots,Returns the complete list of solutions to x^2+bx+c = 0 in Z/mZ,0,3,0,0,0,0,0,0,0,148,,0,0,148,,0,0,148,,82,-38,-38,-38,-38,-38
 S,ChangeRing,Given f = sum a_i*x^i returns sum pi(a_i)*x^i,0,2,0,0,0,0,0,0,0,175,,0,0,312,,312,-38,-38,-38,-38,-38
@@ -76,3 +90,4 @@ S,TracesToLPolynomial,"Given a sequence of Frobenius traces of a genus g curve o
 S,PointCountsToLPolynomial,"Given a sequence of point counts of a genus g curve over Fq,Fq^2,...,Fq^g returns the corresponding L-polynomial",1,0,1,82,0,148,2,0,0,0,0,0,0,0,148,,0,0,82,,312,-38,-38,-38,-38,-38
 S,LPolynomialToTraces,"Returns the sequence of Frobenius traces for a genus g curve over Fq,Fq^2,...,Fq^g corresponding to the givien L-polynomial of degree 2g (or just over Fq,..Fq^d if d is specified)",0,1,0,0,0,0,0,0,0,312,,82,148,-38,-38,-38,-38
 S,LPolynomialToPointCounts,"Returns the sequence of point counrs of a genus g curve over Fq,Fq^2,...,Fq^g corresponding to the givien L-polynomial of degree 2g (or just over Fq,..Fq^d if d is specified)",0,1,0,0,0,0,0,0,0,312,,82,148,-38,-38,-38,-38
+S,ParallelJobs,"Runs the specified cmd (which may contain multiple ;-terminated Magma commands) in parallel across the specified number of jobs using the specified number of workers (each as a separate process), using GNU parallel if the number of workers is greater than 1. The string jobid will be set to 0,1,...,jobs-1 in each job; cmd can use this to distinguish the job it is running. The optional string infile can used to specify that job n is to be run only when infile_n is nonempty. The optional string vkey can be used to propagate a verbosity setting into workers",0,3,0,0,1,0,0,0,0,148,,0,0,148,,0,0,298,,-38,-38,-38,-38,-38,-38
