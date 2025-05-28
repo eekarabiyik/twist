@@ -51,15 +51,15 @@ intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
     N3,T:=SL2Level(T);
     NewN:=LCM([N1,N2,N3,N]);
     NewN;
-    "alala";
-    Cputime(tttt);
+
+
     GL1:=GL1Lift(GL1,NewN);
     realgamma:=lift_hom(realgamma,NewN);
     calG:=GL2Lift(calG,NewN);
     G:=GL2Lift(G,NewN);
     T:=SL2Lift(T,NewN);
-    Cputime(tttt);
-    "asdasd";
+
+
     /*
     listofelements:=[];
     for d in GL1 do
@@ -67,23 +67,24 @@ intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
         listofelements:=listofelements cat [<d,g>];
     end for;
     */    
-    
+    "Forming the determinant map";
     detmapp:=hom<G->GL1|[<g,Matrix([[Determinant(g)]])>: g in Generators(G)]>;
-    "bsad";
-    Cputime(tttt);
+
+
     //tttxi:=map<GL1>;
     //Trans:=Transversal(G, T); 
  // Note: Could precompute this if it is slow. this is ofcourse isomorphic to the UN
     //assert #Trans eq #GL1;
     // The function xi: (Z/N)^* -> Gc maps each d to a matrix in Gc with determinant d.
-    "map";
+    "Inverse Determinant map";
     txi:=map<{d: d in GL1}-> G | [<d,d @@ detmapp >: d in GL1]>; 
     //txi:=map<{d: d in GL1}-> G | listofelements>; 
-    "maps2";
+
     Cputime(tttt); // for each number give a matrix whose determinant is that
     // Note:  Could precompute this if it is slow
     S:=Generators(GL1);
     gens:=[];
+    "Forming the group";
     for u in S do
         d:=Integers()!u[1][1]; 
         g:=GL(2,Integers(NewN))! txi(u); // element of G mod N with determinant d
@@ -94,6 +95,7 @@ intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
         g:=h*g;
         gens:=gens cat [g];
     end for;
+    "Done";
     Cputime(tttt);
     gens:= [SL(2,Integers(NewN))!g : g in Generators(T)] cat gens;
 return NewN, gens;

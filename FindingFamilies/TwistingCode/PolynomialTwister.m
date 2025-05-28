@@ -10,8 +10,8 @@ intrinsic PolynomialTwister(L::SeqEnum, MAT, K) -> SeqEnum
         B:=Basis(K);
         s:=NumberOfRows(MAT);
         Pol<[x]>:=PolynomialRing(K,s);
-        "LLL";
-        L;
+        //"LLL";
+        //L;
    
 
 

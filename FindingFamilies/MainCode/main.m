@@ -195,7 +195,6 @@ intrinsic Weight3Twister(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test
     return NewWeight3F;
 end intrinsic;
 
-/*
 
 intrinsic FindModelWithRelative(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
 {
@@ -232,8 +231,11 @@ intrinsic FindModelWithRelative(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=tru
     printf "Twisting the curve...\n";
     psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
     //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
- 
-    L:=FAM[k]`RelativeJMap;
+    if assigned famG`RelativeJMap then
+    L:=famG`RelativeJMap;
+    else 
+    L:=famG`jmap;
+    end if;
     relmap:= PolynomialTwister(L, MAT, K);
 
     printf "Computing the jmap...\n";
@@ -241,7 +243,7 @@ intrinsic FindModelWithRelative(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=tru
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,famG`JmapcalG,    _,_,_,_;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_;
     end if;
    
 
@@ -263,8 +265,7 @@ intrinsic FindModelWithRelative(G::GrpMat, T::GrpMat, FAM::SeqEnum : redcub:=tru
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,famG`JmapcalG, T,famG`genus,K,famkey;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey;
     end if;
-    return psi,MAT,relmap,famG`JmapcalG,false,famG`genus,K,famkey;
+    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey;
 end intrinsic;
-*/
