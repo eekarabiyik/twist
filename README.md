@@ -1,4 +1,4 @@
-# Genus6
+# A Classification of Modular Curves
 ATTENTION: THIS REPO IS RAPIDLY CHANGING. DO NOT BELIEVE ANYTHING IT SAYS! ONCE EVERYTHING IS IN PLACE THIS SENTENCE WILL BE REMOVED.
 This repository contains the classification of modular curves upto genus 24 in terms of families. 
 
