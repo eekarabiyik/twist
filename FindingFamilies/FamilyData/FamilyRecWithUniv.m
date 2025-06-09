@@ -21,7 +21,8 @@ FamilyRecUniv := recformat<
     //oneelement: True if B=calG meet SL2(Zhat) else false.
     CPname: MonStgElt,
     //CPname: CP label of calG (not of H!)
-    M, calGModCurve, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, AOfMFCanModel, CanModelForHyp, RelativeJMap, JmapcalG, parentcalG, skeleton, parentrelmapcalG, label, weight3form,
+    M, calGModCurve, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, AOfMFCanModel, CanModelForHyp, RelativeJMap, JmapcalG, parentcalG, skeleton, parentrelmapcalG, label, weight3form, calG_cangen, B_cangen, H_cangen,
+    Hconj,Bconj,calGconj,
     extra1,extra2,extra3,extra4,extra5
     //M: the modular curve record of the representative H
     //calGModCurve: modular curve record of calG. Will be used for relative j-maps
@@ -35,6 +36,11 @@ FamilyRecUniv := recformat<
     //skeleton: A list consisting of labels. Each next label is the parent of the previous one. This goes all the way to P^1
     //parentrelmapcalG: The map X_calG -> X_parent
     //label: label of calG 
+    //weight3form: a weight 3 modular form written as a rational function.
+    //cangens are the corresponding canonical generators
+    //conjs are the conjugators
+
+    //Many of these att's will be empty. 
     >;
 
 
@@ -61,7 +67,7 @@ intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CP
     //B_level:=SL2Level(B);
     //calG_index:=Index(GL(2,Integers(calG_level)),ChangeRing(calG,Integers(calG_level)));
     //B_index:=Index(SL(2,Integers(B_level)),ChangeRing(B,Integers(B_level)));
-    //genus:=GL2Genus(B);
+    genus:=GL2Genus(B);
     //no need to do all these computations anymore they are all done somewhere or worst case they are in lmfdb.
 
     calG_gens:=[Eltseq(g): g in Generators(calG)];
@@ -69,7 +75,7 @@ intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CP
     F`W:=W;
     //F`calG_level:=calG_level;
     //F`B_level:=B_level;
-    //F`genus:=genus;
+    F`genus:=genus;
     F`calG_gens:=calG_gens;
     F`B_gens:=B_gens;
     F`AOfMF:=AssociativeArray();

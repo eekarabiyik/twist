@@ -7,16 +7,13 @@
   {
     FamilyData
     {
-      ConstructingFamiliesIntrinsic.m
+      ConstructingFamiliesIntrinsicRelativeMorphismFINAL.m
       FamilyRecWithUniv.m
       LoadData.m
     }
     FamilyFinder
     {
-      AgreeableClosure.m
-      FamilyFinder.m
       FamilyFinderMain.m
-      FamilyFinderMainFine.m
     }
     TwistingCode
     {
@@ -25,6 +22,7 @@
       TwistingCode.m
       RandomCocycleCreator.m
       GroupToCocycleTryingProjections.m
+      PolynomialTwister.m
     }
     MainCode
     {

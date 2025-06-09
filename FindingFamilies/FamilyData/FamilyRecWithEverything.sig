@@ -1,2 +1,0 @@
-177,0
-S,CreateFamilyRecFinal,"Input: calG : an agreeable subgroup of GL2(Zhat) 	B : an open subgroup of SL2(Zhat) such that [calG,calG] subseteq B subseteq SL2 meet calG Hc : the commutator subgroup of calG W : ? CPname : the name of the intersection with SL2 in the Cummings-Pauli database Output: A record of type ""FamilyRec"" with the following entries computed: calG, B, calG_level, B_level, calG_gens, B_gens, W, genus, AOfMF, commutator_sub, CPname",0,5,0,0,0,0,0,0,0,298,,0,0,178,,0,0,178,,0,0,178,,0,0,178,,270,-38,-38,-38,-38,-38
