@@ -63,8 +63,8 @@ intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CP
  }
 
     F := rec<FamilyRecUniv | calG:= calG, B:=B >;
-    //calG_level:=GL2Level(calG);
-    //B_level:=SL2Level(B);
+    calG_level:=GL2Level(calG);
+    B_level:=SL2Level(B);
     //calG_index:=Index(GL(2,Integers(calG_level)),ChangeRing(calG,Integers(calG_level)));
     //B_index:=Index(SL(2,Integers(B_level)),ChangeRing(B,Integers(B_level)));
     genus:=GL2Genus(B);
@@ -73,8 +73,8 @@ intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CP
     calG_gens:=[Eltseq(g): g in Generators(calG)];
     B_gens:=[Eltseq(g): g in Generators(B)];
     F`W:=W;
-    //F`calG_level:=calG_level;
-    //F`B_level:=B_level;
+    F`calG_level:=calG_level;
+    F`B_level:=B_level;
     F`genus:=genus;
     F`calG_gens:=calG_gens;
     F`B_gens:=B_gens;

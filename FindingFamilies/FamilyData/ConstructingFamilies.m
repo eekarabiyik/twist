@@ -295,7 +295,6 @@ function gl2QImagesForFamiliiesEray(GGG,H)
 end function;
 
 
-  if verbose then printf "Using effective divisor of degree"; end if;
 
 intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodels:=true) -> SeqEnum
 {Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
@@ -413,7 +412,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
         a:=a+1;
     end for;
 
-if verbose then printf "Find Potential Family Records"; end if;
+if verbose then printf "Find Potential Family Records\n"; end if;
 FAM1:=AssociativeArray();
 level1things:=0;
 for k in Keys(AllAgreeableGroups) do
@@ -435,7 +434,7 @@ for k in Keys(AllAgreeableGroups) do
         FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
 end for;
 
-if verbose then printf "Creating Family Records for those satisfying the correct genus."; end if;
+if verbose then printf "Creating Family Records for those satisfying the correct genus.\n"; end if;
 
 BS:=AssociativeArray();
 a:=1;
@@ -452,7 +451,7 @@ for k in Keys(FAM1) do
         end for;
     end if;
 end for;
-if verbose then printf "Fixing the levels and genus"; end if;
+if verbose then printf "Fixing the levels and genus\n"; end if;
 
 for k in Keys(BS) do
     if BS[k]`calG_level eq 1 then 
@@ -470,7 +469,7 @@ end for;
 FAM:=BS;
 
 
-if verbose then printf "Finding Representatives with full determinant"; end if;
+if verbose then printf "Finding Representatives with full determinant\n"; end if;
 
 for k in Keys(FAM) do
     if not assigned FAM[k]`H then
@@ -488,9 +487,8 @@ for k in Keys(FAM) do
 end for;
 
 
-print(#FAM);
 
-if verbose then printf "Getting rid of redundant families"; end if;
+if verbose then printf "Getting rid of redundant families\n"; end if;
 
 for k in Keys(FAM) do
     F:=FAM[k];
@@ -543,7 +541,7 @@ for k in Keys(FAM) do
                 Bi`SL:=true;
                 Bi:=SL2Lift(Bi,N);
                 if  Bi eq Bt then
-                    if verbose then printf "key %o is redundant!\n",t; end if;
+                    //if verbose then printf "key %o is redundant!\n",t; end if;
                     keys:= keys diff {t};
                     removed:=removed join {t};
                 end if;
@@ -586,11 +584,11 @@ for k in Keys(FAM) do
 end for; 
 
 if computemodels then
-if verbose then printf "Computing the models"; end if;
+if verbose then printf "Computing the models\n"; end if;
 
 for k in Keys(FAM) do
     
-    if assigned FAM[k]`H and not assigned FAM[k]`M then
+    if assigned FAM[k]`H and not assigned FAM[k]`M and not assigned FAM[k]`calGModCurve then
 
         assert assigned FAM[k]`fine;
         if FAM[k]`fine then continue; end if;
@@ -624,12 +622,12 @@ for k in Keys(FAM) do
 
 end for;
 
-if verbose then printf "Computing Relative Jmaps"; end if;
+if verbose then printf "Computing Relative Jmaps\n"; end if;
 
 
 
 for k in Keys(FAM) do 
-    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M then
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
         if FAM[k]`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
         if #FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0 then continue; end if;//Gets stuck sometimes
         G:=FAM[k]`H;
@@ -641,10 +639,10 @@ for k in Keys(FAM) do
     end if;
 end for;
 
-if verbose then printf "Computing the Jmaps"; end if;
+if verbose then printf "Computing the Jmaps\n"; end if;
 
   for k in Keys(FAM) do
-        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
+        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap and not assigned FAM[k]`jmap then
             require assigned FAM[k]`M : "The modular curve should have been computed.";
             print(k);
             a,b:=AbsoluteJmap(FAM[k]`M);
@@ -655,14 +653,14 @@ if verbose then printf "Computing the Jmaps"; end if;
 
 
 
-if verbose then printf "Computation for the gonality 2 modular curves"; end if;
+if verbose then printf "Computation for the gonality 2 modular curves\n"; end if;
 
 for k in Keys(FAM) do
     if assigned FAM[k]`H and not FAM[k]`fine then
          G:=FAM[k]`H;
         calG:=FAM[k]`calG;
         //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
-     if FAM[k]`M`CPname in gonality_equals_2 then
+     if FAM[k]`M`CPname in gonality_equals_2 and not assigned FAM[k]`CanModelForHyp then
         FAM[k]`CanModelForHyp:=FindCanonicalModel(CreateModularCurveRec(FAM[k]`H));
     end if; 
     end if;
@@ -670,7 +668,7 @@ end for;
 
 
 for k in Keys(FAM) do
-    if assigned FAM[k]`H and assigned FAM[k]`CanModelForHyp then
+    if assigned FAM[k]`H and assigned FAM[k]`CanModelForHyp and not assigned FAM[k]`AOfMFCanModel then
         H:=FAM[k]`H;
         calG:=FAM[k]`calG;
         FAM[k]`AOfMFCanModel:=AssociativeArray();
@@ -687,7 +685,7 @@ for k in Keys(FAM) do
 end for;
 end if;
 
-if verbose then printf "Done!"; end if;
+if verbose then printf "Done!\n"; end if;
 
 
 
