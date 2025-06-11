@@ -2,8 +2,7 @@
 /*
 This is the code for finding all groups that contain the agreeable groups up to a certain genus. 
 */
-//Details will be added.
-//Fork of zywina's code will come soon.
+
 
 
 
@@ -296,9 +295,9 @@ function gl2QImagesForFamiliiesEray(GGG,H)
 end function;
 
 
+  if verbose then printf "Using effective divisor of degree"; end if;
 
-
-intrinsic FindAllFamilies(r::Rec, genus::RngIntElt) -> SeqEnum
+intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodels:=true) -> SeqEnum
 {Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
     if r`genus gt genus then return []; end if;
     if r`level ne 1 then 
@@ -336,7 +335,6 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt) -> SeqEnum
     iota:=hom<H->Q | [ alpha[1](iota1(H.i)) * alpha[2](iota2(H.i)) : i in [1..Ngens(H)] ] >;
 
     assert #Q*SL2Index(H)/index1 eq #Q2;
-    //Okay makes sense -Eray
     //comm_map[r`name]:=iota;
     //comm_level[r`name]:=M;  
      
@@ -415,7 +413,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt) -> SeqEnum
         a:=a+1;
     end for;
 
-"Find Potential Family Records";
+if verbose then printf "Find Potential Family Records"; end if;
 FAM1:=AssociativeArray();
 level1things:=0;
 for k in Keys(AllAgreeableGroups) do
@@ -437,8 +435,8 @@ for k in Keys(AllAgreeableGroups) do
         FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
 end for;
 
+if verbose then printf "Creating Family Records for those satisfying the correct genus."; end if;
 
-"Creating Family Records for those satisfying the correct genus.";
 BS:=AssociativeArray();
 a:=1;
 for k in Keys(FAM1) do
@@ -454,7 +452,8 @@ for k in Keys(FAM1) do
         end for;
     end if;
 end for;
-"Fixing the levels and genus";
+if verbose then printf "Fixing the levels and genus"; end if;
+
 for k in Keys(BS) do
     if BS[k]`calG_level eq 1 then 
          BS[k]`calG:=GL2Project(BS[k]`calG,2); 
@@ -471,8 +470,8 @@ end for;
 FAM:=BS;
 
 
+if verbose then printf "Finding Representatives with full determinant"; end if;
 
-"Finding Representatives with full determinant";
 for k in Keys(FAM) do
     if not assigned FAM[k]`H then
         FAM[k]`B`SL:=true;
@@ -491,8 +490,8 @@ end for;
 
 print(#FAM);
 
+if verbose then printf "Getting rid of redundant families"; end if;
 
-"Getting rid of redundant families";
 for k in Keys(FAM) do
     F:=FAM[k];
     calG:=F`calG;
@@ -544,7 +543,7 @@ for k in Keys(FAM) do
                 Bi`SL:=true;
                 Bi:=SL2Lift(Bi,N);
                 if  Bi eq Bt then
-                    printf "key %o is redundant!\n",t;
+                    if verbose then printf "key %o is redundant!\n",t; end if;
                     keys:= keys diff {t};
                     removed:=removed join {t};
                 end if;
@@ -566,50 +565,40 @@ for k in Keys(FAM) do
 end for;
 
 FAM:=NonRedFam;
+if verbose then printf "There are %o families\n", #FAM; end if;
 
-printf "There are %o families\n", #FAM;
 
 
 //Computing some properties
 for k in Keys(FAM) do
-    FAM[k]`calG_level:=GL2Level(FAM[k]`calG);
-    FAM[k]`B_level:=SL2Level(FAM[k]`B);
-    if assigned FAM[k]`H then
-        FAM[k]`fine := not GL2ContainsNegativeOne(FAM1[k]`H);
+    if not assigned FAM[k]`calG_index then FAM[k]`calG_index:=GL2Index(FAM[k]`calG); end if;
+    if assigned FAM[k]`H and not assigned FAM[k]`fine then
+        if assigned FAM[k]`H then FAM[k]`fine:= not GL2ContainsNegativeOne(FAM[k]`H); end if;
+        if assigned FAM[k]`fine and FAM[k]`fine eq true then FAM[k]`correspondingCoarse:=GL2IncludeNegativeOne(FAM[k]`H); end if;
     end if;
+    if assigned FAM[k]`H and not assigned FAM[k]`index then FAM[k]`index:=GL2Index(FAM[k]`H); end if;
     if assigned FAM[k]`H then FAM[k]`numberofcusps:=GL2CuspCount(FAM[k]`H); end if;
-    FAM[k]`calG_index:=GL2Index(FAM[k]`calG);
-    if assigned FAM[k]`H and assigned FAM[k]`fine and FAM[k]`fine eq false and #BaseRing(FAM1[k]`H) eq #BaseRing(FAM1[k]`calG) and FAM[k]`calG eq FAM[k]`H then
+    if assigned FAM[k]`H and assigned FAM[k]`fine and FAM[k]`fine eq false and #BaseRing(FAM[k]`H) eq #BaseRing(FAM[k]`calG) and FAM[k]`calG eq FAM[k]`H then
         FAM[k]`oneelement:=true;
-    else 
-        FAM[k]`oneelement:=true;
+    else
+        FAM[k]`oneelement:=false;
     end if;
-end for;
+end for; 
 
+if computemodels then
+if verbose then printf "Computing the models"; end if;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"Computing the models";
 for k in Keys(FAM) do
-    if assigned FAM[k]`H then
+    
+    if assigned FAM[k]`H and not assigned FAM[k]`M then
+
+        assert assigned FAM[k]`fine;
+        if FAM[k]`fine then continue; end if;
+
         G:=FAM[k]`H;
         calG:=FAM[k]`calG;
-        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if; //The family consisting of only the j line.
+        //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if; //The family consisting of only the j line.
+
         if assigned G`SL then delete G`SL; end if;
         if assigned calG`SL then delete calG`SL; end if;
         if not GL2ContainsNegativeOne(calG) then continue k; end if;
@@ -619,11 +608,11 @@ for k in Keys(FAM) do
         //printf "Computing the model\n";
         M:=FindModelOfXG(M: G0:=calG);
         FAM[k]`M:=M;
-        if not GL2Level(calG) eq 1 then 
+        //if not GL2Level(calG) eq 1 then 
         MG:=CreateModularCurveRec(calG);
         MG:=FindModelOfXG(MG);
         FAM[k]`calGModCurve:=MG;
-         end if;
+        // end if;
         //"Computing AutOfMF";
         H:=G;
         calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
@@ -631,18 +620,20 @@ for k in Keys(FAM) do
         for i in [1..Ngens(calG)] do
             FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
         end for;    
-
     end if;
+
 end for;
 
+if verbose then printf "Computing Relative Jmaps"; end if;
 
 
-"Computing Relative Jmaps";
+
 for k in Keys(FAM) do 
-    if assigned FAM[k]`H and not FAM[k]`fine then
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M then
+        if FAM[k]`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
+        if #FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0 then continue; end if;//Gets stuck sometimes
         G:=FAM[k]`H;
         calG:=FAM[k]`calG;
-        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
         M:=FAM[k]`M;
         MG:=FAM[k]`calGModCurve;
         L:=FindMorphism(M,MG);
@@ -650,34 +641,27 @@ for k in Keys(FAM) do
     end if;
 end for;
 
+if verbose then printf "Computing the Jmaps"; end if;
 
-
-"Computing the Jmaps";
-for k in Keys(FAM) do 
-    if assigned FAM[k]`H and GL2ContainsNegativeOne(FAM[k]`H) then
-         G:=FAM[k]`H;
-        calG:=FAM[k]`calG;
-        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
-        M:=FAM[k]`M;
-        C, jmap, model_type, F0, M1,mind,maxd, maxprec:=AbsoluteJmap(M);
-        FAM[k]`jmap:=jmap;
-        FAM[k]`model_type:=model_type;
-        FAM[k]`M:=M1;
-        FAM[k]`mind:=mind;
-        FAM[k]`maxd:=maxd;
-        FAM[k]`maxprec:=maxprec;
-    end if;
-end for;
+  for k in Keys(FAM) do
+        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
+            require assigned FAM[k]`M : "The modular curve should have been computed.";
+            print(k);
+            a,b:=AbsoluteJmap(FAM[k]`M);
+            FAM[k]`jmap:=b;
+        end if;
+   end for;
 
 
 
 
-"Computation for the gonality 2 modular curves";
+if verbose then printf "Computation for the gonality 2 modular curves"; end if;
+
 for k in Keys(FAM) do
-    if assigned FAM[k]`H and GL2ContainsNegativeOne(FAM[k]`H) then
+    if assigned FAM[k]`H and not FAM[k]`fine then
          G:=FAM[k]`H;
         calG:=FAM[k]`calG;
-        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
+        //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
      if FAM[k]`M`CPname in gonality_equals_2 then
         FAM[k]`CanModelForHyp:=FindCanonicalModel(CreateModularCurveRec(FAM[k]`H));
     end if; 
@@ -701,10 +685,10 @@ for k in Keys(FAM) do
         end for;    
     end if;
 end for;
+end if;
 
+if verbose then printf "Done!"; end if;
 
-
-"Done!";
 
 
 return [FAM[k]: k in Keys(FAM)];
@@ -723,22 +707,7 @@ end intrinsic;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
 
 
 intrinsic FindAllFamiliesNoModel(r::Rec, genus::RngIntElt) -> SeqEnum 
@@ -1011,8 +980,20 @@ FAM:=NonRedFam;
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
 
+*/
 
 
+
+
+
+
+
+
+
+
+
+
+/*
 //Make Verbose
 intrinsic FindAllModelGivenFamily(FAM::SeqEnum) -> SeqEnum
 {List of fams outputs with models computed}
@@ -1073,7 +1054,7 @@ for k in Keys(FAM) do
 
 end for;
 printf "Total time for computing models: %o\n",Cputime(t);
-
+*/
 
 
 
@@ -1121,7 +1102,7 @@ for k in Keys(FAM) do
 end for;
 */
 
-
+/*
 "Computing Relative Jmaps";
 for k in Keys(FAM) do 
     if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M then
@@ -1135,7 +1116,7 @@ for k in Keys(FAM) do
         FAM[k]`RelativeJMap:=L;
     end if;
 end for;
-
+*/
 /*
 "Computing the j map of agreeable closure";//This will take a lot
 
@@ -1149,14 +1130,13 @@ for k in Keys(FAM) do
 
 end for;
 */
-
+/*
 //If relative jmap is computed then it is good. Otherwise we compute the absolute jmap. Sometimes it is slower to compute the relatice jmap for some reason.
   for k in Keys(FAM) do
         if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
             require assigned FAM[k]`M : "The modular curve should have been computed.";
             print(k);
             a,b:=AbsoluteJmap(FAM[k]`M);
-            print(b);
             FAM[k]`jmap:=b;
         end if;
    end for;
@@ -1196,10 +1176,10 @@ end for;
 "Done!";
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
+*/
 
 
-
-
+/*
 intrinsic FamilyComputeAbsoluteJMap(FAM::SeqEnum) -> SeqEnum
 {List of fams outputs AbsoluteJMap computed}
 
@@ -1215,7 +1195,7 @@ intrinsic FamilyComputeAbsoluteJMap(FAM::SeqEnum) -> SeqEnum
 
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
-
+*/
 
 /*
 

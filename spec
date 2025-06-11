@@ -7,7 +7,7 @@
   {
     FamilyData
     {
-      ConstructingFamiliesIntrinsicRelativeMorphismFINAL.m
+      ConstructingFamilies.m
       FamilyRecWithUniv.m
       LoadData.m
     }
@@ -18,10 +18,9 @@
     TwistingCode
     {
       H90.m
-      Newco.m
       TwistingCode.m
       RandomCocycleCreator.m
-      GroupToCocycleTryingProjections.m
+      GroupToCocycle.m
       PolynomialTwister.m
     }
     MainCode
@@ -41,5 +40,4 @@
   {
     Modular.m
   }
-  jampandunivell.m
 }
