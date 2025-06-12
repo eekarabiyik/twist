@@ -7,7 +7,7 @@ This is the code for finding all groups that contain the agreeable groups up to 
 
 
 
-filename:="CummingsPauli/CPdata.dat";  
+filename:="./FindingFamilies/CummingsPauli/CPdata.dat";  
 I:=Open(filename, "r"); 
 _,cp_data:=ReadObjectCheck(I);
 //Code by David Zywina
@@ -296,8 +296,8 @@ end function;
 
 
 
-intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodels:=true) -> SeqEnum
-{Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
+intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodels:=true, computecangen:=false) -> SeqEnum
+    {Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
     if r`genus gt genus then return []; end if;
     if r`level ne 1 then 
         level:=r`level;
@@ -372,7 +372,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
             Hc:=CommutatorSubgroup(GL(2,Integers(2)));
             Hc`SL:=true;
             level1:=true;
-            AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1>;
+            AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1,[]>;
             a:=a+1;
             continue group;
         end if;
@@ -408,44 +408,46 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
         Hc:=SL2Project(Hc,D);
         if not Set(PrimeDivisors(N)) subset Set(PrimeDivisors(#BaseRing(Hc))) then continue group; end if;
         level1:=false;
-        AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1>;
+        cangen:=[];
+        if computecangen then cangen:=GL2CanonicalGenerators(G); end if;
+        AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1,cangen>;
         a:=a+1;
     end for;
 
-if verbose then printf "Find Potential Family Records\n"; end if;
-FAM1:=AssociativeArray();
-level1things:=0;
-for k in Keys(AllAgreeableGroups) do
-    if AllAgreeableGroups[k][5] then
-        level1things:= level1things +1;
-        N0:=2;
-        SL2:=SL(2,Integers(N0));
-        matgens:=[[1,1,0,1],[1,0,1,1]];
-        R:=gl2QImagesForFamiliiesEray(sub<SL(2,Integers(2))|matgens>,CommutatorSubgroup(GL(2,Integers(2))));
-    else
-        H:=AllAgreeableGroups[k][2];
-        Hc:=AllAgreeableGroups[k][3];
-        H`SL:=true;
-        Hc`SL:=true;
-        if not SL2ContainsNegativeOne(H) then continue k; end if;
-        R:=gl2QImagesForFamiliiesEray(AllAgreeableGroups[k][2],AllAgreeableGroups[k][3]);
-    end if;
+    if verbose then printf "Find Potential Family Records\n"; end if;
+    FAM1:=AssociativeArray();
+    level1things:=0;
+    for k in Keys(AllAgreeableGroups) do
+        if AllAgreeableGroups[k][5] then
+            level1things:= level1things +1;
+            N0:=2;
+            SL2:=SL(2,Integers(N0));
+            matgens:=[[1,1,0,1],[1,0,1,1]];
+            R:=gl2QImagesForFamiliiesEray(sub<SL(2,Integers(2))|matgens>,CommutatorSubgroup(GL(2,Integers(2))));
+        else
+            H:=AllAgreeableGroups[k][2];
+            Hc:=AllAgreeableGroups[k][3];
+            H`SL:=true;
+            Hc`SL:=true;
+            if not SL2ContainsNegativeOne(H) then continue k; end if;
+            R:=gl2QImagesForFamiliiesEray(AllAgreeableGroups[k][2],AllAgreeableGroups[k][3]);
+        end if;
        
-        FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
-end for;
+            FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
+    end for;
 
-if verbose then printf "Creating Family Records for those satisfying the correct genus.\n"; end if;
+    if verbose then printf "Creating Family Records for those satisfying the correct genus.\n"; end if;
 
-BS:=AssociativeArray();
-a:=1;
-for k in Keys(FAM1) do
-    if FAM1[k][2] eq [] then continue;
-    else
+    BS:=AssociativeArray();
+    a:=1;
+    for k in Keys(FAM1) do
+        if FAM1[k][2] eq [] then continue;
+        else
         for i in [1..#FAM1[k][2]] do
             g:=GL2Genus(FAM1[k][2][i]);
             if g gt genus then continue i; //change g gt x accordingly//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
             else 
-                BS[a]:=CreateFamilyUnivRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]); //first coordinate is B, second is calG, third one is calG's key in CP
+                BS[a]:=CreateFamilyUnivRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]:calG_cangen:=FAM1[k][1][6], computecangen:=computecangen); //first coordinate is B, second is calG, third one is calG's key in CP
                 a:=a+1;
             end if;
         end for;
@@ -569,6 +571,9 @@ if verbose then printf "There are %o families\n", #FAM; end if;
 
 //Computing some properties
 for k in Keys(FAM) do
+    FAM[k]`B`SL:=true;
+    if assigned FAM[k]`calG`SL then delete FAM[k]`calG`SL; end if;
+    if assigned FAM[k]`H and assigned FAM[k]`H`SL then delete FAM[k]`H`SL; end if;
     if not assigned FAM[k]`calG_index then FAM[k]`calG_index:=GL2Index(FAM[k]`calG); end if;
     if assigned FAM[k]`H and not assigned FAM[k]`fine then
         if assigned FAM[k]`H then FAM[k]`fine:= not GL2ContainsNegativeOne(FAM[k]`H); end if;
@@ -581,6 +586,7 @@ for k in Keys(FAM) do
     else
         FAM[k]`oneelement:=false;
     end if;
+    if computecangen and assigned FAM[k]`H then FAM[k]`H_cangen:=GL2CanonicalGenerators(FAM[k]`H); end if;
 end for; 
 
 if computemodels then
@@ -696,330 +702,19 @@ end intrinsic;
 
 
 
-
-
-
-
-
-
-
-
-
-/*
-
-
-intrinsic FindAllFamiliesNoModel(r::Rec, genus::RngIntElt) -> SeqEnum 
-{Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.
-Only finds the families, does not compute models, modular forms nor twisting information.}
-    if r`genus gt genus then return []; end if;
-    if r`level ne 1 then 
-        level:=r`level;
-        matgens:=r`matgens;
-    else
-        level:=2;
-        matgens:=[[1,1,0,1],[1,0,1,1]];
-    end if;
-    SL2:=SL2Ambient(level);
-    H0:=sub<SL2|matgens>; H0`SL:=true;
-    assert SL2![-1,0,0,-1] in H0;
-
-    M1,gens1,index1:=FindCommutatorSubgroupSL(H0);
-    H1:=SL2Lift(H0,M1); 
-    Q1,iota1:=quo< H1 | sub<SL(2,Integers(M1))|gens1> >;
-
-    M2:=1;
-    if GCD(M1,2) eq 1 then M2:=M2*4; end if;
-    if GCD(M1,3) eq 1 then M2:=M2*3; end if;
-    if M2 ne 1 then
-        Q2,iota2:=quo<SL2Ambient(M2) | CommutatorSubgroup(SL2Ambient(M2)) >;
-    else
-        M2:=2;
-        Q2,iota2:=quo<SL(2,Integers(2)) | SL(2,Integers(2)) >; 
-        // This is just the trivial group.  Really want M1=1, but magma doesn't like matrices in M_2(Z/(1)).
-    end if;    
-
-    Q,alpha:=DirectProduct(Q1,Q2);  // This group is isomorphic to H/[H,H]
-    assert IsAbelian(Q);
-
-    M:=LCM(M1,M2);
-    H:=SL2Lift(H0,M);
-
-    iota:=hom<H->Q | [ alpha[1](iota1(H.i)) * alpha[2](iota2(H.i)) : i in [1..Ngens(H)] ] >;
-
-    assert #Q*SL2Index(H)/index1 eq #Q2;
-    //Okay makes sense -Eray
-    //comm_map[r`name]:=iota;
-    //comm_level[r`name]:=M;  
-     
-     
-    if r`level eq 1 then
-        N0:=2;
-        SL2:=SL2Ambient(N0);
-        matgens:=[[1,1,0,1],[1,0,1,1]];
-    else
-        N0:=r`level;
-        matgens:=r`matgens;
-        SL2:=SL2Ambient(N0);
-    end if;
-    H:=sub<SL2|matgens>;
-    H`SL:=true;
-    assert SL2![-1,0,0,-1] in H;
-    N1:=2*LCM([12,N0]);
-    HH:=SL2Lift(H,N1);
-    AllAgreeableGroups:=AssociativeArray();
-    a:=1;
-    R:=gl2QImagesFromSL2eray(HH); 
-    for group in R do
-        HG:=HH;
-        G:=group;
-        assert SL2Intersection(G) eq HG;
-        assert #BaseRing(G) eq #BaseRing(HG);
-        HG`Genus:=r`genus;
-        G`Genus:=r`genus;
-        aa:=GL2Order(G);
-
-        N:=GL2Level(G);
-        HGlevel:=SL2Level(HG);
-        assert IsDivisibleBy(N,HGlevel);
-        CPname:=r`name;
-        if N eq 1 then 
-            Hc:=CommutatorSubgroup(GL(2,Integers(2)));
-            Hc`SL:=true;
-            level1:=true;
-            AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1>;
-            a:=a+1;
-            continue group;
-        end if;
-
-        G:=GL2Project(G,N);
-        HG:=SL2Project(HG,N);
-        assert SL2Intersection(G) eq HG;
-        HG:=SL2Project(HG,HGlevel);
-        phi:=iota;
-        Q:=Codomain(phi);
-        G1:=GL2Project(GL2Lift(G,LCM(N,M)), M);
-        
-    
-        // Compute Hc=[G,G]
-        found:=false;
-        W:=sub<Q|{ phi(a*b*a^(-1)*b^(-1)): a,b in Generators(G1)}>;
-        Hc:=W @@ phi; 
-        while not found do
-            Hc:=W @@ phi;
-            found:=true;
-            for g in Generators(G1) do
-                W_:=sub<Q|{phi(g*h*g^(-1)) : h in Generators(Hc)}>;
-                if W_ ne W then
-                    W:=sub<Q|Generators(W) join Generators(W_)>;
-                    found:=false;
-                    break g;
-                end if;
-            end for;
-        end while;
-        Hc`SL:=true;
-        D:=SL2Level(Hc);
-        
-        Hc:=SL2Project(Hc,D);
-        if not Set(PrimeDivisors(N)) subset Set(PrimeDivisors(#BaseRing(Hc))) then continue group; end if;
-        level1:=false;
-        AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1>;
-        a:=a+1;
-    end for;
-
-"Find Potential Family Records";
-FAM1:=AssociativeArray();
-level1things:=0;
-for k in Keys(AllAgreeableGroups) do
-    if AllAgreeableGroups[k][5] then
-        level1things:= level1things +1;
-        N0:=2;
-        SL2:=SL(2,Integers(N0));
-        matgens:=[[1,1,0,1],[1,0,1,1]];
-        R:=gl2QImagesForFamiliiesEray(sub<SL(2,Integers(2))|matgens>,CommutatorSubgroup(GL(2,Integers(2))));
-    else
-        H:=AllAgreeableGroups[k][2];
-        Hc:=AllAgreeableGroups[k][3];
-        H`SL:=true;
-        Hc`SL:=true;
-        if not SL2ContainsNegativeOne(H) then continue k; end if;
-        R:=gl2QImagesForFamiliiesEray(AllAgreeableGroups[k][2],AllAgreeableGroups[k][3]);
-    end if;
-       
-        FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
-end for;
-
-
-"Creating Family Records for those satisfying the correct genus.";
-BS:=AssociativeArray();
-a:=1;
-for k in Keys(FAM1) do
-    if FAM1[k][2] eq [] then continue;
-    else
-        for i in [1..#FAM1[k][2]] do
-            g:=GL2Genus(FAM1[k][2][i]);
-            if g gt genus then continue i; //change g gt x accordingly//GEEEEEEEEEEEEENUSSSSSSSSSSSSSSSSSSSSS
-            else 
-                BS[a]:=CreateFamilyUnivRec(FAM1[k][1][1],FAM1[k][2][i],FAM1[k][1][3],FAM1[k][1][2],FAM1[k][1][4]); //first coordinate is B, second is calG, third one is calG's key in CP
-                a:=a+1;
-            end if;
-        end for;
-    end if;
-end for;
-"Fixing the levels";
-for k in Keys(BS) do
-    if BS[k]`calG_level eq 1 then 
-         BS[k]`calG:=GL2Project(BS[k]`calG,2); 
-         if BS[k]`B_level eq 1 then BS[k]`B`SL:=true; BS[k]`B:=SL2Project(BS[k]`B,2); end if;  
-    else
-    BS[k]`B`SL:=true;
-    BS[k]`calG:=GL2Project(BS[k]`calG,BS[k]`calG_level);  
-    BS[k]`B:=SL2Project(BS[k]`B,BS[k]`B_level);  
-    end if;
-
-end for;    
-
-
-FAM:=BS;
-
-
-
-"Finding Representatives with full determinant";
-for k in Keys(FAM) do
-    if not assigned FAM[k]`H then
-        FAM[k]`B`SL:=true;
-        H:=FindSpecialSubgroup(FAM[k]`calG,FAM[k]`B);
-        if GL2DeterminantIndex(H) eq 1 then 
-            if GL2Level(H) eq 1 then FAM[k]`H:=GL2Project(H,2); else            
-            FAM[k]`H:=GL2Project(H,GL2Level(H));
-            FAM[k]`index:=GL2Index(FAM[k]`H);
-             end if;
-        end if;
-    end if;
-end for;
-
-
-print(#FAM);
-
-
-"Getting rid of redundant families";
-for k in Keys(FAM) do
-    F:=FAM[k];
-    calG:=F`calG;
-    B:=F`B;
-    if F`calG_level eq 1 or F`B_level eq 1 then continue; end if;
-    N:=LCM([F`calG_level,F`B_level]);
-
-    calG:=GL2Lift(calG,N);
-    B`SL:=true;
-    B:=SL2Lift(B,N);
-    GL2:=GL2Ambient(N);
-
-    norm:=Normalizer(GL2,calG);
-    A:=[s: s in Conjugates(norm,B)];
-    conjs:=[];
-    for i in [1..#A] do
-        a,s:=GL2Level(A[i]);
-        conjs:= conjs cat [s];
-    end for; 
-    FAM[k]`conjugacyofB:=conjs;//Be careful about the levels
-
-end for;
-
-
-keys:=Keys(FAM);
-allthekeysneeded:={};
-removed:={};
-for k in Keys(FAM) do
-    if k in removed then continue k; end if;
-    F:=FAM[k];
-    calG:=F`calG;
-    B:=F`B;
-    if F`calG_level eq 1 or F`B_level eq 1 then continue; end if;
-    for t in Keys(FAM) do
-        if t eq k then continue t; end if;
-        if FAM[t]`calG_level eq 1 or FAM[t]`B_level eq 1 then continue t; end if;
-        if F`calG_level eq FAM[t]`calG_level and F`B_level eq FAM[t]`B_level and F`genus eq FAM[t]`genus and calG eq FAM[t]`calG then
-            N:=LCM([F`calG_level,F`B_level]);
-            calG1:=GL2Lift(calG,N);
-            B`SL:=true;
-            B:=SL2Lift(B,N);
-            GL2:=GL2Ambient(N);
-            //norm:=Normalizer(GL2,calG1);
-            Bt:=FAM[t]`B;
-            Bt`SL:=true;
-            Bt:=SL2Lift(Bt,N);
-            for i in [1..#FAM[k]`conjugacyofB] do
-                Bi:=FAM[k]`conjugacyofB[i];
-                Bi`SL:=true;
-                Bi:=SL2Lift(Bi,N);
-                if  Bi eq Bt then
-                    printf "key %o is redundant!\n",t;
-                    keys:= keys diff {t};
-                    removed:=removed join {t};
-                end if;
-            end for;
-        end if;
-
-    end for;
-
-
-end for;
-
-redundant:=removed;
-NonRedFam:=AssociativeArray();
-
-for k in Keys(FAM) do 
-    if k in redundant then continue k; end if;
-
-    NonRedFam[k]:=FAM[k];
-end for;
-
-FAM:=NonRedFam;
-return [FAM[k]: k in Keys(FAM)];
-end intrinsic;
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-/*
 //Make Verbose
-intrinsic FindAllModelGivenFamily(FAM::SeqEnum) -> SeqEnum
+intrinsic FindAllModelGivenFamily(FAM::SeqEnum: verbose:=false, computemodels:=true) -> SeqEnum
 {List of fams outputs with models computed}
-   
-   "Computing the fine families";
+  
+if computemodels then
+if verbose then printf "Computing the models\n"; end if;
 
-for k in Keys(FAM) do
-    if not assigned FAM[k]`calG_index then FAM[k]`calG_index:=GL2Index(FAM[k]`calG); end if;
-    if assigned FAM[k]`H and not assigned FAM[k]`fine then
-        if assigned FAM[k]`H then FAM[k]`fine:= not GL2ContainsNegativeOne(FAM[k]`H); end if;
-        if assigned FAM[k]`fine and FAM[k]`fine eq true then FAM[k]`correspondingCoarse:=GL2IncludeNegativeOne(FAM[k]`H); end if;
-    end if;
-    if assigned FAM[k]`H and not assigned FAM[k]`index then FAM[k]`index:=GL2Index(FAM[k]`H); end if;
-    if assigned FAM[k]`H then FAM[k]`numberofcusps:=GL2CuspCount(FAM[k]`H); end if;
-    if assigned FAM[k]`H and assigned FAM[k]`fine and FAM[k]`fine eq false and #BaseRing(FAM[k]`H) eq #BaseRing(FAM[k]`calG) and FAM[k]`calG eq FAM[k]`H then
-        FAM[k]`oneelement:=true;
-    else
-        FAM[k]`oneelement:=false;
-    end if;
-end for; 
-
-printf "There are %o families\n", #FAM;
-"Computing the models";
-t:=Cputime();
 for k in Keys(FAM) do
     
-    if assigned FAM[k]`H and not assigned FAM[k]`M then
+    if assigned FAM[k]`H and not assigned FAM[k]`M and not assigned FAM[k]`calGModCurve then
 
+        
+       
         assert assigned FAM[k]`fine;
         if FAM[k]`fine then continue; end if;
 
@@ -1048,62 +743,18 @@ for k in Keys(FAM) do
         for i in [1..Ngens(calG)] do
             FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
         end for;    
+    
+    
     end if;
 
 end for;
-printf "Total time for computing models: %o\n",Cputime(t);
-*/
+
+if verbose then printf "Computing Relative Jmaps\n"; end if;
 
 
 
-//Gotta Turn back to this one.
-/*
- if FAM1[k]`fine eq true and assigned FAM1[k]`H then
-    "WEIGHTTT";
-        G:=FAM[k]`H;
-
-        _,_,Gcong:=FamilyFinderFine(G,SL2Intersection(G),FAMC);//THIS IS SO IMPORTANT! VERY IMPORTANT!First conjugate the fine group so it lies in our families
-
-        H:=GL2IncludeNegativeOne(Gcong);
-        M0:=CreateModularCurveRec(Gcong);//Modular curve of the fine group
-        famkey,_,H:=FamilyFinder(H,SL2Intersection(H),FAMC);//Find the family of the coarse group
-        M:=FindModelOfXG(CreateModularCurveRec(H):G0:=FAMC[famkey]`calG);//Compute the model for the course group. For the real computation this wont be needed since we will twist ratios.
-        //M0`widths eq M`widths;
-        //M0`widths;
-        //M`widths;
-        //The following function should return a list of two polynomials, num and denom for the weight 3 modular form.
-        f:=FindRatio(M,M0,2: prec0:=20);
-        print(f);
-        FAM1[k]`weight3form:=f;
-    end if;
-*/
-
-
-
-
-/*
-"Computing the Jmaps";
 for k in Keys(FAM) do 
-    if assigned FAM[k]`H and not FAM[k]`fine then
-         G:=FAM[k]`H;
-        calG:=FAM[k]`calG;
-        if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
-        M:=FAM[k]`M;
-        C, jmap, model_type, F0, M1,mind,maxd, maxprec:=AbsoluteJmap(M);
-        FAM[k]`jmap:=jmap;
-        FAM[k]`model_type:=model_type;
-        FAM[k]`M:=M1;
-        FAM[k]`mind:=mind;
-        FAM[k]`maxd:=maxd;
-        FAM[k]`maxprec:=maxprec;
-    end if;
-end for;
-*/
-
-/*
-"Computing Relative Jmaps";
-for k in Keys(FAM) do 
-    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M then
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
         if FAM[k]`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
         if #FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0 then continue; end if;//Gets stuck sometimes
         G:=FAM[k]`H;
@@ -1114,24 +765,11 @@ for k in Keys(FAM) do
         FAM[k]`RelativeJMap:=L;
     end if;
 end for;
-*/
-/*
-"Computing the j map of agreeable closure";//This will take a lot
 
-for k in Keys(FAM) do 
-   
-        calG:=FAM[k]`calG;
-        MG:=FAM[k]`calGModCurve;
-        M:=FindModelOfXG(CreateModularCurveRec(GL2Ambient(4)));
-        L:=FindMorphism(MG,M);
-        FAM[k]`JmapcalG:=L;
+if verbose then printf "Computing the Jmaps\n"; end if;
 
-end for;
-*/
-/*
-//If relative jmap is computed then it is good. Otherwise we compute the absolute jmap. Sometimes it is slower to compute the relatice jmap for some reason.
   for k in Keys(FAM) do
-        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap then
+        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap and not assigned FAM[k]`jmap then
             require assigned FAM[k]`M : "The modular curve should have been computed.";
             print(k);
             a,b:=AbsoluteJmap(FAM[k]`M);
@@ -1141,13 +779,15 @@ end for;
 
 
 
-"Computation for the gonality 2 modular curves";
+
+if verbose then printf "Computation for the gonality 2 modular curves\n"; end if;
+
 for k in Keys(FAM) do
     if assigned FAM[k]`H and not FAM[k]`fine then
          G:=FAM[k]`H;
         calG:=FAM[k]`calG;
         //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
-     if FAM[k]`M`CPname in gonality_equals_2 then
+     if FAM[k]`M`CPname in gonality_equals_2 and not assigned FAM[k]`CanModelForHyp then
         FAM[k]`CanModelForHyp:=FindCanonicalModel(CreateModularCurveRec(FAM[k]`H));
     end if; 
     end if;
@@ -1155,7 +795,7 @@ end for;
 
 
 for k in Keys(FAM) do
-    if assigned FAM[k]`H and assigned FAM[k]`CanModelForHyp then
+    if assigned FAM[k]`H and assigned FAM[k]`CanModelForHyp and not assigned FAM[k]`AOfMFCanModel then
         H:=FAM[k]`H;
         calG:=FAM[k]`calG;
         FAM[k]`AOfMFCanModel:=AssociativeArray();
@@ -1170,96 +810,10 @@ for k in Keys(FAM) do
         end for;    
     end if;
 end for;
-
-"Done!";
-return [FAM[k]: k in Keys(FAM)];
-end intrinsic;
-*/
-
-
-/*
-intrinsic FamilyComputeAbsoluteJMap(FAM::SeqEnum) -> SeqEnum
-{List of fams outputs AbsoluteJMap computed}
-
-    "Computing the AbsoluteJMap";
-   for k in Keys(FAM) do
-        require assigned FAM[k]`M : "The modular curve should have been computed.";
-        print(k);
-        a,b:=AbsoluteJmap(FAM[k]`M);
-        print(b);
-        FAM[k]`jmap:=b;
-   end for;
-
-
-return [FAM[k]: k in Keys(FAM)];
-end intrinsic;
-*/
-
-/*
-
-for k in Keys(FAM) do
-//for k in Keys(FAM) do
-    if FAM[k]`genus gt 20 then continue; end if;
-    print(k);
-
-if assigned FAM[k]`H then
-
-    if #BaseRing(FAM[k]`H) eq Infinity() then continue k; end if;
-
-    FAM1[k]:= CreateFamilyUnivRec(FAM[k]`calG, FAM[k]`B, FAM[k]`commutator_sub, FAM[k]`W, FAM[k]`CPname);
-    if assigned FAM[k]`fine then FAM1[k]`fine:=FAM[k]`fine; else
-     FAM1[k]`fine:=not GL2ContainsNegativeOne(FAM[k]`H);
-     end if;
-    if assigned FAM[k]`calG_level then FAM1[k]`calG_level:=FAM[k]`calG_level; end if;
-    if assigned FAM[k]`B_level then FAM1[k]`B_level:=FAM[k]`B_level; end if;
-    if assigned FAM[k]`genus then FAM1[k]`genus:=FAM[k]`genus; end if;
-    if assigned FAM[k]`sl2level then FAM1[k]`sl2level:=FAM[k]`sl2level; end if;
-    if assigned FAM[k]`level then FAM1[k]`level:=FAM[k]`level; end if;
-    if assigned FAM[k]`k then FAM1[k]`k:=FAM[k]`k; end if;
-    if assigned FAM[k]`prec then FAM1[k]`prec:=FAM[k]`prec; end if;
-    if assigned FAM[k]`commutator_index then FAM1[k]`commutator_index:=FAM[k]`commutator_index; end if;
-    if assigned FAM[k]`maxprec then FAM1[k]`maxprec:=FAM[k]`maxprec; end if;
-    if assigned FAM[k]`model_type then FAM1[k]`model_type:=FAM[k]`model_type; end if;
-    if assigned FAM[k]`maxd then FAM1[k]`maxd:=FAM[k]`maxd; end if;
-    if assigned FAM[k]`mind then FAM1[k]`mind:=FAM[k]`mind; end if;
-    if assigned FAM[k]`calG_gens then FAM1[k]`calG_gens:=FAM[k]`calG_gens; end if;
-    if assigned FAM[k]`B_gens then FAM1[k]`B_gens:=FAM[k]`B_gens; end if;
-    if assigned FAM[k]`subgroupsofH then FAM1[k]`subgroupsofH:=FAM[k]`subgroupsofH; end if;
-    if assigned FAM[k]`jmap then FAM1[k]`jmap:=FAM[k]`jmap; end if;
-    if assigned FAM[k]`M then FAM1[k]`M:=FAM[k]`M; end if;
-    if assigned FAM[k]`calGModCurve then FAM1[k]`calGModCurve:=FAM[k]`calGModCurve; end if;
-    if assigned FAM[k]`AOfMF then FAM1[k]`AOfMF:=FAM[k]`AOfMF; end if;
-    if assigned FAM[k]`quomap then FAM1[k]`quomap:=FAM[k]`quomap; end if;
-    if assigned FAM[k]`quogroup then FAM1[k]`quogroup:=FAM[k]`quogroup; end if;
-    if assigned FAM[k]`dataforquotient then FAM1[k]`dataforquotient:=FAM[k]`dataforquotient; end if;
-    if assigned FAM[k]`conjugacyofB then FAM1[k]`conjugacyofB:=FAM[k]`conjugacyofB; end if;
-    if assigned FAM[k]`AOfMFCanModel then FAM1[k]`AOfMFCanModel:=FAM[k]`AOfMFCanModel; end if;
-    if assigned FAM[k]`CanModelForHyp then FAM1[k]`CanModelForHyp:=FAM[k]`CanModelForHyp; end if;
-    if assigned FAM[k]`H then FAM1[k]`H:=FAM[k]`H; end if;
-    if assigned FAM[k]`H then FAM1[k]`index:=GL2Index(FAM[k]`H); end if;//Wrong!!!
-    if assigned FAM[k]`H then FAM1[k]`numberofcusps:=GL2CuspCount(FAM[k]`H); end if;
-    if assigned FAM[k]`H and assigned FAM[k]`fine and FAM[k]`fine eq false and #BaseRing(FAM[k]`H) eq #BaseRing(FAM[k]`calG) and FAM[k]`calG eq FAM[k]`H then
-        FAM1[k]`oneelement:=true;
-    end if;
-    FAM1[k]`calG_index:=GL2Index(FAM[k]`calG);
-    if FAM1[k]`fine eq true and assigned FAM1[k]`H then
-    "WEIGHTTT";
-        G:=FAM[k]`H;
-
-        _,_,Gcong:=FamilyFinderFine(G,SL2Intersection(G),FAMC);//THIS IS SO IMPORTANT! VERY IMPORTANT!First conjugate the fine group so it lies in our families
-
-        H:=GL2IncludeNegativeOne(Gcong);
-        M0:=CreateModularCurveRec(Gcong);//Modular curve of the fine group
-        famkey,_,H:=FamilyFinder(H,SL2Intersection(H),FAMC);//Find the family of the coarse group
-        M:=FindModelOfXG(CreateModularCurveRec(H):G0:=FAMC[famkey]`calG);//Compute the model for the course group. For the real computation this wont be needed since we will twist ratios.
-        //M0`widths eq M`widths;
-        //M0`widths;
-        //M`widths;
-        //The following function should return a list of two polynomials, num and denom for the weight 3 modular form.
-        f:=FindRatio(M,M0,2: prec0:=20, prec_delta:=25);
-        print(f);
-        FAM1[k]`weight3form:=f;
-    end if;
 end if;
-end for;
-*/
+
+if verbose then printf "Done!\n"; end if;
+
+return [FAM[k]: k in Keys(FAM)];
+end intrinsic;
+

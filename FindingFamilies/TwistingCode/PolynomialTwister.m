@@ -10,10 +10,6 @@ intrinsic PolynomialTwister(L::SeqEnum, MAT, K) -> SeqEnum
         B:=Basis(K);
         s:=NumberOfRows(MAT);
         Pol<[x]>:=PolynomialRing(K,s);
-        //"LLL";
-        //L;
-   
-
 
         Lnew:=[];
         for pol2 in L do
@@ -42,5 +38,3 @@ intrinsic PolynomialTwister(L::SeqEnum, MAT, K) -> SeqEnum
 return Lnew;
 end intrinsic;
 
-
-//I guess for LLL I will get the Z-coeff,  get the matrix from the coefficients, apply LLL, get a new matrix that transforms it and apply it to do j map again.

@@ -48,7 +48,7 @@ FamilyRecUniv := recformat<
 
 //Creates a family once we already have calG and B.
 
-intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname::MonStgElt) -> Rec
+intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CPname::MonStgElt: calG_cangen:=[], computecangen:=false) -> Rec
  {
     Input:
         calG   : an agreeable subgroup of GL2(Zhat)
@@ -81,6 +81,12 @@ intrinsic CreateFamilyUnivRec(calG::GrpMat, B::GrpMat, Hc::GrpMat, W::GrpMat, CP
     F`AOfMF:=AssociativeArray();
     F`commutator_sub:=Hc;
     F`CPname:=CPname;
-
+    if computecangen then
+        if not calG_cangen eq [] then
+            F`calG_cangen:=calG_cangen;
+        else
+            F`calG_cangen:=GL2CanonicalGenerators(calG);
+        end if;
+    end if;
     return F;
 end intrinsic;
