@@ -71,7 +71,7 @@ Output:
     return false;
 end intrinsic;
 
-intrinsic F0Combination(F0::SeqEnum, M::ModMatRngElt) -> SeqEnum //ERAY: this one should be useful for me as well.
+intrinsic F0Combination(F0::SeqEnum, M) -> SeqEnum //ERAY: this one should be useful for me as well.
 {F0 is as in ModularCurveRec, M is a 3 by n matrix over the integers with full rank, where n is the length of F0.
 Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (given by expansions at cusps as normal)}
     // I can't get matrix vector multiplication working reasonably, so we do this by hand
@@ -89,7 +89,7 @@ Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (give
     return ans;
 end intrinsic;
 
-intrinsic F0Twister(F0::SeqEnum, M) -> SeqEnum //ERAY: this one should be useful for me as well.
+intrinsic F0Twister(F0::SeqEnum, M,cyclevel) -> SeqEnum //ERAY: this one should be useful for me as well.
 {F0 is as in ModularCurveRec, M is a m by n matrix over the integers with full rank, where n is the length of F0.
 Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (given by expansions at cusps as normal)}
     // I can't get matrix vector multiplication working reasonably, so we do this by hand
@@ -98,11 +98,25 @@ Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (give
     //return [[vec3s[i][j] : i in [1..#vec3s]] : j in [1..3]];
      exists(t){t:t in [1..Ncols(M)]|not M[1][t] eq 0 };
     K:=Parent(M[1][t]);
+    K;
     L:=Parent(Coefficient(F0[1][1],0));
-    Z:=Compositum(K,L);
+    L;
+    Z<z>:=CyclotomicField(cyclevel);
+    Z;
     assert L subset Z;
     assert K subset Z;
+    M:=ChangeRing(M,Z);
     FF<qw>:=PowerSeriesRing(Z);
+    Mf:=[];
+    for l in [1..#F0] do
+        cu:=[];
+        for j in [1..#F0[l]] do
+            a:=&+[Coefficient(F0[l][j],i)*qw^i: i in [0..AbsolutePrecision(F0[l][j])-1]]+O(qw^(AbsolutePrecision(F0[l][j])));
+            cu:=cu cat [a];
+        end for;
+        Mf:= Mf cat [cu];
+    end for;
+    F0:=Mf;
     ans := [[FF!0 : a in [1..#F0[1]]] : j in [1..Nrows(M)]];
     for a in [1..#F0[1]] do
         for j in [1..Nrows(M)] do
@@ -213,10 +227,13 @@ intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, gi
     repeat
         NextProjector(~state, ~M);
         MF := F0Combination(rec`F0, M);
+        "new";
         for m in [low..high] do
-
+            m;
+            "ariyoz";
+            MF[1][1];
             rels := FindRelationsOverKG(rec, MF, m);
-
+            "aradik";
             if #rels gt 0 then
                 f := R!rels[1];
                 proj := [&+[M[i,j] * Rg.j : j in [1..g]] : i in [1..3]];
@@ -227,17 +244,99 @@ intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, gi
                 try
                     "within try";
                     projection := map<XC -> C | proj>;
-                    valid := ValidModel(projection,997);
-                    print(valid);
+                    "x";
+                    valid := ValidModel(projection,997: show_reason:=true);
+                    "y";
+                    //print(valid);
                     if valid then
                         "valid";
-                        Append(~ans, <f,proj,M>);
+                        Append(~ans, <f,proj,M,MF>);
                         break;
                     else
                         vprint User1: "invalid model, continuing to next m";
                     end if;
                 catch e
                     vprint User1: e;
+                end try;
+            elif Cputime() - t0 gt giveup_time then
+                break;
+            end if;
+        end for;
+        if state`nonpiv_ctr[1] ge ctr_bound then
+            print "ctr_bound reached, terminating";
+            break;
+        end if;
+        // Since this is part of the process where we compute the canonical model (and we give that a long timeout), we don't want this to spin forever.
+    until #ans ge success_amount or (#ans gt 0 and Cputime() - t0 gt success_time) or (Cputime() - t0 gt giveup_time);
+
+    vprint User1: Sprintf("Plane model: %o model(s) found\n", #ans);
+    return ans;
+end intrinsic;
+
+
+
+
+intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*/ : success_amount:=25, giveup_time:=600, success_time:=60, ctr_bound:=728) -> SeqEnum
+{
+    Input:
+      - rec: a ModularCurveRec, not hyperelliptic with genus larger than 3
+      - Can: The canonical model as found by FindCanonicalModel
+      - MFF: The modular forms that are to be used.
+      - success_amount: The number of distinct projections sought (default 25)
+      - giveup_time: how long to run before returning an empty sequence (default 600 seconds)
+      - success_time: how long to run before returning a nonempty sequence with fewer than success_amount entries (default 60 seconds)
+      - ctr_bound: A bound on the size of the projector matrix; this should not get triggered (default 728)
+
+    Output:
+      - a sequence of pairs <f, proj>, where proj is a 3 by g array of integers defining a projection from rec`F0 to a projective plane and f is the defining equation of the image of the canonical model under this projection.
+}
+    assert reduction_prime gt rec`N;
+
+
+
+    g := rec`genus;
+    assert g gt 3; // For genus 3 curves, the canonical model is already a plane model
+    low := DegreeLowerBound(g);
+    high := DegreeUpperBound(g);
+    state := InitProjectorRec(g);
+    M := ZeroMatrix(Integers(), 3, g);
+    R<X,Y,Z> := PolynomialRing(Rationals(), 3);
+    Rg := PolynomialRing(Rationals(), g); // variable names should be assigned later
+    CanEqs := DefiningEquations(Can);
+
+    t0:=Cputime();
+    ans:=[];
+    repeat
+        NextProjector(~state, ~M);
+        MF := F0Combination(MFF, M);
+        for m in [low..high] do
+
+            rels := FindRelationsOverKG(rec, MF, m);
+
+            if #rels gt 0 then
+                f := R!rels[1];
+                f;
+                proj := [&+[M[i,j] * Rg.j : j in [1..g]] : i in [1..3]];
+                // Note that FindRelations is inexact: the modular forms may not actually satisfy the relations exactly, but instead only up to some precision which is lower than the precision of the forms themselves.  As a consequence, proj may not actually define a map from Can to the plane model.  This is checked in ValidModel below.
+                XC := Curve(Proj(Universe(CanEqs)), CanEqs);
+                C := Curve(Proj(Parent(f)), f);
+
+                try
+                    "within try";
+                    projection := map<XC -> C | proj>;
+                    "x";
+                    valid := ValidModel(projection,997: show_reason:=true);
+                    "y";
+                    //print(valid);
+                    if valid then
+                        "valid";
+                        Append(~ans, <f,proj,M,MF>);
+                        break;
+                    else
+                        vprint User1: "invalid model, continuing to next m";
+                    end if;
+                catch e
+                     vprint User1: e;
                 end try;
             elif Cputime() - t0 gt giveup_time then
                 break;

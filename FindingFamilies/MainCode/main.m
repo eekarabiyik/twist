@@ -19,7 +19,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 
 
 //Fix this 
-intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -40,7 +40,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
 
     //We first start with finding the family in our database that contains G.
     print("Finding the family...");
-    //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinder(G,T,FAM);
+    //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan);
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
@@ -48,26 +48,47 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         AOfMF[i]:=Transpose(famG`AOfMF[i]);
     end for;
     Tcong`SL:=true;
-    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
-    printf "Computing the cocycle\n";
-    xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
-    //Now the twist
-    printf "Twisting the curve...\n";
-    psi,MAT:=TwistCurve(famG`M,xi,K: redcub:=redcub);
-    //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
-    if assigned famG`RelativeJMap then
-    L:=famG`RelativeJMap;
-    else 
-    L:=famG`jmap;
+    if famG`extra1 then
+        "IN WAWA!!!";
+        printf "Computing the cocycle\n";
+        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+        xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
+        Pol<[x]>:=PolynomialRing(Rationals(),3);
+        PP:=ProjectiveSpace(Rationals(),2);
+        pis:=[Pol!(x[2]^2-x[1]*x[3])];
+        psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
+        if assigned famG`RelativeJMap then
+            L:=famG`RelativeJMap;
+        else 
+            L:=famG`jmap;
+        end if;
+        newL:=[];
+        for ji in L do
+            newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
+        end for;
+        relmap:= PolynomialTwister(newL, MAT, K);
+    else
+        printf "Computing the cocycle\n";
+        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
+        //Now the twist
+        printf "Twisting the curve...\n";
+        psi,MAT,_,unrefined:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
+        if assigned famG`RelativeJMap then
+            L:=famG`RelativeJMap;
+        else 
+            L:=famG`jmap;
+        end if;
+        relmap:= PolynomialTwister(L, MAT, K);
     end if;
-    relmap:= PolynomialTwister(L, MAT, K);
+    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
 
     printf "Computing the jmap...\n";
     //Computing the jmap. The jmap of the representative is precomputed.
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_,unrefined;
     end if;
    
 
@@ -83,13 +104,13 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
             gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
         end for;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
-        gonpsi,gonMAT:=TwistCurve(gonmodel,xi,K);
+        gonpsi,gonMAT:=TwistCurve(gonmodel`psi,xi,K);
         Pol<x>:=Parent(gonpsi[1]);
         PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey,unrefined;
     end if;
-    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey;
+    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,unrefined;
 end intrinsic;

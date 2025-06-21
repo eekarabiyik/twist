@@ -22,7 +22,7 @@ FamilyRecUniv := recformat<
     CPname: MonStgElt,
     //CPname: CP label of calG (not of H!)
     M, calGModCurve, AOfMF, quogroup, quomap, dataforquotient, conjugacyofB, AOfMFCanModel, CanModelForHyp, RelativeJMap, JmapcalG, parentcalG, skeleton, parentrelmapcalG, label, weight3form, calG_cangen, B_cangen, H_cangen,
-    Hconj,Bconj,calGconj,
+    Hconj,Bconj,calGconj, family_label, agreeable_label,
     extra1,extra2,extra3,extra4,extra5
     //M: the modular curve record of the representative H
     //calGModCurve: modular curve record of calG. Will be used for relative j-maps
