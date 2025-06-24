@@ -227,13 +227,11 @@ intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, gi
     repeat
         NextProjector(~state, ~M);
         MF := F0Combination(rec`F0, M);
-        "new";
+
         for m in [low..high] do
-            m;
-            "ariyoz";
-            MF[1][1];
+
             rels := FindRelationsOverKG(rec, MF, m);
-            "aradik";
+
             if #rels gt 0 then
                 f := R!rels[1];
                 proj := [&+[M[i,j] * Rg.j : j in [1..g]] : i in [1..3]];
@@ -242,16 +240,14 @@ intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, gi
                 C := Curve(Proj(Parent(f)), f);
 
                 try
-                    "within try";
                     projection := map<XC -> C | proj>;
-                    "x";
                     valid := ValidModel(projection,997: show_reason:=true);
-                    "y";
+
                     //print(valid);
                     if valid then
-                        "valid";
+
                         Append(~ans, <f,proj,M,MF>);
-                        break;
+
                     else
                         vprint User1: "invalid model, continuing to next m";
                     end if;
@@ -276,7 +272,7 @@ end intrinsic;
 
 
 
-intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*/ : success_amount:=25, giveup_time:=600, success_time:=60, ctr_bound:=728) -> SeqEnum
+intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*/ : success_amount:=25, giveup_time:=600, success_time:=60, ctr_bound:=728, verbose:=false) -> SeqEnum
 {
     Input:
       - rec: a ModularCurveRec, not hyperelliptic with genus larger than 3
@@ -309,35 +305,57 @@ intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*
     repeat
         NextProjector(~state, ~M);
         MF := F0Combination(MFF, M);
+        relsbydeg:=AssociativeArray();
         for m in [low..high] do
+            if verbose then printf "Degree is %o\n",m; end if;
 
             rels := FindRelationsOverKG(rec, MF, m);
-
+            relsbydeg[m]:=rels;
+            if m gt low then
+                monm:=MonomialsOfDegree(R,m);
+                V:=VectorSpace(Rationals(),#monm);
+                W:=sub<V| [V![MonomialCoefficient(o*R!f,mo): mo in monm] : o in [R!X,R!Y,R!Z], f in relsbydeg[m-1]]>;
+                V3:=sub<V| [V![MonomialCoefficient(R!f,mo): mo in monm] : f in relsbydeg[m]]>;
+                J:=[];
+                i:=1;
+                while Dimension(W) lt Dimension(V3) do
+                    v:=V![MonomialCoefficient(R!relsbydeg[m][i],mo): mo in monm];
+                    if v notin W then
+                        W:=sub<V|Generators(W) join {v}>;
+                        J:=J cat [R!relsbydeg[m][i]];
+                    end if;
+                    i:=i+1;
+                end while;
+                rels:=J;
+            end if;
+            
             if #rels gt 0 then
+                //for fff in rels do
+                //f:=R!fff;
                 f := R!rels[1];
-                f;
+                if verbose then printf "Looking at relations %o\n",f; end if;
                 proj := [&+[M[i,j] * Rg.j : j in [1..g]] : i in [1..3]];
                 // Note that FindRelations is inexact: the modular forms may not actually satisfy the relations exactly, but instead only up to some precision which is lower than the precision of the forms themselves.  As a consequence, proj may not actually define a map from Can to the plane model.  This is checked in ValidModel below.
                 XC := Curve(Proj(Universe(CanEqs)), CanEqs);
                 C := Curve(Proj(Parent(f)), f);
 
                 try
-                    "within try";
+                    if verbose then printf "within try\n"; end if;
                     projection := map<XC -> C | proj>;
-                    "x";
                     valid := ValidModel(projection,997: show_reason:=true);
-                    "y";
+
                     //print(valid);
                     if valid then
-                        "valid";
+
                         Append(~ans, <f,proj,M,MF>);
-                        break;
+
                     else
                         vprint User1: "invalid model, continuing to next m";
                     end if;
                 catch e
                      vprint User1: e;
                 end try;
+                //end for;
             elif Cputime() - t0 gt giveup_time then
                 break;
             end if;
@@ -352,3 +370,6 @@ intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*
     vprint User1: Sprintf("Plane model: %o model(s) found\n", #ans);
     return ans;
 end intrinsic;
+
+
+
