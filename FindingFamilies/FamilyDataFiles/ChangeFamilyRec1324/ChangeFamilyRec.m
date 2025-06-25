@@ -192,14 +192,15 @@ for k in Keys(FAM) do
 
     //Maps and models
     if assigned FAM[k]`M then
-        if (FAM[k]`genus lt 4) or FAM[k]`M`CPname in gonality_equals_2 then
+
             if assigned FAM[k]`jmap then FAM1[k]`jmap:=FAM[k]`jmap; end if;
             if assigned FAM[k]`M then FAM1[k]`M:=FAM[k]`M; end if;
             if assigned FAM[k]`RelativeJMap then FAM1[k]`RelativeJMap:=FAM[k]`RelativeJMap; end if;
-        end if;
+
     end if;
 
-
+    if assigned FAM[k]`calG_cangen then FAM1[k]`calG_cangen:=FAM[k]`calG_cangen; end if;
+    if assigned FAM[k]`H_cangen then FAM1[k]`H_cangen:=FAM[k]`H_cangen; end if;
 
 
 
@@ -208,7 +209,7 @@ end for;
 
 
 
-I:=Open("/homes/ek693/Main/FindingFamilies/FamilyDataFiles/ChangeFamilyRec012/FamiliesGenus012.dat", "w");
+I:=Open("/homes/ek693/Main/FindingFamilies/FamilyDataFiles/ChangeFamilyRec1324/FamiliesGenus1324.dat", "w");
     for k in Keys(FAM1) do
         x:=FAM1[k];
         WriteObject(I, x);

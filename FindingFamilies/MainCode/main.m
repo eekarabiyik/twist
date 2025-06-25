@@ -72,7 +72,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
         //Now the twist
         printf "Twisting the curve...\n";
-        psi,MAT,_,unrefined:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
         if assigned famG`RelativeJMap then
             L:=famG`RelativeJMap;
@@ -88,7 +88,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_,unrefined;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_;
     end if;
    
 
@@ -110,7 +110,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey,unrefined;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey;
     end if;
-    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,unrefined;
+    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey;
 end intrinsic;

@@ -40,18 +40,18 @@ intrinsic PortData(input, output) -> SeqEnum
             A := AssociativeArray();
             for j in [1..#FAM] do
                 y := FAM[j];
-                if not assigned y`label then
+                if not assigned y`agreeable_label then
                     Append(~bad, <g, ind, j>);
                     continue;
                 end if;
-                if not IsDefined(A, y`label) then
-                    A[y`label] := [];
+                if not IsDefined(A, y`agreeable_label) then
+                    A[y`agreeable_label] := [];
                 end if;
-                Append(~(A[y`label]), y);
+                Append(~(A[y`agreeable_label]), y);
             end for;
-            for label -> L in A do
+            for agreeable_label -> L in A do
                 maxlen := Max(maxlen, #L);
-                O := Open(output * g * "/" * ind * "/" * label, "w");
+                O := Open(output * g * "/" * ind * "/" * agreeable_label, "w");
                 for y in L do
                     WriteObject(O, y);
                 end for;
