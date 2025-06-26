@@ -89,7 +89,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
         newishprec:= potentialprec + lcmneeded - remainder;
     end if;
     prec:=newishprec;
-      if potentialprec lt prec then
+      if potentialprec le prec then
         M := IncreaseModularFormPrecision(M,prec);
       end if;
     SetSeed(0);
@@ -109,7 +109,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
 	    mind := maxd - 1;
 	
 	    maxprec := Floor(N*(M`k*maxd/12 + 1)) + 1;
-	    if (maxprec gt prec) then
+	    if (maxprec ge prec) then
 	             if not IsDivisibleBy(maxprec,lcmneeded) then
                     remainder:= maxprec mod lcmneeded;
                     maxprec:= maxprec + lcmneeded - remainder;
@@ -132,7 +132,7 @@ intrinsic AbsoluteJmap(M::Rec) -> Crv, SeqEnum[RngMPolElt], RngIntElt, SeqEnum, 
 	
         end if;
         maxprec := Floor(N*(1 + maxd/6)+1);
-        if (maxprec gt prec) then
+        if (maxprec ge prec) then
 	        if not IsDivisibleBy(maxprec,lcmneeded) then
                     remainder:= maxprec mod lcmneeded;
                     maxprec:= maxprec + lcmneeded - remainder;
