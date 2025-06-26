@@ -19,7 +19,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 
 
 //Fix this 
-intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true, test_hyperelliptic:=true) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true, test_hyperelliptic:=true, compute_plane:=false, giveup_time:=720) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -74,6 +74,8 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         printf "Twisting the curve...\n";
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
+        printf "Computing the jmap...\n";
+        //Computing the jmap. The jmap of the representative is precomputed.
         if assigned famG`RelativeJMap then
             L:=famG`RelativeJMap;
         else 
@@ -83,12 +85,11 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
     end if;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
 
-    printf "Computing the jmap...\n";
-    //Computing the jmap. The jmap of the representative is precomputed.
+
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_,[];
     end if;
    
 
@@ -110,7 +111,25 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey;
+        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey,[];
     end if;
-    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey;
+
+
+    if compute_plane and FAM[famkey]`genus gt 3 and not FAM[famkey]`M`CPname in gonality_equals_2  then
+        MFAM:=FAM[famkey]`M;
+        MFAM`H`SL:=true;
+        cyclevel:=LCM([MFAM`N,#BaseRing(G)]);
+        cyctop<o>:=CyclotomicField(cyclevel);
+        cycG:=CyclotomicField(#BaseRing(G));
+        M:=CreateModularCurveRec(G);
+        MFF:=F0Twister(MFAM`F0, MAT^(-1),cyclevel);//Need galois descent coef by coef?
+        if psi eq [] then s:=1; else s:=Rank(Parent(psi[1]))-1; end if;
+        PP:=ProjectiveSpace(Rationals(),s);
+        CG:=Curve(PP,psi);
+         L:=PlaneModelsFromQExpansionsForm(M, CG, MFF:giveup_time:=giveup_time);
+        return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,L;
+    end if;
+
+
+    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,[];
 end intrinsic;
