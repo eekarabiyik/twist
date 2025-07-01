@@ -135,8 +135,8 @@ end intrinsic;
 
 
 
-
-intrinsic FamilyFinderCanon(G::GrpMat, T::GrpMat, FAM::SeqEnum,aggcan) -> RngIntElt, Rec, GrpMat, GrpMat, GrpMat
+//Uses canonical generators
+intrinsic FamilyFinderCanon(G::GrpMat, T::GrpMat, FAM::SeqEnum,aggcan: use_agg_label:=false,use_family_label:=false, family_label:="",agreeable_label:="") -> RngIntElt, Rec, GrpMat, GrpMat, GrpMat
 {
     Input:
 	    G       : a subgroup of GL2(Zhat) full det, -I in G
@@ -147,7 +147,14 @@ intrinsic FamilyFinderCanon(G::GrpMat, T::GrpMat, FAM::SeqEnum,aggcan) -> RngInt
 
 }
     N:=#BaseRing(G);
-    YY:=[k: k in Keys(FAM)| aggcan eq FAM[k]`calG_cangen];
+    if use_agg_label then 
+        YY:=[k: k in Keys(FAM)| agreeable_label eq FAM[k]`agreeable_label];
+    elif use_family_label then
+        YY:=[k: k in Keys(FAM)| family_label eq FAM[k]`family_label];
+    else
+        YY:=[k: k in Keys(FAM)| aggcan eq FAM[k]`calG_cangen];
+    end if;
+    
     Y:=AssociativeArray();
     calG:=GL2AgreeableClosure(G);
     calG_level:=#BaseRing(calG);
@@ -364,6 +371,86 @@ intrinsic FamilyFinder(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt, Rec, Gr
         end if;
     end for;
 
+    o:=-1;
+    u:=-1;
+    //Y is an array of possible families that contains G.
+    //We know possible families. We conjugate to land in them, then we check whether the SL2 intersections match. 
+    for t in Keys(Y) do
+        b:=FiniteLift(Y[t][2],calG_level,M);
+        Tcong:=Conjugate(SL2Lift(T,M),b);
+        Tcong`SL:=true;
+        //we check if the SL2 intersection are the same.
+        if SL2Project(Tcong,T_level) eq FAM[t]`B then;
+            o:=t;
+            break t;
+        else
+            //If not, it is possible that T is conjugate in the normalizer of calG, we check if this is the case. Either one of these cases will happen.
+            norm:=Normalizer(GL2Ambient(M),GL2Lift(FAM[t]`calG,M));
+            for i in [1..#FAM[t]`conjugacyofB] do
+                conB:=FAM[t]`conjugacyofB[i];
+                conB`SL:=true;
+                con,element:=IsConjugate(norm,SL2Lift(conB,M),Tcong);
+                if con then
+                    u:=t;
+                    neededb:=element;
+                    break t;
+                end if;
+            end for;
+        end if;
+    end for;
+
+    if o ne -1 then
+        //If we have found the family with correct SL2intersection:
+        b:=FiniteLift(Y[o][2],calG_level,N);
+        bm:=FiniteLift(Y[o][2],calG_level,M);
+        Gcong:=Conjugate(G,b);
+        Tcong:=Conjugate(SL2Lift(T,M),bm);
+
+        return o,FAM[o],Gcong,FAM[o]`calG,Tcong;
+    else
+        //Otherwise T is conjugate to a normalizer conjugate.
+        bm:=FiniteLift(Y[u][2],calG_level,M);
+        Tcong:=Conjugate(SL2Lift(T,M),bm);//figure out conjugation
+        Tcong:=Conjugate(Tcong,neededb);
+        b:=FiniteLift(Y[u][2],calG_level,N);
+        Gcong:=Conjugate(G,b);
+        neededbN:=FiniteLift(neededb,M,N);
+        Gcong:=Conjugate(Gcong,neededbN);
+
+        return u,FAM[u],Gcong,FAM[u]`calG,Tcong;
+    end if;
+end intrinsic;
+
+//Uses labels of the agreeable closure
+intrinsic FamilyFinderAgLabel(G::GrpMat, T::GrpMat, FAM::SeqEnum,agglabel) -> RngIntElt, Rec, GrpMat, GrpMat, GrpMat
+{
+    Input:
+	    G       : a subgroup of GL2(Zhat) full det, -I in G
+	    T       : G meet SL2
+        FAM     : The list of families
+    Output:
+        The family containing G
+
+}
+    N:=#BaseRing(G);
+    YY:=[k: k in Keys(FAM)| agglabel eq FAM[k]`agreeable_label];
+    Y:=AssociativeArray();
+    calG:=GL2AgreeableClosure(G);
+    calG_level:=#BaseRing(calG);
+    T_level,T:=SL2Level(T);
+    g:=GL2Genus(T);
+    M:=LCM([calG_level,T_level]);
+    index:=GL2Index(G);
+    for k in YY do
+        if not assigned FAM[k]`H or FAM[k]`fine eq true then continue; end if;
+        if index eq FAM[k]`index and FAM[k]`B_level eq T_level and g eq FAM[k]`genus and FAM[k]`calG_level eq calG_level and IsConjugate(GL(2,Integers(T_level)),T,FAM[k]`B) then   //This seems to be working
+            //k;
+            A,b:=IsConjugate(GL(2,Integers(calG_level)),calG,FAM[k]`calG);
+            if A then
+                Y[k]:=<k,b>;
+            end if;
+        end if;
+    end for;
     o:=-1;
     u:=-1;
     //Y is an array of possible families that contains G.

@@ -347,7 +347,7 @@ intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*
                     //print(valid);
                     if valid then
                         if verbose then printf "valid\n"; end if;
-                        Append(~ans, <f,proj,M,MF>);
+                        Append(~ans, <f,proj,M>);
 
                     else
                         vprint User1: "invalid model, continuing to next m";

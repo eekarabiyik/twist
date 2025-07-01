@@ -19,7 +19,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 
 
 //Fix this 
-intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true, test_hyperelliptic:=true, compute_plane:=false, giveup_time:=720) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyperelliptic:=true,already_conjugated:=false,onefamily:=false, use_agg_label:=false, use_family_label:=false, agreeable_label:="", family_label:="", use_parent_can:=false, parentcan:=[]) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -41,7 +41,17 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
     //We first start with finding the family in our database that contains G.
     print("Finding the family...");
     //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
-    famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan);
+    if already_conjugated and onefamily then
+        Gcong:=G; Tcong:=T; famG:=FAM[1]; 
+    elif use_agg_label then 
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan:agreeable_label:=agreeable_label, use_agg_label:=use_agg_label);
+    elif use_family_label then
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan:family_label:=family_label, use_family_label:=use_family_label);
+    elif use_parent_can then 
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan);
+    else
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
+    end if;
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
@@ -49,14 +59,15 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
     end for;
     Tcong`SL:=true;
     if famG`extra1 then
-        "IN WAWA!!!";
         printf "Computing the cocycle\n";
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
         xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
         Pol<[x]>:=PolynomialRing(Rationals(),3);
         PP:=ProjectiveSpace(Rationals(),2);
         pis:=[Pol!(x[2]^2-x[1]*x[3])];
+        printf "Twisting the curve...\n";
         psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
+                printf "Computing the jmap...\n";
         if assigned famG`RelativeJMap then
             L:=famG`RelativeJMap;
         else 
@@ -89,7 +100,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,_,_,_,[];
+        return psi,MAT,relmap,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_;
     end if;
    
 
@@ -111,12 +122,20 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famkey,[];
+        return psi,MAT,relmap,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT;
     end if;
 
 
-    if compute_plane and FAM[famkey]`genus gt 3 and not FAM[famkey]`M`CPname in gonality_equals_2  then
-        MFAM:=FAM[famkey]`M;
+
+    return psi,MAT,relmap,/*famG`JmapcalG,*/"not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_;
+end intrinsic;
+
+
+
+
+intrinsic ComputePlaneModel(G::GrpMat, MAT,MFAM::Rec,psi::SeqEnum: giveup_time:=720)->Any
+{}
+    assert MFAM`genus gt 3 and not MFAM`CPname in gonality_equals_2;
         MFAM`H`SL:=true;
         cyclevel:=LCM([MFAM`N,#BaseRing(G)]);
         cyctop<o>:=CyclotomicField(cyclevel);
@@ -126,10 +145,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum, parentcan : redcub:=true
         if psi eq [] then s:=1; else s:=Rank(Parent(psi[1]))-1; end if;
         PP:=ProjectiveSpace(Rationals(),s);
         CG:=Curve(PP,psi);
-         L:=PlaneModelsFromQExpansionsForm(M, CG, MFF:giveup_time:=giveup_time);
-        return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,L;
-    end if;
-
-
-    return psi,MAT,relmap,/*famG`JmapcalG,*/false,famG`genus,K,famkey,[];
+        L:=PlaneModelsFromQExpansionsForm(M, CG, MFF:giveup_time:=giveup_time);
+        return L;
 end intrinsic;
+
+
+
+
+
+
