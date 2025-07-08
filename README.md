@@ -2,6 +2,9 @@
 ATTENTION: THIS REPO IS RAPIDLY CHANGING. DO NOT BELIEVE ANYTHING IT SAYS! ONCE EVERYTHING IS IN PLACE THIS SENTENCE WILL BE REMOVED.
 This repository contains the classification of modular curves upto genus 24 in terms of families. 
 
+All the data is on: https://zenodo.org/records/15832985
+Download these files. Unpack. Put them all in a folder. Use the `PortData` intrinsic.
+
 It also contains a set of codes for the computation of models of modular curves upto genus 24. 
 The main function is `FindModel` in the file main.m in the folder `FindingFamilies/MainCode`.
 It takes an arbitrary subgroup G of GL_2(Z/NZ) with full determinant, its SL2Intersection T and the list of families `FAM` as inputs. In turn it computes a set of equations for the modular curve, computes its jmap. It also camputes whether the curve has Q-gonality 2.
