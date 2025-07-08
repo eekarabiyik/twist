@@ -1,5 +1,8 @@
 # A Classification of Modular Curves
 ATTENTION: THIS REPO IS RAPIDLY CHANGING. DO NOT BELIEVE ANYTHING IT SAYS! ONCE EVERYTHING IS IN PLACE THIS SENTENCE WILL BE REMOVED.
+
+A SMALL BUG ABOUT COMPUTING THE JMAPS OF MODULAR CURVES OF GENUS >2 IS BEING FIXED!
+
 This repository contains the classification of modular curves upto genus 24 in terms of families. 
 
 All the data is on: https://zenodo.org/records/15832985

@@ -817,3 +817,33 @@ if verbose then printf "Done!\n"; end if;
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
 
+
+
+//Make Verbose
+intrinsic FindRelativeJMap(FAM::SeqEnum: verbose:=false) -> SeqEnum
+{List of fams outputs with models computed}
+  
+if verbose then printf "Computing Relative Jmaps\n"; end if;
+
+
+
+for k in Keys(FAM) do 
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and assigned FAM[k]`calGModCurve then
+        if FAM[k]`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
+        if #FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0 then continue; end if;//Gets stuck sometimes
+        if FAM[k]`oneelement then continue; end if;
+        G:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        M:=FAM[k]`M;
+        M0:=FAM[k]`calGModCurve;
+        is_canonical :=M`genus ge 3 and M`k eq 2 and Set(M`mult) eq {1};
+        is_canonical0:=M0`genus ge 3 and M0`k eq 2 and Set(M0`mult) eq {1};
+        if not (is_canonical and is_canonical0) then continue; end if;
+        L:=FindMorphism(M,M0);
+        FAM[k]`RelativeJMap:=L;
+    end if;
+end for;
+
+return [FAM[k]: k in Keys(FAM)];
+end intrinsic;
+
