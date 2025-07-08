@@ -23,8 +23,6 @@ Some explanations:
 This repo is optimized for computation of modular curves with respect to group theory data coming from LMFDB. This is not necessary, earlier versions was not optimized for this and did not use LMFDB labels nor canonical generators. We believe that modular curves and forms data being collected in LMFDB is a good thing.
 
 
-- Do not believe the output when your input is a genus 0 modular curve! There is a small bug but to fix it I need to recompute everything so it will some time to fix it. This is still the case but will be fixed.
-
 - Our implementation is usually faster than other implementations for finding models for modular curves. This is certainly the case when the level of modular curves input gets bigger and bigger.
 
 - `Trial/Trial.m` demonstrates over all genus 1 modular curves whose level us at most 70. Once other computations are done, this will be increased to genus up to 24.
