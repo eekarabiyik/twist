@@ -25,7 +25,7 @@ intrinsic TwistCurve(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEnum[Rng
     for i in [1..#I] do
         Append(~Itw,Pol!I[i]^MAT);
     end for;
-    unrefined:=Itw;
+
 
     //Get the coefficent vectors of polynomials in Itw to do Galois descent.
     mon2:=MonomialsOfDegree(Pol,2);
@@ -80,7 +80,7 @@ intrinsic TwistCurve(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEnum[Rng
         i:=1;
         while i lt #coeff2+1 do
             v:=coeff2[i];
-            tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] /*/ #GAL*/;
             tr:=V2!Transpose(tr);
             if Dimension(sub<V2|S2 join {tr}>) gt Dimension(sub<V2|S2>) then
                 S2:=S2 join {tr};
@@ -124,7 +124,7 @@ intrinsic TwistCurve(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEnum[Rng
         i:=1;
         while i lt #coeff3+1 do
             v:=coeff3[i];
-            tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] /*/ #GAL*/;
             tr:=V3!Transpose(tr);
             if Dimension(sub<V3|S3 join {tr}>) gt Dimension(sub<V3|S3>) then
                 S3:=S3 join {tr};
@@ -165,7 +165,7 @@ intrinsic TwistCurve(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEnum[Rng
         i:=1;
         while i lt #coeff4+1 do
             v:=coeff4[i];
-            tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] /*/ #GAL*/;
             tr:=V4!Transpose(tr);
             if Dimension(sub<V4|S4 join {tr}>) gt Dimension(sub<V4|S4>) then
                 S4:=S4 join {tr};
@@ -203,7 +203,7 @@ intrinsic TwistCurve(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEnum[Rng
         end if;
     end if;
 
-    return I2G cat I3G cat I4G, MAT,s,unrefined;
+    return I2G cat I3G cat I4G, MAT,s;
 end intrinsic;
 
 
@@ -297,7 +297,7 @@ intrinsic TwistCurveGenus0(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEn
         i:=1;
         while i lt #coeff2+1 do
             v:=coeff2[i];
-            tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon2,1,[sigma(g)(v[i]): i in [1..#mon2]]) : g in GAL] /*/ #GAL*/;
             tr:=V2!Transpose(tr);
             if Dimension(sub<V2|S2 join {tr}>) gt Dimension(sub<V2|S2>) then
                 S2:=S2 join {tr};
@@ -341,7 +341,7 @@ intrinsic TwistCurveGenus0(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEn
         i:=1;
         while i lt #coeff3+1 do
             v:=coeff3[i];
-            tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon3,1,[sigma(g)(v[i]): i in [1..#mon3]]) : g in GAL] /*/ #GAL*/;
             tr:=V3!Transpose(tr);
             if Dimension(sub<V3|S3 join {tr}>) gt Dimension(sub<V3|S3>) then
                 S3:=S3 join {tr};
@@ -382,7 +382,7 @@ intrinsic TwistCurveGenus0(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEn
         i:=1;
         while i lt #coeff4+1 do
             v:=coeff4[i];
-            tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] / #GAL;
+            tr:=&+[ Matrix(K,#mon4,1,[sigma(g)(v[i]): i in [1..#mon4]]) : g in GAL] /*/ #GAL*/;
             tr:=V4!Transpose(tr);
             if Dimension(sub<V4|S4 join {tr}>) gt Dimension(sub<V4|S4>) then
                 S4:=S4 join {tr};
