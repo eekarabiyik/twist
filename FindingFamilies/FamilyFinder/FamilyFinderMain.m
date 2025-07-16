@@ -158,7 +158,20 @@ intrinsic FamilyFinderCanon(G::GrpMat, T::GrpMat, FAM::SeqEnum,aggcan: use_agg_l
     Y:=AssociativeArray();
     calG:=GL2AgreeableClosure(G);
     calG_level:=#BaseRing(calG);
+    if Type(calG_level) eq Infty then calG_level:=1; end if;
     T_level,T:=SL2Level(T);
+    if T_level eq 1 then
+        listkeys:=[k: k in Keys(FAM)| #BaseRing(FAM[k]`B) eq 2 and FAM[k]`B eq SL2Ambient(2) and SL2Level(FAM[k]`B) eq 1];
+        s:=listkeys[1];
+        assert FAM[s]`B eq SL2Project(T,2);
+        return s, FAM[s], G, FAM[s]`calG, T;
+    end if;
+    if calG_level eq 1 then
+        listkeys:=[k: k in Keys(FAM)| #BaseRing(FAM[k]`calG) eq 2 and FAM[k]`calG eq GL2Ambient(2) and SL2Level(FAM[k]`B) eq 2];
+        s:=listkeys[1];
+        assert T eq FAM[s]`B;
+        return s, FAM[s], G, FAM[s]`calG, T;
+    end if;
     g:=GL2Genus(T);
     M:=LCM([calG_level,T_level]);
     index:=GL2Index(G);

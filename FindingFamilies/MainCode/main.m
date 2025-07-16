@@ -52,6 +52,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     else
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     end if;
+    if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,_,_,_; end if;
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
@@ -152,8 +153,6 @@ intrinsic ComputePlaneModel(G::GrpMat, MAT,MFAM::Rec,psi::SeqEnum: giveup_time:=
         L:=PlaneModelsFromQExpansionsForm(M, CG, MFF:giveup_time:=giveup_time);
         return L;
 end intrinsic;
-
-
 
 
 
