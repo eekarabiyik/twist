@@ -32,6 +32,12 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 "58A5", "59A5", "60A5", "96A5", "48A6", "71A6", "32E7", "48N7", "56B7", "64D7", "82B7",
 "96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 
+gonality_equals_3:=[ "54C5", "16A6", "18A6", "18D6", "24D6", "27A6", "28D6", "28E6", 
+    "30C6", "32A6", "36C6", "36H6", "36J6", "36K6", "39A6", "45D6", "54A6", "54B6", "56D6", 
+    "64A6", "84A6", "108A6", "27B7", "27C7", "30D7", "42M7", "24A8", "24B8", "36H8", "36I8", 
+    "36J8", "36K8", "48A8", "48C8", "48E8", "72F8", "72G8", "84A8", "96A8", "108A8", "108B8", 
+    "144A8", "15A10", "36A10", "36C10", "42G10", "72A10", "75A10", "108A10", "108C10", "108A12"];
+
 
 
 
@@ -74,8 +80,21 @@ rank:=Rank(Parent(j[1]));
 Pol:=PolynomialRing(Rationals(),rank);
 j:=[Pol!j[i]: i in [1..#j]];
 
+if Type(qgon2) eq BoolElt then
+    if qgon2 then gonbounds:=<2,2,2,2>; end if;
+    if not qgon2 then gonbounds:=<4,4,2,2>; end if;
+    LMFDBWriteGonalityBounds(gonbounds, label);
+end if;
 
 
+if MFAM`CPname in gonality_equals_3 then geotrigonal:=true; else geotrigonal:=false; end if;
+
+
+if geotrigonal then
+    gonbounds := LMFDBReadGonalityBounds(label);
+    gonbounds:=<gonbounds[1],gonbounds[2],3,3>;
+    LMFDBWriteGonalityBounds(gonbounds, label);
+end if;
 
 
 

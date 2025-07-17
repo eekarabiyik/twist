@@ -1,8 +1,7 @@
-//assuming the output of FindModel and ComputePlaneModel
+//assuming the output of FindModel and ComputePlaneModel. How to do this?
 
 cusps:=CuspOrbits(Gcong);
-
-Cs := L;//L is the list of plane models
+Cs := LMFDBReadPlaneModel(label);
 if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
 X := Curve(Proj(Universe(psi)), psi); end if;
 C := 0; // stupid magma needs this defined even if not used.
