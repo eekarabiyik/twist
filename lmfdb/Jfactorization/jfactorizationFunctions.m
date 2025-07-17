@@ -1,0 +1,84 @@
+
+function parenwrap(f)
+    f := sprint(f);
+    if "+" in f or "-" in f then
+        f := "(" * f * ")";
+    end if;
+    return f;
+end function;
+
+function show_exp(fe)
+    f, e := Explode(fe);
+    f := parenwrap(f);
+    if e eq 1 then
+        return f;
+    end if;
+    return f * "^" * sprint(e);
+end function;
+
+function getfac(j)
+    ZZ := Integers();
+    leading := [];
+    facs := [];
+    nfacs := [];
+    R := Universe(j);
+    AssignCanonicalNames(~R);
+    jdegs := {Degree(coord) : coord in j};
+    for coord in j do
+        fac, u := Factorization(coord);
+        nfac := [fe[2] : fe in fac | fe[1] ne R.(Rank(R))]; // skip homogenizing terms
+        if #nfac eq 0 then
+            nfac := 0;
+        else
+            nfac := &+nfac;
+        end if;
+        Append(~nfacs, Sprint(nfac));
+        rescaled := [];
+        for fe in fac do
+            f, e := Explode(fe);
+            f, d := ClearDenominators(f);
+            u /:= d^e;
+            Append(~rescaled, <f, e>);
+        end for;
+        Append(~leading, u);
+        if #rescaled eq 1 and fac[1][2] eq 1 then
+            // irreducible
+            s := sprint(rescaled[1][1]);
+        else
+            s := Join([show_exp(fe) : fe in rescaled], "*");
+        end if;
+        Append(~facs, s);
+    end for;
+    facs := "{" * Join(facs, ",") * "}";
+    nfacs := "{" * Join(nfacs, ",") * "}";
+
+    d := LCM([Denominator(u) : u in leading]);
+	
+    if Rationals()!leading[#leading] lt 0 then
+        d := -d;
+    end if;
+    leading := [ZZ!(u * d) : u in leading];
+    d := GCD(leading);
+    leading := [u div d : u in leading];
+    if &and[u eq 1 : u in leading] then
+        leading := "\\N";
+    else
+        // Factor leading coefficients
+        leadfac := [];
+        for u in leading do
+            if u in [1, -1] then
+                Append(~leadfac, Sprint(u));
+            else
+                fac, sgn := Factorization(u);
+                sgn := (sgn eq 1) select "" else "-";
+                Append(~leadfac, sgn * Join([show_exp(pe) : pe in fac], "*"));
+            end if;
+        end for;
+        leading := "{" * Join([Sprint(u) : u in leadfac], ",") * "}";
+    end if;
+    jdegs := Join([Sprint(d) : d in jdegs], ","); // Should be length 1
+
+    return facs, leading, nfacs, jdegs;
+end function;
+
+
