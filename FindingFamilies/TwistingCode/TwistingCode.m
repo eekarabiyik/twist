@@ -422,3 +422,51 @@ intrinsic TwistCurveGenus0(psi, xi/*::HomGrp*/, K::Fld : redcub:=false) -> SeqEn
 
     return I2G cat I3G cat I4G, MAT,s;
 end intrinsic;
+
+intrinsic ReduceCubics(psi) -> Any
+{  }
+    rank:=Rank(Parent(psi[1]));
+    Pol<[x]>:=PolynomialRing(Rationals(),rank);
+    mon2:=MonomialsOfDegree(Pol,2);
+    mon3:=MonomialsOfDegree(Pol,3);
+    psi:=[Pol!a: a in psi];
+
+     coef2:=[];
+    for f in psi do
+        Append(~coef2,[MonomialCoefficient(f,m): m in mon2]);
+    end for;
+
+    coef3:=[];
+    for f in psi do
+        Append(~coef3,[MonomialCoefficient(f,m): m in mon3]);
+    end for;
+
+     UU2 := VectorSpace(Rationals(),#mon2);
+    VV2:=sub<UU2| coef2>;
+
+    UU3 := VectorSpace(Rationals(),#mon3);
+    VV3:=sub<UU3| coef3>;
+    I2G:=[a: a in psi| Degree(a) eq 2];
+    I3G:=[a: a in psi| Degree(a) eq 3];
+    I4G:=[a: a in psi| Degree(a) eq 4];
+    J:=I2G cat I3G cat I4G;
+    
+if Dimension(VV2) ne 0 and Dimension(VV3) ne 0 then
+            V:=VectorSpace(Rationals(),#mon3);
+            W:=sub<V| [V![MonomialCoefficient(x[i]*f,m): m in mon3] : i in [1..rank], f in I2G]>;
+            V3:=sub<V| [V![MonomialCoefficient(f,m): m in mon3] : f in I3G]>;
+            J:=[];
+            i:=1;
+            while Dimension(W) lt Dimension(V3) do
+                v:=V![MonomialCoefficient(I3G[i],m): m in mon3];
+                if v notin W then
+                    W:=sub<V|Generators(W) join {v}>;
+                    J:=J cat [I3G[i]];
+                end if;
+                i:=i+1;
+            end while;
+            I3G := J;
+        end if;
+        return I2G cat J cat I4G;
+
+end intrinsic;

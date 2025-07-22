@@ -164,3 +164,43 @@ intrinsic LoadFamilies(filenames::SeqEnum[MonStgElt]) -> SeqEnum
     end for;
     return FAM;
 end intrinsic;
+
+
+intrinsic ConjIntoParent(~FAM::Any,k::Any)
+{Updates FAM}
+    k;
+    fam:=FAM[k];
+    if fam`agreeable_label eq "1.1.0.a.1" then 
+        fam`extra5:=GL2Ambient(1)![1,0,0,1];
+        FAM[k]:=fam;
+        return; 
+    end if;
+    if assigned fam`extra2 and fam`extra2 then "This was done before!"; return; end if;
+    if fam`parentcalG eq "" then 
+        fam`extra5:=GL2Ambient(#BaseRing(fam`quogroup))![1,0,0,1];
+        fam`extra4:=GL2Ambient(#BaseRing(fam`quogroup))![1,0,0,1];
+        fam`extra2:=true;
+        FAM[k]:=fam;
+        return;
+    else
+         ConjIntoParent(~FAM,fam`parentcalG);
+    end if;
+    if fam`parentcalG eq "1.1.0.a.1" then 
+        lift:=GL2ElementLifter(1,#BaseRing(fam`quogroup));
+    else
+        lift:=GL2ElementLifter(#BaseRing(FAM[fam`parentcalG]`quogroup),#BaseRing(fam`quogroup));
+    end if;
+    conjugator:=GL2Ambient(#BaseRing(fam`quogroup))!fam`extra4;
+    lifted:=lift(FAM[fam`parentcalG]`extra5);
+    lifted;
+    GGG:=fam`quogroup;
+    fam`quogroup:=Conjugate(Conjugate(GGG,conjugator),lifted);
+    //fam`quogroup:=Conjugate(fam`quogroup,conjugator);
+    //fam`quogroup:=Conjugate(fam`quogroup,lifted);
+  
+
+    fam`extra5:=conjugator*lifted;
+    fam`extra2:=true;
+    FAM[k]:=fam;
+    k;
+end intrinsic;

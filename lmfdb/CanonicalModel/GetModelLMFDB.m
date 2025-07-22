@@ -3,6 +3,7 @@ AttachSpec("./spec");
 //Assumeeverythingattached
 //Need to figure out how the data is coming
 //AttachSpec("equations.spec");
+//need label and group attached.
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
@@ -33,16 +34,10 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 "96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 
 gonality_equals_3:=[ "54C5", "16A6", "18A6", "18D6", "24D6", "27A6", "28D6", "28E6", 
-    "30C6", "32A6", "36C6", "36H6", "36J6", "36K6", "39A6", "45D6", "54A6", "54B6", "56D6", 
-    "64A6", "84A6", "108A6", "27B7", "27C7", "30D7", "42M7", "24A8", "24B8", "36H8", "36I8", 
-    "36J8", "36K8", "48A8", "48C8", "48E8", "72F8", "72G8", "84A8", "96A8", "108A8", "108B8", 
-    "144A8", "15A10", "36A10", "36C10", "42G10", "72A10", "75A10", "108A10", "108C10", "108A12"];
-
-
-
-
-
-
+"30C6", "32A6", "36C6", "36H6", "36J6", "36K6", "39A6", "45D6", "54A6", "54B6", "56D6", 
+"64A6", "84A6", "108A6", "27B7", "27C7", "30D7", "42M7", "24A8", "24B8", "36H8", "36I8", 
+"36J8", "36K8", "48A8", "48C8", "48E8", "72F8", "72G8", "84A8", "96A8", "108A8", "108B8", 
+"144A8", "15A10", "36A10", "36C10", "42G10", "72A10", "75A10", "108A10", "108C10", "108A12"];
 
 
 
@@ -56,40 +51,203 @@ rec:=Random(curves1);
 G:=rec`subgroup;
 label:=rec`label;
 T:=SL2Intersection(G);
-FAM:=LoadFamilies("/data/modcurve/Families2": genus:=5, index:=rec`index);
-psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT:=FindModel(G,T,FAM); //we already know the family. so it should be more like:: FindModel(Gcong,Tcong,FAM[family_label]);
+
+
+
+
+
+
+FAM:=LoadFamilies("/data/modcurve/Families2": genus:=genus, index:=index, agreeable_label:=aggclosure);
+psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT,Tcong:=FindModel(G,T,FAM); //we already know the family. so it should be more like:: FindModel(Gcong,Tcong,FAM[family_label]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if Type(psi) eq MonStgElt then
+    M:=FindModelOfXG(CreateModularCurveRec(Gcong));//ISSUE!update M`psi. Code is there! do and try
+    psi:=ReduceCubics(M`psi);
+    if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
+            X := Curve(Proj(Universe(psi)), psi); end if;
+    if M`genus gt 2 and not M`CPname in gonality_equals_2 then model_type:=0; else model_type:=8; end if; 
+    a,j:=AbsoluteJmap(M);
+    LMFDBWriteXGModel(X,model_type,label);
+    
+    cusps := CuspOrbits(Gcong);
+    cusps := [orb[1] : orb in cusps];
+    for i in [1..#cusps] do
+	    CuspUpdateCoordinates(~cusps[i], X, M`F0);
+    end for;
+    if M`CPname in gonality_equals_2 then geohyper:=true; else geohyper:=false; end if;
+    if geohyper then
+        canM:=FindCanonicalModel(M);
+        if canM`psi eq [] then 
+            gonbounds:=<2,2,2,2>;
+            LMFDBWriteGonalityBounds(gonbounds, label);
+        else
+            rank:=Rank(Parent(canM`psi[1]));
+            Pol:=PolynomialRing(Rationals(),rank);
+            canpsi:=[Pol!canM`psi[i]: i in [1..#canM`psi]];
+            canX := Curve(ProjectiveSpace(Rationals(),rank-1), canpsi); 
+            cancurve,mapo:=Conic(canX);
+            T:=HasRationalPoint(cancurve);
+            
+            if T then 
+                qgon2:=true;
+                gonbounds:=<2,2,2,2>;
+                LMFDBWriteGonalityBounds(gonbounds, label);
+            else
+                qgon2:=false;
+                gonbounds:=<2,4,2,2>;
+                LMFDBWriteGonalityBounds(gonbounds, label);
+            end if;
+        end if;
+    end if;
+    codomain:="";
+    LMFDBWriteJMap(j, cusps, codomain, model_type, label)
+
+    if M`CPname in gonality_equals_3 then geotrigonal:=true; else geotrigonal:=false; end if;
+    if geotrigonal then
+        gonbounds := LMFDBReadGonalityBounds(label);
+        gonbounds:=<3,gonbounds[2],3,3>;
+        LMFDBWriteGonalityBounds(gonbounds, label);
+    end if;
+    
+if geohyper then
+    if qgon2 eq true then   
+        if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
+            X := Curve(Proj(Universe(psi)), psi); end if;
+        isH, H,hmap := IsHyperelliptic(X);
+        if isH then
+            C:=H;
+            LMFDBWriteHyperellipticModel(C, hmap, label);
+        else
+            "What do you mean it is not hyperelliptic?";
+        end if;
+    else
+        if not assigned prec then
+            prec := 100;
+        else
+            prec := StringToInteger(prec);
+        end if;
+        if g lt 3 then
+            label cat ":genus too small";
+            //exit;
+        end if;
+        t0 := ReportStart(label, "conic double cover model");
+        done:-=false;
+        repeat
+            try
+                done:=true;
+                C := HyperellipticModelFromModRec(canM : i:=1, prec0:=prec)
+            catch e 
+                done:=false;
+                prec:=prec+10;
+            end try;
+        until done;
+        LMFDBWriteHyperellipticModel(DefiningEquations(C), [], label);
+end if;   
+    //The above should give the hyperelliptic model
+end if;
+
+
+
+cusps:=CuspOrbits(Gcong);
+Cs := LMFDBReadPlaneModel(label);
+if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
+X := Curve(Proj(Universe(psi)), psi); end if;
+C := 0; // stupid magma needs this defined even if not used.
+if #Cs gt 0 then
+    C := Curve(Proj(Parent(Cs[1][1])), Cs[1][1]);//Universe???
+end if;
+ans := [* *];
+cusps := [orb[1] : orb in cusps];
+cyclevel:=LCM([famG`M`N,#BaseRing(G)]);
+F0:=F0Twister(famG`M`F0, MAT^(-1),cyclevel);
+ for i in [1..#cusps] do
+	    CuspUpdateCoordinates(~cusps[i], X, F0);
+end for;
+for cusp in cusps do
+    K := cusp`field;
+    P1K := ProjectiveSpace(K, 1);
+    XK := ChangeRing(X, K);
+    pt := XK!Eltseq(cusp`coords);
+    Append(~ans, <model_type, pt>);
+    if #Cs gt 0 then
+        CK := ChangeRing(C, K);
+        T := ChangeRing(Universe(Cs[1][2]), K);
+        CprojK := map<XK -> CK| [T!f : f in Cs[1][2]]>;
+        Append(~ans, <2, pt @ CprojK>);//this is plane model?
+    end if;
+end for;
+LMFDBWriteCuspCoords(ans, label);
+
+
+
+
+
+
+exit;
+end if;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //canon is0 embedded is 8
 if MFAM`genus gt 2 and not MFAM`CPname in gonality_equals_2 then model_type:=0; else model_type:=8; end if; 
-//Gonality for (Qbar gonality 2 + genus>2) curves are completely determined by above code. 
 
 
-if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
-rank:=Rank(Parent(psi[1]));
-Pol:=PolynomialRing(Rationals(),rank);
-psi:=[Pol!psi[i]: i in [1..#psi]];
-X := Curve(ProjectiveSpace(Rationals(),rank-1), psi); end if;
-
+//Form the curve
+if psi eq [] then 
+    X:=Curve(ProjectiveSpace(Rationals(),1),[]); 
+else
+    rank:=Rank(Parent(psi[1]));
+    Pol:=PolynomialRing(Rationals(),rank);
+    psi:=[Pol!psi[i]: i in [1..#psi]];
+    X := Curve(ProjectiveSpace(Rationals(),rank-1), psi); 
+end if;
+//Write the curve
 LMFDBWriteXGModel(X,model_type,label);
 
 
-
-
+//j is either relative jmap or the absolute j map. Let's note that accordingly
+if rel then codomain:=famG`agreeable_label; else codomain:=""; end if;
+//Make everything over Rationals.
 j:=relmap;
 rank:=Rank(Parent(j[1]));
 Pol:=PolynomialRing(Rationals(),rank);
 j:=[Pol!j[i]: i in [1..#j]];
 
+//Gonality 2 case handled
 if Type(qgon2) eq BoolElt then
     if qgon2 then gonbounds:=<2,2,2,2>; end if;
     if not qgon2 then gonbounds:=<4,4,2,2>; end if;
     LMFDBWriteGonalityBounds(gonbounds, label);
 end if;
 
-
+//Geometric Gonality 3
 if MFAM`CPname in gonality_equals_3 then geotrigonal:=true; else geotrigonal:=false; end if;
-
-
 if geotrigonal then
     gonbounds := LMFDBReadGonalityBounds(label);
     gonbounds:=<gonbounds[1],gonbounds[2],3,3>;
@@ -98,24 +256,16 @@ end if;
 
 
 
-if rel then codomain:=famG`agreeable_label; else codomain:=""; end if;
-
-cusps:=[];
-
-
-    cyclevel:=LCM([famG`M`N,#BaseRing(Gcong)]);
-    F0:=F0Twister(famG`M`F0, MAT^(-1),cyclevel);
-    cusps := CuspOrbits(Gcong);
-        // We only need one representative of each orbit
-        cusps := [orb[1] : orb in cusps];
-        for i in [1..#cusps] do
-	    CuspUpdateCoordinates(~cusps[i], X, F0);
-        end for;
 
 
 
 
-LMFDBWriteJMap(j, cusps, codomain, model_type, label);//cusps empty so far, gotta check that
+
+
+
+
+
+
 //need the gonality data started.
 if model_type eq 0 then 
     L:=ComputePlaneModel(Gcong,MAT,MFAM,psi); 
@@ -125,13 +275,95 @@ if model_type eq 0 then
     for d in L do
         f:=d[1];
         proj:=d[2];
-        ans:=RecordPlaneModel(<f, proj>, CanEqs, best, bestkey, "mf", label : warn_invalid:=false);
+        best, bestkey, vld, tmpval, tmpred := RecordPlaneModel(<f, proj>, CanEqs, best, bestkey, "mf", label : warn_invalid:=false); //need to learn how we actually save the plane models.
     end for;
-    //LMFDBWritePlaneModel(f, proj, alg, label);//What is alg? and need to choose a best one.
+    //LMFDBWritePlaneModel(f, proj, alg, label);//What is alg? and need to choose a best one. Figure this out.
     //might need to use  RecordPlaneModel
 end if;//<f,proj,M>
 //Add gonalities
 //where does the gonality bounds come from? is it all from plane models? 
 //What should be the main gonality bound contributor ? plane models or canonical models? 
 
+//Writing the cusps of the model. (This will be done later again?)
+cusps:=CuspOrbits(Gcong);
+Cs := LMFDBReadPlaneModel(label);
+if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
+X := Curve(Proj(Universe(psi)), psi); end if;
+C := 0; // stupid magma needs this defined even if not used.
+if #Cs gt 0 then
+    C := Curve(Proj(Parent(Cs[1][1])), Cs[1][1]);//Universe???
+end if;
+ans := [* *];
+cusps := [orb[1] : orb in cusps];
+cyclevel:=LCM([famG`M`N,#BaseRing(G)]);
+F0:=F0Twister(famG`M`F0, MAT^(-1),cyclevel);
+ for i in [1..#cusps] do
+	    CuspUpdateCoordinates(~cusps[i], X, F0);
+end for;
+for cusp in cusps do
+    K := cusp`field;
+    P1K := ProjectiveSpace(K, 1);
+    XK := ChangeRing(X, K);
+    pt := XK!Eltseq(cusp`coords);
+    Append(~ans, <model_type, pt>);
+    if #Cs gt 0 then
+        CK := ChangeRing(C, K);
+        T := ChangeRing(Universe(Cs[1][2]), K);
+        CprojK := map<XK -> CK| [T!f : f in Cs[1][2]]>;
+        Append(~ans, <2, pt @ CprojK>);//this is plane model?
+    end if;
+end for;
+
+
+LMFDBWriteCuspCoords(ans, label);
+
+LMFDBWriteJMap(j, cusps, codomain, model_type, label);//cusps empty so far, gotta check that
+
+
+//HyperElliptic!
+if qgon2 eq true then   
+    if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
+        X := Curve(Proj(Universe(psi)), psi); end if;
+    isH, H,hmap := IsHyperelliptic(X);
+    if isH then
+        C:=H;
+        LMFDBWriteHyperellipticModel(C, hmap, label);
+    else
+        "What do you mean it is not hyperelliptic?";
+    end if;
+else
+    if not assigned prec then
+        prec := 100;
+    else
+        prec := StringToInteger(prec);
+    end if;
+    if g lt 3 then
+        label cat ":genus too small";
+        //exit;
+    end if;
+    t0 := ReportStart(label, "conic double cover model");
+    done:-=false;
+    repeat
+        try
+            done:=true;
+            C := HyperellipticModelFromGroup(Gcong,famG`CanModelForHyp,gonMAT : prec0:=prec);
+        catch e 
+            done:=false;
+            prec:=prec+10;
+        end try;
+    until done;
+    LMFDBWriteHyperellipticModel(DefiningEquations(C), [], label);
+    //The above should give the hyperelliptic model
+end if;
+
+
+
+
+
+
+
 exit;
+
+
+
+

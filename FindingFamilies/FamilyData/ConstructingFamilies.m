@@ -835,10 +835,13 @@ for k in Keys(FAM) do
         G:=FAM[k]`H;
         calG:=FAM[k]`calG;
         M:=FAM[k]`M;
+        M`H`SL:=true;
         M0:=FAM[k]`calGModCurve;
-        is_canonical :=M`genus ge 3 and M`k eq 2 and Set(M`mult) eq {1};
-        is_canonical0:=M0`genus ge 3 and M0`k eq 2 and Set(M0`mult) eq {1};
-        if not (is_canonical and is_canonical0) then continue; end if;
+        M0`H`SL:=true;
+        //is_canonical :=M`genus ge 3 and M`k eq 2 and Set(M`mult) eq {1};
+        //is_canonical0:=M0`genus ge 3 and M0`k eq 2 and Set(M0`mult) eq {1};
+        //if not (is_canonical and is_canonical0) then continue; end if;
+        "Computing!!";
         L:=FindMorphism(M,M0);
         FAM[k]`RelativeJMap:=L;
     end if;
@@ -846,4 +849,174 @@ end for;
 
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
+
+
+intrinsic AgreeableModel(FAM::SeqEnum: verbose:=false) -> SeqEnum
+{List of fams outputs with models computed}
+  
+if verbose then printf "Computing absolute jmaps when agreeable\n"; end if;
+
+
+
+for k in Keys(FAM) do 
+    calG:=FAM[k]`calG;
+    MG:=FindModelOfXG(CreateModularCurveRec(calG));
+    //if FAM[k]`agreeable_label eq "1.1.0.a.1" then continue; end if;
+    //a,b:=AbsoluteJmap(MG);
+    //FAM[k]`jmap:=b;
+    FAM[k]`calGModCurve:=MG;
+end for;
+
+return [FAM[k]: k in Keys(FAM)];
+end intrinsic;
+
+intrinsic AgreeableJmap(FAM::SeqEnum: verbose:=false) -> SeqEnum
+{List of fams outputs with models computed}
+  
+if verbose then printf "Computing absolute jmaps when agreeable\n"; end if;
+
+
+
+for k in Keys(FAM) do 
+    calG:=FAM[k]`calG;
+    MG:=FindModelOfXG(CreateModularCurveRec(calG));
+    if FAM[k]`agreeable_label eq "1.1.0.a.1" then continue; end if;
+    a,b:=AbsoluteJmap(MG);
+    FAM[k]`jmap:=b;
+    FAM[k]`calGModCurve:=MG;
+end for;
+
+return [FAM[k]: k in Keys(FAM)];
+end intrinsic;
+
+
+
+intrinsic RelativeAndOther(FAM::SeqEnum: verbose:=false) -> SeqEnum
+{List of fams outputs with models computed}
+  
+if verbose then printf "Computing rels and so on\n"; end if;
+
+
+
+for k in Keys(FAM) do 
+    G:=FAM[k]`H;
+    calG:=FAM[k]`calG;
+    M:=CreateModularCurveRec(G);
+        //printf "Computing the model\n";
+        M:=FindModelOfXG(M: G0:=calG);
+        H:=G;
+        calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+        M:=IncreaseModularFormPrecision(M,[Maximum(M`prec[i]+2,((M`prec_sturm[i]-1) * (M`sl2level div M`widths[i]))+5) : i in [1..M`vinf]]);
+        for i in [1..Ngens(calG)] do
+            FAM[k]`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+        end for;    
+        FAM[k]`M:=M;
+end for;
+
+
+for k in Keys(FAM) do
+    if (FAM[k]`M`CPname in gonality_equals_2 or (#FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0)) and assigned FAM[k]`M then 
+         M:=FAM[k]`M;
+        M`H`SL:=true;
+        a,b:=AbsoluteJmap(M);
+        FAM[k]`jmap:=b;
+     
+    end if;//Gets stuck sometimes
+end for;
+
+
+
+
+for k in Keys(FAM) do 
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and assigned FAM[k]`calGModCurve then
+        if FAM[k]`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
+        if #FAM[k]`M`psi gt 40 and FAM[k]`M`genus eq 0 then continue; end if;//Gets stuck sometimes
+        if FAM[k]`oneelement then continue; end if;
+        G:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        M:=FAM[k]`M;
+        M`H`SL:=true;
+        M0:=FAM[k]`calGModCurve;
+        //M0`H`SL:=true;
+        if FAM[k]`agreeable_label eq "1.1.0.a.1" then
+            M0`G:=GL2Ambient(2);
+            M0`H:=SL2Project(SL2Intersection(M0`G),2);
+        end if;
+        //is_canonical :=M`genus ge 3 and M`k eq 2 and Set(M`mult) eq {1};
+        //is_canonical0:=M0`genus ge 3 and M0`k eq 2 and Set(M0`mult) eq {1};
+        //if not (is_canonical and is_canonical0) then continue; end if;
+        "Computing!!";
+        L:=FindMorphism(M,M0);
+        FAM[k]`RelativeJMap:=L;
+        if assigned FAM[k]`RelativeJMap then
+            K1:=Parent(FAM[k]`RelativeJMap[1]);
+            K:=BaseRing(K1);
+            rank:=Rank(K1);
+            if Type(K) eq FldCyc and Degree(K) eq 1 then K:=Rationals(); end if;
+            Pol_K:=PolynomialRing(K,rank);
+            L:=[Pol_K!FAM[k]`RelativeJMap[i]: i in [1..#FAM[k]`RelativeJMap]];
+            FAM[k]`RelativeJMap:=L;
+        end if;
+
+    end if;
+end for;
+
+
+
+for k in Keys(FAM) do 
+    if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and assigned FAM[k]`calGModCurve and not assigned FAM[k]`RelativeJMap and not assigned FAM[k]`jmap then
+
+
+        M:=FAM[k]`M;
+        M`H`SL:=true;
+        a,b:=AbsoluteJmap(M);
+        FAM[k]`jmap:=b;
+    end if;
+end for;
+
+
+
+
+
+
+if verbose then printf "Computation for the gonality 2 modular curves\n"; end if;
+
+for k in Keys(FAM) do
+    if assigned FAM[k]`H and not FAM[k]`fine then
+         G:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
+     if FAM[k]`M`CPname in gonality_equals_2 and not assigned FAM[k]`CanModelForHyp then
+        FAM[k]`CanModelForHyp:=FindCanonicalModel(CreateModularCurveRec(FAM[k]`H));
+    end if; 
+    end if;
+end for;
+
+
+for k in Keys(FAM) do
+    if assigned FAM[k]`H and assigned FAM[k]`CanModelForHyp and not assigned FAM[k]`AOfMFCanModel then
+        H:=FAM[k]`H;
+        calG:=FAM[k]`calG;
+        FAM[k]`AOfMFCanModel:=AssociativeArray();
+        if assigned H`SL then delete H`SL; end if;
+        if assigned calG`SL then delete calG`SL; end if;
+        M:=FAM[k]`CanModelForHyp;
+        calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+        M`H`SL:=true;
+        M:=IncreaseModularFormPrecision(M,[Maximum(M`prec[i]+1,((M`prec_sturm[i]-1) * (M`sl2level div M`widths[i]))+5) : i in [1..M`vinf]]);
+        for i in [1..Ngens(calG)] do
+            FAM[k]`AOfMFCanModel[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+        end for;  
+        FAM[k]`CanModelForHyp:=M;  
+    end if;
+end for;
+
+
+
+
+return [FAM[k]: k in Keys(FAM)];
+end intrinsic;
+
+
+
 

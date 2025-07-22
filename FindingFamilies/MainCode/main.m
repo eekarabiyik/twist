@@ -52,7 +52,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     else
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     end if;
-    if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,_,_,_; end if;
+    if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,Gcong,_,_,Tcong; end if;
     printf "The family key in the database is %o\n",famkey;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
@@ -105,7 +105,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_;
+        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong;
     end if;
    
 
@@ -127,12 +127,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT;
+        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong;
     end if;
 
 
 
-    return psi,MAT,relmap,rel,/*famG`JmapcalG,*/"not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_;
+    return psi,MAT,relmap,rel,/*famG`JmapcalG,*/"not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong;
 end intrinsic;
 
 
