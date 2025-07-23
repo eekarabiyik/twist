@@ -343,3 +343,20 @@ function HyperellipticModelFromGroup(G,canM,gonMAT : i:=1, prec0:=0)
 	end if;
 	return C;
 end function;
+
+function HyperellipticModelFromModRec(canM : i:=1, prec0:=0)
+	canM:=IncreaseModularFormPrecision(canM,prec0);
+	fs:=canM`F0;
+	B := [elt[i] : elt in fs];
+	C := HyperellipticModel(B);
+	if Dimension(Ambient(C)) eq 3 then
+		C := SimplifyGeometricHyperellipticCurve(C);
+	end if;
+	isH, H := IsHyperelliptic(C);
+	if isH then
+		H := ReducedMinimalWeierstrassModel(H);
+		P2<X,Y,Z> := CoordinateRing(Ambient(H));
+		return H;
+	end if;
+	return C;
+end function;

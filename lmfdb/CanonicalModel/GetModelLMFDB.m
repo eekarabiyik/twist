@@ -1,9 +1,8 @@
 
+//Assumes aggcolsure, index and genus
 AttachSpec("./spec");
-//Assumeeverythingattached
-//Need to figure out how the data is coming
-//AttachSpec("equations.spec");
-//need label and group attached.
+AttachSpec("./ModularCurves/equations/equations.spec");
+
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
@@ -42,168 +41,9 @@ gonality_equals_3:=[ "54C5", "16A6", "18A6", "18D6", "24D6", "27A6", "28D6", "28
 
 
 
-
-
-
-rec:=Random(curves1);
-
-
-G:=rec`subgroup;
-label:=rec`label;
-T:=SL2Intersection(G);
-
-
-
-
-
-
-FAM:=LoadFamilies("/data/modcurve/Families2": genus:=genus, index:=index, agreeable_label:=aggclosure);
+FAM:=LoadFamilies("/home/eekarabiyik/Families": genus:=genus, index:=index, agreeable_label:=aggclosure);
+gonMAT:=0;
 psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT,Tcong:=FindModel(G,T,FAM); //we already know the family. so it should be more like:: FindModel(Gcong,Tcong,FAM[family_label]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if Type(psi) eq MonStgElt then
-    M:=FindModelOfXG(CreateModularCurveRec(Gcong));//ISSUE!update M`psi. Code is there! do and try
-    psi:=ReduceCubics(M`psi);
-    if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
-            X := Curve(Proj(Universe(psi)), psi); end if;
-    if M`genus gt 2 and not M`CPname in gonality_equals_2 then model_type:=0; else model_type:=8; end if; 
-    a,j:=AbsoluteJmap(M);
-    LMFDBWriteXGModel(X,model_type,label);
-    
-    cusps := CuspOrbits(Gcong);
-    cusps := [orb[1] : orb in cusps];
-    for i in [1..#cusps] do
-	    CuspUpdateCoordinates(~cusps[i], X, M`F0);
-    end for;
-    if M`CPname in gonality_equals_2 then geohyper:=true; else geohyper:=false; end if;
-    if geohyper then
-        canM:=FindCanonicalModel(M);
-        if canM`psi eq [] then 
-            gonbounds:=<2,2,2,2>;
-            LMFDBWriteGonalityBounds(gonbounds, label);
-        else
-            rank:=Rank(Parent(canM`psi[1]));
-            Pol:=PolynomialRing(Rationals(),rank);
-            canpsi:=[Pol!canM`psi[i]: i in [1..#canM`psi]];
-            canX := Curve(ProjectiveSpace(Rationals(),rank-1), canpsi); 
-            cancurve,mapo:=Conic(canX);
-            T:=HasRationalPoint(cancurve);
-            
-            if T then 
-                qgon2:=true;
-                gonbounds:=<2,2,2,2>;
-                LMFDBWriteGonalityBounds(gonbounds, label);
-            else
-                qgon2:=false;
-                gonbounds:=<2,4,2,2>;
-                LMFDBWriteGonalityBounds(gonbounds, label);
-            end if;
-        end if;
-    end if;
-    codomain:="";
-    LMFDBWriteJMap(j, cusps, codomain, model_type, label)
-
-    if M`CPname in gonality_equals_3 then geotrigonal:=true; else geotrigonal:=false; end if;
-    if geotrigonal then
-        gonbounds := LMFDBReadGonalityBounds(label);
-        gonbounds:=<3,gonbounds[2],3,3>;
-        LMFDBWriteGonalityBounds(gonbounds, label);
-    end if;
-    
-if geohyper then
-    if qgon2 eq true then   
-        if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
-            X := Curve(Proj(Universe(psi)), psi); end if;
-        isH, H,hmap := IsHyperelliptic(X);
-        if isH then
-            C:=H;
-            LMFDBWriteHyperellipticModel(C, hmap, label);
-        else
-            "What do you mean it is not hyperelliptic?";
-        end if;
-    else
-        if not assigned prec then
-            prec := 100;
-        else
-            prec := StringToInteger(prec);
-        end if;
-        if g lt 3 then
-            label cat ":genus too small";
-            //exit;
-        end if;
-        t0 := ReportStart(label, "conic double cover model");
-        done:-=false;
-        repeat
-            try
-                done:=true;
-                C := HyperellipticModelFromModRec(canM : i:=1, prec0:=prec)
-            catch e 
-                done:=false;
-                prec:=prec+10;
-            end try;
-        until done;
-        LMFDBWriteHyperellipticModel(DefiningEquations(C), [], label);
-end if;   
-    //The above should give the hyperelliptic model
-end if;
-
-
-
-cusps:=CuspOrbits(Gcong);
-Cs := LMFDBReadPlaneModel(label);
-if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
-X := Curve(Proj(Universe(psi)), psi); end if;
-C := 0; // stupid magma needs this defined even if not used.
-if #Cs gt 0 then
-    C := Curve(Proj(Parent(Cs[1][1])), Cs[1][1]);//Universe???
-end if;
-ans := [* *];
-cusps := [orb[1] : orb in cusps];
-cyclevel:=LCM([famG`M`N,#BaseRing(G)]);
-F0:=F0Twister(famG`M`F0, MAT^(-1),cyclevel);
- for i in [1..#cusps] do
-	    CuspUpdateCoordinates(~cusps[i], X, F0);
-end for;
-for cusp in cusps do
-    K := cusp`field;
-    P1K := ProjectiveSpace(K, 1);
-    XK := ChangeRing(X, K);
-    pt := XK!Eltseq(cusp`coords);
-    Append(~ans, <model_type, pt>);
-    if #Cs gt 0 then
-        CK := ChangeRing(C, K);
-        T := ChangeRing(Universe(Cs[1][2]), K);
-        CprojK := map<XK -> CK| [T!f : f in Cs[1][2]]>;
-        Append(~ans, <2, pt @ CprojK>);//this is plane model?
-    end if;
-end for;
-LMFDBWriteCuspCoords(ans, label);
-
-
-
-
-
-
-exit;
-end if;
-
-
-
-
-
-
 
 
 
@@ -321,13 +161,14 @@ LMFDBWriteJMap(j, cusps, codomain, model_type, label);//cusps empty so far, gott
 
 
 //HyperElliptic!
+if Type(qgon2) eq BoolElt then
 if qgon2 eq true then   
     if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else
         X := Curve(Proj(Universe(psi)), psi); end if;
     isH, H,hmap := IsHyperelliptic(X);
     if isH then
         C:=H;
-        LMFDBWriteHyperellipticModel(C, hmap, label);
+        LMFDBWriteHyperellipticModel(C, DefiningEquations(hmap), label);
     else
         "What do you mean it is not hyperelliptic?";
     end if;
@@ -337,12 +178,12 @@ else
     else
         prec := StringToInteger(prec);
     end if;
-    if g lt 3 then
+    if genus lt 3 then
         label cat ":genus too small";
         //exit;
     end if;
     t0 := ReportStart(label, "conic double cover model");
-    done:-=false;
+    done:=false;
     repeat
         try
             done:=true;
@@ -355,10 +196,7 @@ else
     LMFDBWriteHyperellipticModel(DefiningEquations(C), [], label);
     //The above should give the hyperelliptic model
 end if;
-
-
-
-
+end if;
 
 
 
