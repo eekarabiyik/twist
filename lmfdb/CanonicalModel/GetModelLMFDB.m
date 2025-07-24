@@ -1,8 +1,8 @@
 
 //Assumes aggcolsure, index and genus
-AttachSpec("./spec");
+AttachSpec("./twist/spec");
 AttachSpec("./ModularCurves/equations/equations.spec");
-
+load "/twist/lmfdb/Hyperelliptic/hyperellipticFunctions.m";
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
