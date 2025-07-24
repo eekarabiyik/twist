@@ -1,8 +1,8 @@
 //This just works?
 // Run after GetModelLMFDB.m
 // Usage: magma -b label:={1} GetPlaneAndGonality.m >> stdout/{1} 2>&1
-
-//AttachSpec("equations.spec");
+AttachSpec("./twist/spec");
+AttachSpec("./ModularCurves/equations/equations.spec");
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
