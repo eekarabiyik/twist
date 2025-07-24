@@ -1,4 +1,19 @@
-//assuming the output of FindModel
+AttachSpec("./spec");
+AttachSpec("./ModularCurves/equations/equations.spec");
+SetColumns(0);
+if assigned verbose or assigned debug then
+    SetVerbose("User1", 1);
+end if;
+if assigned debug then
+    SetDebugOnError(true);
+end if;
+if (not assigned label) then
+    printf "This script assumes that label, the label of the X_H to compute, is given as a command line paramter.\n";
+    printf "Something like magma label:=7.168.3.a.1 GetJFactorization.m\n";
+    quit;
+end if;
+
+
 function parenwrap(f)
     f := sprint(f);
     if "+" in f or "-" in f then

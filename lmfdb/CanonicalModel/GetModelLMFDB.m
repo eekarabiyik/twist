@@ -16,6 +16,16 @@ if (not assigned label) then
     quit;
 end if;
 
+if (not assigned agreeable_closure) then
+    printf "This script assumes that agreeable_closure, the agreeble closure of the X_H to compute, is given as a command line paramter.\n";
+    quit;
+end if;
+
+if (not assigned generators) then
+    printf "This script assumes that generators, the generators of the X_H to compute, is given as a command line paramter.\n";
+    quit;
+end if;
+
 
 gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H3", "12K3",
 "12L3", "14A3", "14C3", "14F3", "15F3", "15G3", "16B3", "16C3", "16D3", "16E3", "16F3",
@@ -40,21 +50,24 @@ gonality_equals_3:=[ "54C5", "16A6", "18A6", "18D6", "24D6", "27A6", "28D6", "28
 
 
 
+//Setting up the inputs to our function.
+level:=Split(label,".")[1];
+index:=Split(label,".")[2];
+genus:=Split(label,".")[3];
+G:=sub<GL2Ambient(level)|generators>;
+T:=SL2Intersection(G);
 
-FAM:=LoadFamilies("/home/eekarabiyik/Families": genus:=genus, index:=index, agreeable_label:=aggclosure);
+
+//Load a minimum number of families.
+FAM:=LoadFamilies("/home/eekarabiyik/Families": genus:=genus, index:=index, agreeable_label:=agreeable_closure);
 gonMAT:=0;
-psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT,Tcong:=FindModel(G,T,FAM); //we already know the family. so it should be more like:: FindModel(Gcong,Tcong,FAM[family_label]);
+//Call the function
+psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT,Tcong,oneelement,calG_parent_label:=FindModel(G,T,FAM); 
 
 
 
 
-
-
-
-
-
-
-//canon is0 embedded is 8
+//canonical model is 0 embedded model is 8
 if MFAM`genus gt 2 and not MFAM`CPname in gonality_equals_2 then model_type:=0; else model_type:=8; end if; 
 
 
@@ -72,7 +85,16 @@ LMFDBWriteXGModel(X,model_type,label);
 
 
 //j is either relative jmap or the absolute j map. Let's note that accordingly
-if rel then codomain:=famG`agreeable_label; else codomain:=""; end if;
+if rel then 
+    if oneelement then
+        codomain:=calG_parent_label;
+    else
+        codomain:=famG`agreeable_label; 
+    end if;
+else 
+    codomain:=""; 
+end if;
+
 //Make everything over Rationals.
 j:=relmap;
 rank:=Rank(Parent(j[1]));
@@ -90,6 +112,7 @@ end if;
 if MFAM`CPname in gonality_equals_3 then geotrigonal:=true; else geotrigonal:=false; end if;
 if geotrigonal then
     gonbounds := LMFDBReadGonalityBounds(label);
+    if 3 gt gonbounds[1] then gonbounds[1]:=3; end if;
     gonbounds:=<gonbounds[1],gonbounds[2],3,3>;
     LMFDBWriteGonalityBounds(gonbounds, label);
 end if;
@@ -118,11 +141,8 @@ if model_type eq 0 then
         best, bestkey, vld, tmpval, tmpred := RecordPlaneModel(<f, proj>, CanEqs, best, bestkey, "mf", label : warn_invalid:=false); //need to learn how we actually save the plane models.
     end for;
     //LMFDBWritePlaneModel(f, proj, alg, label);//What is alg? and need to choose a best one. Figure this out.
-    //might need to use  RecordPlaneModel
 end if;//<f,proj,M>
-//Add gonalities
-//where does the gonality bounds come from? is it all from plane models? 
-//What should be the main gonality bound contributor ? plane models or canonical models? 
+
 
 //Writing the cusps of the model. (This will be done later again?)
 cusps:=CuspOrbits(Gcong);
@@ -154,13 +174,13 @@ for cusp in cusps do
     end if;
 end for;
 
-
+//Write the cusp coordinates
 LMFDBWriteCuspCoords(ans, label);
+//Write the j map, now that we have all the cusp info
+LMFDBWriteJMap(j, cusps, codomain, model_type, label);
 
-LMFDBWriteJMap(j, cusps, codomain, model_type, label);//cusps empty so far, gotta check that
 
-
-//HyperElliptic!
+//Handle the hyperelliptic curves. Note: what do we want to do for genus 1 curves.
 if Type(qgon2) eq BoolElt then
 if qgon2 eq true then   
     if psi eq [] then X:=Curve(ProjectiveSpace(Rationals(),1),[]); else

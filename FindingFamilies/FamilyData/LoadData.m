@@ -204,3 +204,119 @@ intrinsic ConjIntoParent(~FAM::Any,k::Any)
     FAM[k]:=fam;
     k;
 end intrinsic;
+
+
+
+
+//This one can be used to assign family labels
+intrinsic LoadFamilies(base::MonStgElt, base_labels::MonStgElt : genus:="", index:="", label:="", agreeable_genus:="", agreeable_index:="", agreeable_label:="") -> SeqEnum
+{Load family data from within the base folder with given invariants}
+    if label ne "" then
+        pieces := Split(label, "-");
+        if #pieces ne 2 then
+            error "Invalid format for label: must be agreeable_label-genus.index.tiebreaker";
+        end if;
+        if agreeable_label eq "" then
+            agreeable_label := pieces[1];
+        elif pieces[1] ne agreeable_label then
+            error Sprintf("label (%o) must start with given agreeable label (%o)", label, agreeable_label);
+        end if;
+        pieces := Split(pieces[2], ".");
+        if #pieces ne 3 then
+            error "Invalid format for label: must be agreeable_label-genus.index.tiebreaker";
+        end if;
+        if genus cmpeq "" then
+            genus := StringToInteger(pieces[1]);
+        elif Sprint(genus) ne pieces[1] then
+            error Sprintf("label (%o) incompatible with provided genus (%o)", label, genus);
+        end if;
+        if index cmpeq "" then
+            index := StringToInteger(pieces[2]);
+        elif Sprint(index) ne pieces[2] then
+            error Sprintf("label (%o) incompatible with provided index (%o)", label, index);
+        end if;
+    end if;
+    agreeable_genus := Sprint(agreeable_genus);
+    agreeable_index := Sprint(agreeable_index);
+    if agreeable_label ne "" then
+        pieces := Split(agreeable_label, ".");
+        if #pieces ne 5 then
+            error "agreeable_label must be valid LMFDB coarse label for modular curve";
+        end if;
+        if agreeable_genus ne "" and agreeable_genus ne pieces[3] then
+            error Sprintf("agreeable_label (%o) incompatible with provided agreeable_genus (%o)", agreeable_label, agreeable_genus);
+        end if;
+        if agreeable_index ne "" and agreeable_index ne pieces[2] then
+            error Sprintf("agreeable_label (%o) incompatible with provided agreeable_index (%o)", agreeable_label, agreeable_index);
+        end if;
+    end if;
+    if base[#base] ne "/" then // I guess we're not supporting Windows....
+        base *:= "/";
+    end if;
+    if base_labels[#base_labels] ne "/" then // I guess we're not supporting Windows....
+        base_labels *:= "/";
+    end if;
+    genera := Split(Pipe("ls " * base, ""), "\n");
+    if genus cmpne "" then
+        // Size 0 or 1
+        genera := [g : g in genera | g eq Sprintf("Genus%o", genus)];
+    end if;
+    FAM := [];
+    for g in genera do
+        path := base * g * "/";
+        indexes := Split(Pipe("ls " * path, ""), "\n");
+        if index cmpne "" then
+            // Size 0 or 1
+            indexes := [ind : ind in indexes | ind eq Sprintf("Index%o", index)];
+        end if;
+        for ind in indexes do
+            path := base * g * "/" * ind * "/";
+            agreeables := Split(Pipe("ls " * path, ""), "\n");
+            if agreeable_label ne "" then
+                // Size 0 or 1
+                agreeables := [ag : ag in agreeables | ag eq agreeable_label];
+            else
+                if agreeable_genus ne "" then
+                    agreeables := [ag : ag in agreeables | Split(ag, ".")[3] eq agreeable_genus];
+                end if;
+                if agreeable_index ne "" then
+                    agreeables := [ag : ag in agreeables | Split(ag, ".")[2] eq agreeable_index];
+                end if;
+            end if;
+            for ag in agreeables do
+                path := base * g * "/" * ind * "/" * ag;
+                path_label := base_labels * g[6..#g] * "/" * ind[6..#ind] * "/" * ag;
+                path;
+                try
+                    succ:=true;
+                    J:=Open(path_label,"r");
+                    content:=Read(J);
+                    listoflabel:=Split(content);
+                catch e
+                    succ:=false;
+                end try;
+                I := Open(path, "r");
+                count:=1;
+                repeat
+                    b, y := ReadObjectCheck(I);
+                    if b and (label eq "" or label eq y`family_label) then
+                        if succ then
+                            if not count gt #listoflabel then 
+                                famlabel:=Split(listoflabel[count],":")[2];
+                                famlabel;
+                                y`family_label:=famlabel;
+                            end if;
+                        end if;
+                        assigned y`family_label;
+                        Append(~FAM, y);
+                        assigned FAM[#FAM]`family_label;
+                        count:=count+1;
+                    end if;
+                until not b;
+                delete I;
+                if succ then delete J; end if;
+            end for;
+        end for;
+    end for;
+    return FAM;
+end intrinsic;
