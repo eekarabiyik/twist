@@ -109,7 +109,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 for ji in L do
                     newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
                 end for;
-                relmap:= PolynomialTwister(L, MAT, K);
+                relmap:= PolynomialTwister(newL, MAT, K);
 
             else 
                 rel:=false;
@@ -118,7 +118,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 for ji in L do
                     newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
                 end for;
-                relmap:= PolynomialTwister(L, MAT, K);
+                relmap:= PolynomialTwister(newL, MAT, K);
 
             end if;
         end if;
