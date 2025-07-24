@@ -19,7 +19,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 
 
 //Fix this 
-intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyperelliptic:=true,already_conjugated:=false,onefamily:=false, use_agg_label:=false, use_family_label:=false, agreeable_label:="", family_label:="", use_parent_can:=false, parentcan:=[]) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
+intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyperelliptic:=true,already_conjugated:=false,onefamily:=false, use_agg_label:=false, use_family_label:=false, agreeable_label:="", family_label:="", use_parent_can:=false, parentcan:=[],verbose:=false) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
 {
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
@@ -39,7 +39,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 }
 
     //We first start with finding the family in our database that contains G.
-    print("Finding the family...");
+    if verbose then print("Finding the family..."); end if;
     //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     if already_conjugated and onefamily then
         Gcong:=G; Tcong:=T; famG:=FAM[1]; 
@@ -52,29 +52,42 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     else
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     end if;
-    if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,Gcong,_,_,Tcong; end if;
-    printf "The family key in the database is %o\n",famkey;
+    //if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,Gcong,_,_,Tcong; end if;
+    oneelement:=famG`oneelement;
+    parentcalG:=famG`parentcalG;
+    if verbose then printf "The family key in the database is %o\n",famkey; end if
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
         AOfMF[i]:=Transpose(famG`AOfMF[i]);
     end for;
     Tcong`SL:=true;
     if famG`extra1 then
-        printf "Computing the cocycle\n";
+        if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
         xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
         Pol<[x]>:=PolynomialRing(Rationals(),3);
         PP:=ProjectiveSpace(Rationals(),2);
         pis:=[Pol!(x[2]^2-x[1]*x[3])];
-        printf "Twisting the curve...\n";
+        if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
-                printf "Computing the jmap...\n";
-        if assigned famG`RelativeJMap then
-			rel:=true;
-            L:=famG`RelativeJMap;
-        else 
-			rel:=false;
-            L:=famG`jmap;
+        if verbose then printf "Computing the jmap...\n"; end if;
+        if famG`oneelement then
+            rel:=true;//fix later
+            if not assigned famG`JmapcalG then
+                rel:=true;
+                L:=famG`parentrelmapcalG;
+            else
+                rel:=false;
+                L:=famG`JmapcalG;
+            end if;
+        else
+            if assigned famG`RelativeJMap and not assigned famG`extra3 then
+                rel:=true;
+                L:=famG`RelativeJMap;
+            else 
+                rel:=false;
+                L:=famG`jmap;
+            end if;
         end if;
         newL:=[];
         for ji in L do
@@ -82,20 +95,31 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         end for;
         relmap:= PolynomialTwister(newL, MAT, K);
     else
-        printf "Computing the cocycle\n";
+        if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
         //Now the twist
-        printf "Twisting the curve...\n";
+        if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
-        printf "Computing the jmap...\n";
+        if verbose then printf "Computing the jmap...\n"; end if;
         //Computing the jmap. The jmap of the representative is precomputed.
-        if assigned famG`RelativeJMap then
-			rel:=true;
-            L:=famG`RelativeJMap;
-        else 
-			rel:=false;
-            L:=famG`jmap;
+        if famG`oneelement then
+            rel:=true;//fix later
+            if not assigned famG`JmapcalG then
+                rel:=true;
+                L:=famG`parentrelmapcalG;
+            else
+                rel:=false;
+                L:=famG`JmapcalG;
+            end if;
+        else
+            if assigned famG`RelativeJMap and not assigned famG`extra3 then
+                rel:=true;
+                L:=famG`RelativeJMap;
+            else 
+                rel:=false;
+                L:=famG`jmap;
+            end if;
         end if;
         relmap:= PolynomialTwister(L, MAT, K);
     end if;
@@ -105,13 +129,13 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 
    
     if not test_hyperelliptic then
-        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong;
+        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
     end if;
    
 
 
 
-    printf "Computing QQ-gonality...\n";
+    if verbose then printf "Computing QQ-gonality...\n"; end if;
     //Following computes if the curve is hyperelliptic
     if famG`M`CPname in gonality_equals_2 then
         assert assigned famG`CanModelForHyp;
@@ -127,12 +151,12 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         C:=Curve(PP,gonpsi);
         C,mapo:=Conic(C);
         T:=HasRationalPoint(C);
-        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong;
+        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
     end if;
 
 
 
-    return psi,MAT,relmap,rel,/*famG`JmapcalG,*/"not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong;
+    return psi,MAT,relmap,rel,/*famG`JmapcalG,*/"not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
 end intrinsic;
 
 
