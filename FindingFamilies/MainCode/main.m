@@ -69,8 +69,25 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         pis:=[Pol!(x[2]^2-x[1]*x[3])];
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
-        if assigned famG`extra5 then
-            return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+        if assigned famG`extra5 and famG`genus gt 6 then
+            if famG`M`CPname in gonality_equals_2 then
+                assert assigned famG`CanModelForHyp;
+                gonmodel:=famG`CanModelForHyp;
+                gonAOfMF:=AssociativeArray();
+                for i in Keys(famG`AOfMFCanModel) do
+                    gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
+                end for;
+                xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
+                gonpsi,gonMAT:=TwistCurve(gonmodel`psi,xi,K);
+                Pol<x>:=Parent(gonpsi[1]);
+                PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
+                C:=Curve(PP,gonpsi);
+                C,mapo:=Conic(C);
+                T:=HasRationalPoint(C);
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
+            else
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+            end if;
         end if;
         if verbose then printf "Computing the jmap...\n"; end if;
         if famG`oneelement then
@@ -78,9 +95,11 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
             if not assigned famG`JmapcalG then
                 rel:=true;
                 L:=famG`parentrelmapcalG;
+                relmap:=L;
             else
                 rel:=false;
                 L:=famG`JmapcalG;
+                relmap:=L;
             end if;
         else
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
@@ -110,8 +129,25 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         //Now the twist
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
-        if assigned famG`extra5 then
-            return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+        if assigned famG`extra5 and famG`genus gt 6 then
+            if famG`M`CPname in gonality_equals_2 then
+                assert assigned famG`CanModelForHyp;
+                gonmodel:=famG`CanModelForHyp;
+                gonAOfMF:=AssociativeArray();
+                for i in Keys(famG`AOfMFCanModel) do
+                    gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
+                end for;
+                xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
+                gonpsi,gonMAT:=TwistCurve(gonmodel`psi,xi,K);
+                Pol<x>:=Parent(gonpsi[1]);
+                PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
+                C:=Curve(PP,gonpsi);
+                C,mapo:=Conic(C);
+                T:=HasRationalPoint(C);
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
+            else
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+            end if;
         end if;
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
         if verbose then printf "Computing the jmap...\n"; end if;
@@ -121,9 +157,11 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
             if not assigned famG`JmapcalG then
                 rel:=true;
                 L:=famG`parentrelmapcalG;
+                relmap:=L;
             else
                 rel:=false;
                 L:=famG`JmapcalG;
+                relmap:=L;
             end if;
         else
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
