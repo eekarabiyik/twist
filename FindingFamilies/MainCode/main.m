@@ -86,7 +86,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 T:=HasRationalPoint(C);
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
             else
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    "not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
         if verbose then printf "Computing the jmap...\n"; end if;
@@ -146,7 +146,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 T:=HasRationalPoint(C);
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
             else
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    "not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
@@ -157,11 +157,11 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
             if not assigned famG`JmapcalG then
                 rel:=true;
                 L:=famG`parentrelmapcalG;
-                relmap:=L;
+                relmap:= PolynomialTwister(L, MAT, K);
             else
                 rel:=false;
                 L:=famG`JmapcalG;
-                relmap:=L;
+                relmap:= PolynomialTwister(L, MAT, K);
             end if;
         else
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
