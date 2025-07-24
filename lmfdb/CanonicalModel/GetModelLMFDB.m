@@ -194,9 +194,7 @@ if qgon2 eq true then
     end if;
 else
     if not assigned prec then
-        prec := 100;
-    else
-        prec := StringToInteger(prec);
+        prec := 30;
     end if;
     if genus lt 3 then
         label cat ":genus too small";
