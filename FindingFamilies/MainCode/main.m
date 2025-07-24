@@ -52,10 +52,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     else
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     end if;
-    //if assigned famG`extra3 then return "problem",_,_,_,_,_,_,_,Gcong,_,_,Tcong; end if;
     oneelement:=famG`oneelement;
     parentcalG:=famG`parentcalG;
-    if verbose then printf "The family key in the database is %o\n",famkey; end if
+    if verbose then printf "The family key in the database is %o\n",famkey; end if;
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
         AOfMF[i]:=Transpose(famG`AOfMF[i]);
@@ -70,6 +69,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         pis:=[Pol!(x[2]^2-x[1]*x[3])];
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
+        if assigned famG`extra5 then
+            return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+        end if;
         if verbose then printf "Computing the jmap...\n"; end if;
         if famG`oneelement then
             rel:=true;//fix later
@@ -84,22 +86,33 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
                 rel:=true;
                 L:=famG`RelativeJMap;
+                 newL:=[];
+                for ji in L do
+                    newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
+                end for;
+                relmap:= PolynomialTwister(L, MAT, K);
+
             else 
                 rel:=false;
                 L:=famG`jmap;
+                 newL:=[];
+                for ji in L do
+                    newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
+                end for;
+                relmap:= PolynomialTwister(L, MAT, K);
+
             end if;
         end if;
-        newL:=[];
-        for ji in L do
-            newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
-        end for;
-        relmap:= PolynomialTwister(newL, MAT, K);
+
     else
         if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
         //Now the twist
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        if assigned famG`extra5 then
+            return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+        end if;
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
         if verbose then printf "Computing the jmap...\n"; end if;
         //Computing the jmap. The jmap of the representative is precomputed.
@@ -116,12 +129,15 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
                 rel:=true;
                 L:=famG`RelativeJMap;
+                relmap:= PolynomialTwister(L, MAT, K);
+
             else 
                 rel:=false;
                 L:=famG`jmap;
+                relmap:= PolynomialTwister(L, MAT, K);
+
             end if;
         end if;
-        relmap:= PolynomialTwister(L, MAT, K);
     end if;
     //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
 
