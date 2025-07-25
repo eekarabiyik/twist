@@ -63,6 +63,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     if famG`extra1 then
         if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+        _,MAT1:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
         xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
         Pol<[x]>:=PolynomialRing(Rationals(),3);
         PP:=ProjectiveSpace(Rationals(),2);
@@ -86,7 +87,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 T:=HasRationalPoint(C);
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
             else
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    "not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
         if verbose then printf "Computing the jmap...\n"; end if;
@@ -110,7 +111,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                     newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
                 end for;
                 relmap:= PolynomialTwister(newL, MAT, K);
-
+                MAT:=MAT1;
             else 
                 rel:=false;
                 L:=famG`jmap;
@@ -119,7 +120,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                     newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
                 end for;
                 relmap:= PolynomialTwister(newL, MAT, K);
-
+                MAT:=MAT1;
             end if;
         end if;
 
@@ -146,7 +147,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 T:=HasRationalPoint(C);
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
             else
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    "not_hyperelliptic",famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
         //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
