@@ -1,0 +1,13 @@
+{
+  twist
+  {
+    +spec
+  }
+  ModularCurves
+  {
+    equations
+    {
+      +equations.spec
+    }
+  }
+}

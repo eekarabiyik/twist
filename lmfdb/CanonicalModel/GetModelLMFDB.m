@@ -1,8 +1,7 @@
 
 //Assumes aggcolsure, index and genus
-AttachSpec("./twist/spec");
-AttachSpec("./ModularCurves/equations/equations.spec");
-load "/twist/lmfdb/Hyperelliptic/hyperellipticFunctions.m";
+AttachSpec("spec");
+load "twist/lmfdb/Hyperelliptic/hyperellipticFunctions.m";
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
@@ -51,15 +50,17 @@ gonality_equals_3:=[ "54C5", "16A6", "18A6", "18D6", "24D6", "27A6", "28D6", "28
 
 
 //Setting up the inputs to our function.
-level:=Split(label,".")[1];
-index:=Split(label,".")[2];
-genus:=Split(label,".")[3];
+pieces := Split(label, ".");
+level:=StringToInteger(pieces[1]);
+index:=StringToInteger(pieces[2]);
+genus:=StringToInteger(pieces[3]);
+generators:=eval generators;
 G:=sub<GL2Ambient(level)|generators>;
 T:=SL2Intersection(G);
 
 
 //Load a minimum number of families.
-FAM:=LoadFamilies("/home/eekarabiyik/Families": genus:=genus, index:=index, agreeable_label:=agreeable_closure);
+FAM:=LoadFamilies("Families": genus:=genus, index:=index, agreeable_label:=agreeable_closure);
 gonMAT:=0;
 //Call the function
 psi,MAT,relmap,rel,qgon2,genus,K,famG,Gcong,MFAM,gonMAT,Tcong,oneelement,calG_parent_label:=FindModel(G,T,FAM); 

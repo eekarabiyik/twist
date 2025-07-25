@@ -1,5 +1,4 @@
 AttachSpec("./spec");
-AttachSpec("./ModularCurves/equations/equations.spec");
 SetColumns(0);
 if assigned verbose or assigned debug then
     SetVerbose("User1", 1);
@@ -97,6 +96,7 @@ end function;
 
 
 X, model_type, codomain, j := LMFDBReadJMap(label);
+rel := (codomain ne "");
 fname := "jfacs/" * label;
 if not rel then
     assert #j eq 2;
