@@ -278,7 +278,7 @@ function gl2QImagesForFamiliiesEray(GGG,H)
 //Input:
     //GGG: An open subgroup of SL2(Zhat)
     //  H: An open subgroup of SL2(Zhat) contained in GGG
-    //Output: List of 
+    //Output: List of subgroups lying between GGG and H
     GGG`SL:=true;
     H`SL:=true;
     N1:=SL2Level(GGG);
@@ -297,8 +297,11 @@ end function;
 
 
 intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodels:=true, computecangen:=false) -> SeqEnum
-    {Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r, that have genus at most genus.}
+    {Given a Congruence subgroup r (given as a record in CP database) this function returns a list of records of families that arise from the record r,
+     that have genus at most genus.}
+
     if r`genus gt genus then return []; end if;
+    //From each congruence subgroup, we compute the agreeable groups arising from it. We first compute the commutator subgroup of the congruence group.
     if r`level ne 1 then 
         level:=r`level;
         matgens:=r`matgens;
@@ -332,6 +335,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
     H:=SL2Lift(H0,M);
 
     iota:=hom<H->Q | [ alpha[1](iota1(H.i)) * alpha[2](iota2(H.i)) : i in [1..Ngens(H)] ] >;
+    //iota contains the information for the commutator subgroup
 
     assert #Q*SL2Index(H)/index1 eq #Q2;
     //comm_map[r`name]:=iota;
@@ -354,6 +358,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
     HH:=SL2Lift(H,N1);
     AllAgreeableGroups:=AssociativeArray();
     a:=1;
+    //All potential groups coming from the 
     R:=gl2QImagesFromSL2eray(HH); 
     for group in R do
         HG:=HH;
@@ -413,8 +418,10 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
         AllAgreeableGroups[a]:=<G,HG,Hc,CPname,level1,cangen>;
         a:=a+1;
     end for;
+    //All agreeable subgroups arising from r has been computed
 
     if verbose then printf "Find Potential Family Records\n"; end if;
+    //This computes all the possible family records (calG,B)
     FAM1:=AssociativeArray();
     level1things:=0;
     for k in Keys(AllAgreeableGroups) do
@@ -435,6 +442,7 @@ intrinsic FindAllFamilies(r::Rec, genus::RngIntElt: verbose:=false, computemodel
        
             FAM1[k]:=<AllAgreeableGroups[k],R>; //second coordinate is group and third coordinate is key. Frist coordinate are the list above.
     end for;
+
 
     if verbose then printf "Creating Family Records for those satisfying the correct genus.\n"; end if;
 
@@ -648,7 +656,7 @@ end for;
 if verbose then printf "Computing the Jmaps\n"; end if;
 
   for k in Keys(FAM) do
-        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap and not assigned FAM[k]`jmap then
+        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M  and not assigned FAM[k]`jmap then
             require assigned FAM[k]`M : "The modular curve should have been computed.";
             print(k);
             a,b:=AbsoluteJmap(FAM[k]`M);
@@ -704,7 +712,10 @@ end intrinsic;
 
 //Make Verbose
 intrinsic FindAllModelGivenFamily(FAM::SeqEnum: verbose:=false, computemodels:=true) -> SeqEnum
-{List of fams outputs with models computed}
+{
+    Takes a list of families. Assumes that groups of the family and 
+    basic level and index data are computes as in FindAllFamilies. Outputs the same list with all of the maps and models computed
+}
   
 if computemodels then
 if verbose then printf "Computing the models\n"; end if;
@@ -763,13 +774,25 @@ for k in Keys(FAM) do
         MG:=FAM[k]`calGModCurve;
         L:=FindMorphism(M,MG);
         FAM[k]`RelativeJMap:=L;
+        if assigned FAM[k]`RelativeJMap then
+            K1:=Parent(FAM[k]`RelativeJMap[1]);
+            K:=BaseRing(K1);
+            rank:=Rank(K1);
+            if Type(K) eq FldCyc and Degree(K) eq 1 then K:=Rationals(); end if;
+            Pol_K:=PolynomialRing(K,rank);
+            L:=[Pol_K!FAM[k]`RelativeJMap[i]: i in [1..#FAM[k]`RelativeJMap]];
+            FAM[k]`RelativeJMap:=L;
+        end if;
     end if;
 end for;
+
+
+
 
 if verbose then printf "Computing the Jmaps\n"; end if;
 
   for k in Keys(FAM) do
-        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`RelativeJMap and not assigned FAM[k]`jmap then
+        if assigned FAM[k]`H and not FAM[k]`fine and assigned FAM[k]`M and not assigned FAM[k]`jmap then
             require assigned FAM[k]`M : "The modular curve should have been computed.";
             print(k);
             a,b:=AbsoluteJmap(FAM[k]`M);
@@ -844,6 +867,16 @@ for k in Keys(FAM) do
         "Computing!!";
         L:=FindMorphism(M,M0);
         FAM[k]`RelativeJMap:=L;
+        //We change the coefficent field to rationals if necessary
+        if assigned FAM[k]`RelativeJMap then
+            K1:=Parent(FAM[k]`RelativeJMap[1]);
+            K:=BaseRing(K1);
+            rank:=Rank(K1);
+            if Type(K) eq FldCyc and Degree(K) eq 1 then K:=Rationals(); end if;
+            Pol_K:=PolynomialRing(K,rank);
+            L:=[Pol_K!FAM[k]`RelativeJMap[i]: i in [1..#FAM[k]`RelativeJMap]];
+            FAM[k]`RelativeJMap:=L;
+        end if;
     end if;
 end for;
 
@@ -891,10 +924,24 @@ end intrinsic;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+//What was the use case of this?
 intrinsic RelativeAndOther(FAM::SeqEnum: verbose:=false) -> SeqEnum
 {List of fams outputs with models computed}
   
-if verbose then printf "Computing rels and so on\n"; end if;
+if verbose then printf "Computing relative jmaps and so on\n"; end if;
 
 
 

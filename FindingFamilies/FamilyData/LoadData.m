@@ -167,7 +167,11 @@ end intrinsic;
 
 
 intrinsic ConjIntoParent(~FAM::Any,k::Any)
-{Updates FAM}
+{
+    Conjugates all the families into their agreeable subgroups, compatible with the families consisting of one elements.
+    This function basically chooses a tree in the graph of agreeable subgroups and conjugates all families so they are in the same conjugacy class.
+    There are some families that do not have agreeable labels (because of the commutator subgroup of SL_2(Z_3)) these left unchanged? 
+}
     k;
     fam:=FAM[k];
     if fam`agreeable_label eq "1.1.0.a.1" then 
@@ -316,6 +320,47 @@ intrinsic LoadFamilies(base::MonStgElt, base_labels::MonStgElt : genus:="", inde
                 delete I;
                 if succ then delete J; end if;
             end for;
+        end for;
+    end for;
+    return FAM;
+end intrinsic;
+
+
+
+intrinsic LoadFamiliesGenusIndex(base::MonStgElt : genus:="", index:="") -> SeqEnum
+{Load family data from within the base folder with given genus and index}
+    if base[#base] ne "/" then // I guess we're not supporting Windows....
+        base *:= "/";
+    end if;
+    //"aa";
+    genera := Split(Pipe("ls " * base, ""), "\n");
+    if genus cmpne "" then
+        // Size 0 or 1
+        genera := [g : g in genera | g eq Sprintf("Genus%o", genus)];
+    end if;
+    FAM := [];
+    //genera;
+    for g in genera do
+        //g;
+        path := base * g * "/";
+        indexes := Split(Pipe("ls " * path, ""), "\n");
+        //indexes;
+        if index cmpne "" then
+            // Size 0 or 1
+            indexes := [ind : ind in indexes | ind eq Sprintf("Index%o"*".dat", index)];
+        end if;
+        for ind in indexes do
+            //ind;
+            path := base * g * "/" * ind ;
+            //path;
+            I := Open(path, "r");
+                repeat
+                    b, y := ReadObjectCheck(I);
+                    if b then
+                        Append(~FAM, y);
+                    end if;
+                until not b;
+                delete I;
         end for;
     end for;
     return FAM;

@@ -24,23 +24,36 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     Input:
     - G is a subgroup of GL2(Zhat). It is given by a subgroup of GL2(Z/NZ) where N is a multiple of the level of G.
     - T is the intersection of G with SL2(Z/NZ)
+    - FAM is the list of families as outputed by FindAllFamilies
 
     Keywords:
     - redcub, whether to reduce the cubics (passed on to TwistCurve)
     - test_hyperelliptic, test if X_G is hyperelliptic over Q
 
     Output:
-    - psi: homogeneous polynomials in Q[x_1,..x_n] defining the curve X_G mentioned above.
-      n depends on the model of the family representative used to twist G from.
-    - MAT: H90 matrix describing the twist from the family representative to G.
-    - a sequence of length 2 giving the numerator and denominator of the absolute j-map
-    - a boolean, whether X_G is hyperelliptic over Q (only returned if test_hyperelliptic is true)
-    - the genus of X_G
+    //psi: the equations in a projective space
+    //MAT: H90 matrix used
+    //relmap: the relative or absoltue jmap
+    //rel: if the relative jmap is computed or not, boolean. If false then the absolute j-map is computed. If it is a string then it states that no j-map is computed
+    //qgon2: if true then it has Q gonality 2, If false Q gonality 4. Otherwise not geometrically hyperelliptic
+    //genus: genus
+    //K: the number field over which the modular curve is isomorphic to therepresentative curce in the family
+    //famG: family record that the curve is in
+    //Gcong: Group G conjugated into the family
+    //MFAM: the modular curve record of the representative
+    //gonMAT: H90 matrix used for the Gonality 2 comptuation
+    //Tcong: T conjugated into the family
+    //oneelement : if the curve lies in a one element family i.e., if it is agreeable
+    //parentcalG: the parent of the agreeable closure. If it is empty then one should use the absolute j-maps
+    //extra: genus 0 P^1's family. These are maybe problematic, maybe not. Need to prove
+    //MAT1: if extra then the associated H90 matrix?
 }
 
     //We first start with finding the family in our database that contains G.
     if verbose then print("Finding the family..."); end if;
     //famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
+
+    //We find the family G lies in. Depending on the information input we use different methods.
     if already_conjugated and onefamily then
         Gcong:=G; Tcong:=T; famG:=FAM[1]; 
     elif use_agg_label then 
@@ -48,7 +61,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     elif use_family_label then
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan:family_label:=family_label, use_family_label:=use_family_label);
     elif use_parent_can then 
-        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan);
+        famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan: use_parent_can:=use_parent_can);
     else
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderWithCusps(G,T,FAM);
     end if;
@@ -60,6 +73,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         AOfMF[i]:=Transpose(famG`AOfMF[i]);
     end for;
     Tcong`SL:=true;
+    //extra1 means that the representative in the family is given by the equations []. To reasonably twist we embed it into the projective plane.
     if famG`extra1 then
         if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
@@ -70,6 +84,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         pis:=[Pol!(x[2]^2-x[1]*x[3])];
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
+        //extra5 means the relative jmaps and absolute jmaps are huge and should not twist them!
         if assigned famG`extra5 and famG`genus gt 6 then
             if famG`M`CPname in gonality_equals_2 then
                 assert assigned famG`CanModelForHyp;
@@ -90,7 +105,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
+        //Computing the jmaps
         if verbose then printf "Computing the jmap...\n"; end if;
+        //if the groups is agreeable we use precomputed jmaps.
         if famG`oneelement then
             rel:=true;//fix later
             if not assigned famG`JmapcalG then
@@ -102,7 +119,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 L:=famG`JmapcalG;
                 relmap:=L;
             end if;
-        else
+        else //if not agreeable we actually twist the jmaps
             if assigned famG`RelativeJMap and not assigned famG`extra3 then
                 rel:=true;
                 L:=famG`RelativeJMap;
@@ -125,11 +142,13 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         end if;
 
     else
+        //Now we are in the generic case! Not genus 0!
         if verbose then printf "Computing the cocycle\n"; end if;
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
         //Now the twist
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        //Huge j-maps case
         if assigned famG`extra5 and famG`genus gt 6 then
             if famG`M`CPname in gonality_equals_2 then
                 assert assigned famG`CanModelForHyp;
@@ -218,7 +237,7 @@ end intrinsic;
 
 
 intrinsic ComputePlaneModel(G::GrpMat, MAT,MFAM::Rec,psi::SeqEnum: giveup_time:=720)->Any
-{}
+{Given the group, The H90 matrix obtained from FindModel, the representative modular curve and the equations of the curve, computes a list of planemodels for the modular curve}
     assert MFAM`genus gt 3 and not MFAM`CPname in gonality_equals_2;
         MFAM`H`SL:=true;
         cyclevel:=LCM([MFAM`N,#BaseRing(G)]);

@@ -44,7 +44,8 @@ end function;
 intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
 {
     This function takes a cocycle and produces the twisted group.
-}   tttt:=Cputime();
+}   
+    tttt:=Cputime();
     calG:=groupslist[1];  G:=groupslist[2]; T:=groupslist[3];
     N1,calG:=GL2Level(calG);
     N2,G:=GL2Level(G);
