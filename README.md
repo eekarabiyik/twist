@@ -1,6 +1,7 @@
 # A Classification of Modular Curves
 
 This repository contains the classification of modular curves upto genus 12 in terms of families. 
+Please let me know any if you have any comments or suggestions, or find any bugs: ek693@cornell.edu
 
 All the data is on: https://zenodo.org/records/15832985
 Download these files. Unpack. Put them all in a folder. Individual files in the folder should have paths similar to: `Families/Genus5/Index144` 
