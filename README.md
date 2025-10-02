@@ -4,6 +4,10 @@ This repository contains the classification of modular curves upto genus 12 in t
 Please let me know any if you have any comments or suggestions, or find any bugs: ek693@cornell.edu
 
 All the data is on: https://zenodo.org/records/15832985
+Associated preprint: https://eekarabiyik.github.io/files/paper.pdf
+
+
+
 Download these files. Unpack. Put them all in a folder. Individual files in the folder should have paths similar to: `Families/Genus5/Index144` 
 In the file `Main/FindingFamilies/FamilyData/LoadData.m`, the intrinsic `LoadFamiliesGenusIndex`is used for loading the families into a list. 
 
