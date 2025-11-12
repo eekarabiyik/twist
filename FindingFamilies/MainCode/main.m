@@ -18,7 +18,7 @@ gonality_equals_2:=[ "8B3", "10B3", "12C3", "12D3", "12E3", "12F3", "12G3", "12H
 "96A7", "93A8", "50A9", "50D9", "96B9", "48B11", "72A11", "96B11"];
 
 
-//Fix this 
+
 intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyperelliptic:=true,already_conjugated:=false,onefamily:=false, use_agg_label:=false, use_family_label:=false, agreeable_label:="", family_label:="", use_parent_can:=false, parentcan:=[],verbose:=false) -> SeqEnum[RngMPolElt], AlgMatElt, SeqEnum, BoolElt, RngIntElt,Any
 {
     Input:
@@ -45,7 +45,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     //Tcong: T conjugated into the family
     //oneelement : if the curve lies in a one element family i.e., if it is agreeable
     //parentcalG: the parent of the agreeable closure. If it is empty then one should use the absolute j-maps
-    //extra: genus 0 P^1's family. These are maybe problematic, maybe not. Need to prove
+    //extra: Boolean indicating if the curve lies in a genus 0 family consisting entirely of P^1s.
     //MAT1: if extra then the associated H90 matrix?
 }
 
@@ -68,83 +68,94 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
     oneelement:=famG`oneelement;
     parentcalG:=famG`parentcalG;
     if verbose then printf "The family key in the database is %o\n",famkey; end if;
+    //AOfMF are the automorphisms induced by the agreeable closure on our model.
     AOfMF:=AssociativeArray();
     for i in Keys(famG`AOfMF) do
+        //Initial computation was done in a different order.
         AOfMF[i]:=Transpose(famG`AOfMF[i]);
     end for;
     Tcong`SL:=true;
-    //extra1 means that the representative in the family is given by the equations []. To reasonably twist we embed it into the projective plane.
-    if famG`extra1 then
-        if verbose then printf "Computing the cocycle\n"; end if;
-        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
-        _,MAT1:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
-        xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
-        Pol<[x]>:=PolynomialRing(Rationals(),3);
-        PP:=ProjectiveSpace(Rationals(),2);
-        pis:=[Pol!(x[2]^2-x[1]*x[3])];
-        if verbose then printf "Twisting the curve...\n"; end if;
-        psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
-        //extra5 means the relative jmaps and absolute jmaps are huge and should not twist them!
-        if assigned famG`extra5 and famG`genus gt 6 then
-            if famG`M`CPname in gonality_equals_2 then
-                assert assigned famG`CanModelForHyp;
-                gonmodel:=famG`CanModelForHyp;
-                gonAOfMF:=AssociativeArray();
-                for i in Keys(famG`AOfMFCanModel) do
-                    gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
-                end for;
-                xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
-                gonpsi,gonMAT:=TwistCurve(gonmodel`psi,xi,K);
-                Pol<x>:=Parent(gonpsi[1]);
-                PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
-                C:=Curve(PP,gonpsi);
-                C,mapo:=Conic(C);
-                T:=HasRationalPoint(C);
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
-            else
-                return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
-            end if;
-        end if;
-        //Computing the jmaps
-        if verbose then printf "Computing the jmap...\n"; end if;
-        //if the groups is agreeable we use precomputed jmaps.
-        if famG`oneelement then
-            rel:=true;//fix later
-            if not assigned famG`JmapcalG then
-                rel:=true;
-                L:=famG`parentrelmapcalG;
-                relmap:=L;
-            else
-                rel:=false;
-                L:=famG`JmapcalG;
-                relmap:=L;
-            end if;
-        else //if not agreeable we actually twist the jmaps
-            if assigned famG`RelativeJMap and not assigned famG`extra3 then
-                rel:=true;
-                L:=famG`RelativeJMap;
-                 newL:=[];
-                for ji in L do
-                    newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
-                end for;
-                relmap:= PolynomialTwister(newL, MAT, K);
-                MAT:=MAT1;
-            else 
-                rel:=false;
-                L:=famG`jmap;
-                 newL:=[];
-                for ji in L do
-                    newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
-                end for;
-                relmap:= PolynomialTwister(newL, MAT, K);
-                MAT:=MAT1;
-            end if;
-        end if;
 
-    else
+    //Ignore the commented parts. The genus 0 P^1 case has been proven so it is redundant.
+
+    //extra1 means that the representative in the family is given by the equations []. To reasonably twist we embed it into the projective plane.
+    // if famG`extra1 then
+    //     if verbose then printf "Computing the cocycle\n"; end if;
+    //     xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
+    //     //xi;
+    //     //K;
+    //     _,MAT1:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+    //     //"Before\n";
+    //     //MAT1;
+    //     xinew:=map<Domain(xi)->GL(3,K)| [<t,mat3map(xi(t))>: t in Domain(xi)]>;
+    //     Pol<[x]>:=PolynomialRing(Rationals(),3);
+    //     PP:=ProjectiveSpace(Rationals(),2);
+    //     pis:=[Pol!(x[2]^2-x[1]*x[3])];
+    //     if verbose then printf "Twisting the curve...\n"; end if;
+    //     psi,MAT:=TwistCurveGenus0(pis,xinew,K: redcub:=redcub);
+    //     //"Afterwards\n";
+    //     //MAT;
+    //     //extra5 means the relative jmaps and absolute jmaps are huge and should not twist them!
+    //     if assigned famG`extra5 and famG`genus gt 6 then
+    //         if famG`M`CPname in gonality_equals_2 then
+    //             assert assigned famG`CanModelForHyp;
+    //             gonmodel:=famG`CanModelForHyp;
+    //             gonAOfMF:=AssociativeArray();
+    //             for i in Keys(famG`AOfMFCanModel) do
+    //                 gonAOfMF[i]:=Transpose(famG`AOfMFCanModel[i]);
+    //             end for;
+    //             xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,gonAOfMF);
+    //             gonpsi,gonMAT:=TwistCurve(gonmodel`psi,xi,K);
+    //             Pol<x>:=Parent(gonpsi[1]);
+    //             PP:=ProjectiveSpace(Rationals(),#VariableWeights(Pol)-1);
+    //             C:=Curve(PP,gonpsi);
+    //             C,mapo:=Conic(C);
+    //             T:=HasRationalPoint(C);
+    //             return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/ T,famG`genus,K,famG,Gcong,famG`M,gonMAT,Tcong,oneelement,parentcalG;
+    //         else
+    //             return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+    //         end if;
+    //     end if;
+    //     //Computing the jmaps
+    //     if verbose then printf "Computing the jmap...\n"; end if;
+    //     //if the groups is agreeable we use precomputed jmaps.
+    //     if famG`oneelement then
+    //         rel:=true;//fix later
+    //         if not assigned famG`JmapcalG then
+    //             rel:=true;
+    //             L:=famG`parentrelmapcalG;
+    //             relmap:=L;
+    //         else
+    //             rel:=false;
+    //             L:=famG`JmapcalG;
+    //             relmap:=L;
+    //         end if;
+    //     else //if not agreeable we actually twist the jmaps
+    //         if assigned famG`RelativeJMap and not assigned famG`extra3 then
+    //             rel:=true;
+    //             L:=famG`RelativeJMap;
+    //              newL:=[];
+    //             for ji in L do
+    //                 newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
+    //             end for;
+    //             relmap:= PolynomialTwister(newL, MAT, K);
+    //             MAT:=MAT1;
+    //         else 
+    //             rel:=false;
+    //             L:=famG`jmap;
+    //              newL:=[];
+    //             for ji in L do
+    //                 newL:= newL cat [Evaluate(ji,[x[2],x[3]])];
+    //             end for;
+    //             relmap:= PolynomialTwister(newL, MAT, K);
+    //             MAT:=MAT1;
+    //         end if;
+    //     end if;
+
+    // else
         //Now we are in the generic case! Not genus 0!
         if verbose then printf "Computing the cocycle\n"; end if;
-        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);//This will be the main one from now on. much much faster!
+        xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
         //Now the twist
         if verbose then printf "Twisting the curve...\n"; end if;
         psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
@@ -169,7 +180,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 return psi,MAT,"no map computed!",_,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
             end if;
         end if;
-        //Now we compute the jmap. Need to do Galois descent to have rational coefficents. So a little messy
+        //Now we compute the jmap. Need to do Galois descent to have rational coefficents.
         if verbose then printf "Computing the jmap...\n"; end if;
         //Computing the jmap. The jmap of the representative is precomputed.
         if famG`oneelement then
@@ -184,7 +195,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 relmap:= PolynomialTwister(L, MAT, K);
             end if;
         else
-            if assigned famG`RelativeJMap and not assigned famG`extra3 then
+            if assigned famG`RelativeJMap and not assigned famG`extra3 then //extra3 indicates that the RelativeJmap is too big and the absolute j map is preferred.
                 rel:=true;
                 L:=famG`RelativeJMap;
                 relmap:= PolynomialTwister(L, MAT, K);
@@ -196,8 +207,8 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 
             end if;
         end if;
-    end if;
-    //Computing the cocycle related to H and G. See the paper for details. (Paper is not out yet so look at the file)
+    // end if;
+
 
 
 
@@ -210,7 +221,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 
 
     if verbose then printf "Computing QQ-gonality...\n"; end if;
-    //Following computes if the curve is hyperelliptic
+    //Following computes if the curve is hyperelliptic. We basically twist the canonical model as above.
     if famG`M`CPname in gonality_equals_2 then
         assert assigned famG`CanModelForHyp;
         gonmodel:=famG`CanModelForHyp;

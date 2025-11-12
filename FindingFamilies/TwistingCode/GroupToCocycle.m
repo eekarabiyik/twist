@@ -44,7 +44,7 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
                 GAL1: the Galois group of Gal(K/Q) as an automorphism group
                 sigma1: the map from GAL1 to the set of automorphisms of K
 }
-    //Arranging the levels
+    //We start by some arrangement of the levels. 
     time0:=Cputime();
     N1:=#BaseRing(calG);
     N3:=#BaseRing(H);
@@ -60,7 +60,7 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     //T:=SL2Intersection(G);//This is fast now.
     UNG,iotaN:=UnitGroup(Integers(NG));
     SL2:=SL2Ambient(NG);
-    //Forming the quotient calG/H. We have to make it into an abelian group so that the kernels actually work.
+    //Forming the quotient calG/H where H is the representative. We have to make it into an abelian group so that the kernels actually work.
     calG:=GL2Lift(calG,N);
     quocalG,quomapG:= quo<calG|H>;
     quocalGG,quomapGG:=AbelianGroup(quocalG);
@@ -68,30 +68,30 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
     GUNG:=GenericAbelianGroup(UNG);
     AA:=sub<GUNG|[Determinant(g) @@ iotaN : g in Generators(G)]:UseUserGenerators:=true>;
     //newgammadd:=hom<AA->G | [<Determinant(g) @@ iotaN,g>: g in Generators(G)]>;
+    //newgammadd and gammadd are the continuous homomorphism gamma. 
     newgammadd:=hom<AA->quocalGG | [<Determinant(g) @@ iotaN,quomapGG(quomapG(ChangeRing(g,BaseRing(calG))))>: g in Generators(G)]>;
-    //This function is basically our cocycle.
     gammadd:=hom<UNG->quocalGG|[newgammadd(UNG.i): i in [1..Ngens(UNG)]]>;
+    //Time to use the cyclotomic character and carry over to the Galois groups.
     //First we create Cyclotomic field. Then find the fixed field coming from our homomorphism. Afterwards the cocycle is transformed into an honest galois cocycle via the cyclotomic character.
     GL1:=GL1Ambient(NG);
     KNG<z>:=NumberField(CyclotomicPolynomial(NG));
     kernell:=Kernel(gammadd);
     degneeded:=Index(UNG,kernell);
     kerrr:=sub<GL1|[[iotaN(kernell.i)]: i in [1..Ngens(kernell)]]>;
-   if not GL1Order(kerrr) eq GL1Order(GL1) then 
-
-
-        L,prim:=fieldfind(kerrr,KNG);
-            //L<zz>:=L;
-        L<zz>:=sub<KNG|[prim]>;
-    //Find the Galois map via cyclotomic character.
-    GAL,iota,sigma:=AutomorphismGroup(L);
-    quotientgamma,quogammamap:=quo<UNG|kernell>;
-    quogamma:=hom<quotientgamma->quocalGG| [gammadd(quotientgamma.i @@ quogammamap): i in [1..Ngens(quotientgamma)]]>;
-    jj:=KNG!zz;
-    listinho:=Eltseq(jj);
-    genlist:=[];
-    gallist:=[];
-    for i in [1..Ngens(quotientgamma)] do
+    if not GL1Order(kerrr) eq GL1Order(GL1) then 
+      L,prim:=fieldfind(kerrr,KNG);
+      L<zz>:=sub<KNG|[prim]>;
+      //Find the Galois map via cyclotomic character.
+      GAL,iota,sigma:=AutomorphismGroup(L);
+      //The quotient group that is isomorphic to \calG/H.
+      quotientgamma,quogammamap:=quo<UNG|kernell>;
+      quogamma:=hom<quotientgamma->quocalGG| [gammadd(quotientgamma.i @@ quogammamap): i in [1..Ngens(quotientgamma)]]>;
+      jj:=KNG!zz;
+      listinho:=Eltseq(jj);
+      genlist:=[];
+      gallist:=[];
+      //We write down the isomorphism between the Galois group and the quotient group above. This is ugly brute force.
+      for i in [1..Ngens(quotientgamma)] do
         exponento:=Integers()!iotaN(quotientgamma.i @@ quogammamap);
         a:=0;
         for j in [1..#listinho] do
@@ -101,12 +101,13 @@ intrinsic GroupToCocycleProj(calG::GrpMat, H::GrpMat, G::GrpMat, T::GrpMat, AOfM
         //This is a brute force way. But it seems fast enough because the degree of the Galois group is uniformly bounded for our twists.
         _:=exists(g0){g0: g0 in GAL | sigma(g0)(zz) eq a };
         Append(~gallist,g0);
-    end for;
-    galiso:=hom<quotientgamma->GAL | [gallist[i]: i in [1..Ngens(quotientgamma)]]>;
-    galisoa:=Inverse(galiso);
-    xi1:=hom<GAL-> calG | [(quogamma(galisoa(GAL.i))@@ quomapGG) @@ quomapG: i in [1..Ngens(GAL)]]>;//This is the cocycleish/
+      end for;
+      galiso:=hom<quotientgamma->GAL | [gallist[i]: i in [1..Ngens(quotientgamma)]]>;
+      galisoa:=Inverse(galiso);
+      //This xi1 is a map from the Galois group of the field of definition and gives matrices that can be put into autofmodularforms.
+      xi1:=hom<GAL-> calG | [(quogamma(galisoa(GAL.i))@@ quomapGG) @@ quomapG: i in [1..Ngens(GAL)]]>;//This is the cocycleish/
 
-    //This takes from the field of definition and gives matrices that can be put into autofmodularforms.
+
 
     else
     //Separately handle if the cocycle is the trivial map.  
