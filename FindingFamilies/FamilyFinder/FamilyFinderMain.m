@@ -94,6 +94,7 @@ intrinsic FamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt
     //Y is an array of possible families that contains G.
     //We know the possible families. We conjugate to land in them, then we check whether the SL2 intersections match. 
     for t in Keys(Y) do
+        FAM[t]`B`SL:=true;
         b:=FiniteLift(Y[t][2],calG_level,M);
         Tcong:=Conjugate(SL2Lift(T,M),b);
         Tcong`SL:=true;
@@ -102,6 +103,7 @@ intrinsic FamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt
             o:=t;
             break t;
         else
+            FAM[t]`B`SL:=true;
             //If not, it is possible that T is conjugate in the normalizer of calG, we check if this is the case. Either one of these cases will happen.
             norm:=Normalizer(GL2Ambient(M),GL2Lift(FAM[t]`calG,M));
             conj,element:=IsConjugate(norm,SL2Lift(Tcong,M),SL2Lift(FAM[t]`B,M));
@@ -133,6 +135,7 @@ intrinsic FamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt
         end if;
     end for;
     if o ne -1 then
+        FAM[o]`B`SL:=true;
         //If we have found the family with correct SL2intersection:
         b:=FiniteLift(Y[o][2],calG_level,N);
         bm:=FiniteLift(Y[o][2],calG_level,M);
@@ -141,9 +144,11 @@ intrinsic FamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt
         assert Tcong eq SL2Project(SL2Intersection(Gcong),M);
         assert Tcong eq SL2Lift(FAM[o]`B,M);
         _,Tcong:=SL2Level(Tcong);
-        _,Gcong:=GL2Level(Gcong);
+        Gconglevel,Gcong:=GL2Level(Gcong);
+        assert Gcong subset GL2Lift(FAM[o]`calG,Gconglevel);
         return o,FAM[o],Gcong,FAM[o]`calG,Tcong;
     else
+        FAM[u]`B`SL:=true;
         //Otherwise T is conjugate to a normalizer conjugate.
         bm:=FiniteLift(Y[u][2],calG_level,M);
         Tcong:=Conjugate(SL2Lift(T,M),bm);
@@ -155,7 +160,8 @@ intrinsic FamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngIntElt
         assert Tcong eq SL2Lift(FAM[u]`B,M);
         assert Tcong eq SL2Project(SL2Intersection(Gcong),M);
         _,Tcong:=SL2Level(Tcong);
-        _,Gcong:=GL2Level(Gcong);
+        Gconglevel,Gcong:=GL2Level(Gcong);
+        assert Gcong subset GL2Lift(FAM[u]`calG,Gconglevel);
         return u,FAM[u],Gcong,FAM[u]`calG,Tcong;
     end if;
 end intrinsic;
