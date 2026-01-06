@@ -42,5 +42,6 @@ This repo is optimized for computation of modular curves with respect to group t
 
 
 - Our implementation is usually faster than other implementations for finding models for modular curves. This is certainly the case when the level of modular curves input gets bigger.
+- Improvements will be made. This is a working version as of 5 January 2026.
 
 Eray Karabiyik
