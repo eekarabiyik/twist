@@ -1,4 +1,5 @@
 # A Classification of Modular Curves
+CAUTION! A BUG WAS FOUND IN DECEMBER 2025. PLEASE UPDATE REDOWNLOAD THE DATA FILES!
 
 This repository contains the classification of modular curves upto genus 12 in terms of families. 
 Please let me know any if you have any comments or suggestions, or find any bugs: ek693@cornell.edu
