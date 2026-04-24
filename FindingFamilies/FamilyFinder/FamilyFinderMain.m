@@ -696,3 +696,71 @@ intrinsic OldFamilyFinderWithCusps(G::GrpMat, T::GrpMat, FAM::SeqEnum) -> RngInt
         return u,FAM[u],Gcong,FAM[u]`calG,Tcong;
     end if;
 end intrinsic;
+
+
+
+intrinsic ConjugateIntoFamily(G,T,fam)->RngIntElt, Rec, GrpMat, GrpMat, GrpMat
+     {
+        Input:  G open subgroup
+                T: G meet SL2
+                fam: a single family. We already know that G is in fam
+        Output: G and T conjugated into this family.
+     }
+    g:=GL2Genus(T);
+    T_level,T:=SL2Level(T);
+    G_level,G:=GL2Level(G);
+    N:=#BaseRing(G);
+    M:=#BaseRing(T);
+      M:=LCM([#BaseRing(fam`calG),T_level]);
+
+    A,b:=GL2IsConjugateSubgroup(GL2Lift(fam`calG,G_level),G);
+    A;
+    Tcong:=Conjugate(SL2Lift(T,G_level),b);
+    Tcong`SL:=true;
+
+     o:=-1;
+    u:=-1;
+    t:=31;
+        if SL2Project(Tcong,T_level) eq fam`B then;
+            o:=t;
+
+        else
+            fam`B`SL:=true;
+            //If not, it is possible that T is conjugate in the normalizer of calG, we check if this is the case. Either one of these cases will happen.
+            norm:=Normalizer(GL2Ambient(M),GL2Lift(fam`calG,M));
+            conj,element:=IsConjugate(norm,SL2Lift(Tcong,M),SL2Lift(fam`B,M));
+            if conj then
+                neededb:=element;
+                u:=t;
+            end if;
+
+        end if;
+
+    if o ne -1 then
+        //If we have found the family with correct SL2intersection:
+
+        bm:=GL2Ambient(M)!ChangeRing(b,Integers(M));
+        bm;
+        Gcong:=Conjugate(G,b);
+        Tcong:=Conjugate(SL2Lift(T,M),bm);
+        assert Tcong eq SL2Project(SL2Intersection(Gcong),M);
+        assert Tcong eq SL2Lift(fam`B,M);
+        _,Tcong:=SL2Level(Tcong);
+        _,Gcong:=GL2Level(Gcong);
+        return o,fam,Gcong,fam`calG,Tcong;
+    else
+        //Otherwise T is conjugate to a normalizer conjugate.
+        bm:=GL2Ambient(M)!ChangeRing(b,Integers(M));
+        Tcong:=Conjugate(SL2Lift(T,M),bm);
+        Tcong:=Conjugate(Tcong,neededb);
+        //b:=FiniteLift(Y[u][2],calG_level,N);
+        Gcong:=Conjugate(G,b);
+        neededbN:=FiniteLift(neededb,M,N);
+        Gcong:=Conjugate(Gcong,neededbN);
+        assert Tcong eq SL2Lift(fam`B,M);
+        assert Tcong eq SL2Project(SL2Intersection(Gcong),M);
+        _,Tcong:=SL2Level(Tcong);
+        _,Gcong:=GL2Level(Gcong);
+        return u,fam,Gcong,fam`calG,Tcong;
+    end if;
+end intrinsic;

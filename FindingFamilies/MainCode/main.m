@@ -158,7 +158,27 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         xi,K:=GroupToCocycleProj(famG`calG,famG`H,Gcong,Tcong,AOfMF);
         //Now the twist
         if verbose then printf "Twisting the curve...\n"; end if;
-        psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        // BURA DEGISTI
+        if famG`oneelement then
+            psi:=famG`M`psi;
+            if psi eq [] then 
+                MAT:=Identity(MatrixRing(Rationals(), 2));
+            else
+                rr:=Rank(Parent(psi[1]));
+                MAT:=Identity(MatrixRing(Rationals(), rr));
+            end if;
+
+
+
+        else
+
+            psi,MAT:=TwistCurve(famG`M`psi,xi,K: redcub:=redcub);
+        end if;
+
+
+
+        if verbose then printf "Twisting the curve...\n"; end if;
+        
         //Huge j-maps case
         if assigned famG`extra5 and famG`genus gt 6 then
             if famG`M`CPname in gonality_equals_2 then
@@ -195,7 +215,7 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
                 relmap:= PolynomialTwister(L, MAT, K);
             end if;
         else
-            if assigned famG`RelativeJMap and not assigned famG`extra3 then //extra3 indicates that the RelativeJmap is too big and the absolute j map is preferred.
+            if assigned famG`RelativeJMap and not assigned famG`extra3 and not (famG`agreeable_label eq "2.3.0.a.1" or famG`agreeable_label eq "2.2.0.a.1" or famG`agreeable_label eq "2.6.0.a.1") then //extra3 indicates that the RelativeJmap is too big and the absolute j map is preferred.
                 rel:=true;
                 L:=famG`RelativeJMap;
                 relmap:= PolynomialTwister(L, MAT, K);

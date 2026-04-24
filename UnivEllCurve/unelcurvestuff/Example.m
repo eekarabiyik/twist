@@ -1,15 +1,12 @@
 
-/*
-//Load  this to run the code on all curves in LMFDB
-ChangeDirectory("/homes/ek693/Main/FindingFamilies");
+SetColumns(0);
+ChangeDirectory("./Main/FindingFamilies");
 AttachSpec("../spec");
-FAM:=LoadFamilies(["/homes/ek693/Main/UnivEllCurve/unelcurvestuff/allfamincludingfinestuffLATEST.dat"]);
-load "/homes/ek693/Main/UnivEllCurve/univellcurvedatalmfdb/lmfdbdatafine.m";
-curves:=make_data();
-*/
 
-//load "/homes/ek693/Main/FindingFamilies/TwistingCode/TwistingCode2.m";
-//okay it can find the family no problem.
+
+
+
+
 
 // Helper function
 // Input: C::Crv, g::RngIntElt -> DivCrvElt
@@ -384,8 +381,15 @@ function KTform2(C,QC,polyring,A,B)
     Afunc := Evaluate(Numerator(A),vals)/Evaluate(Denominator(A),vals);
     Bfunc := Evaluate(Numerator(B),vals)/Evaluate(Denominator(B),vals);
   end if;
+
+
+
   rawE := EllipticCurve([0,0,0,Afunc,Bfunc]);
+
+
+
   divpol := DivisionPolynomial(rawE,2);
+
   // The roots of divpol are x-coordinates of points of exact order d.
   printf "Finding roots of division polynomial.\n";
   rts := Roots(divpol);
@@ -524,6 +528,8 @@ function FinalReduction(C,H0,QC,polyring,newA2num,newA2denom,newB2num,newB2denom
   varsnames := ["x","y","z","w","t","u","v","r","s","a","b","c","d","e","f","g","h","i","k","l","m","n","o","p","q","j"];
   AssignNames(~Ffield,[varsnames[j] : j in [1..Rank(polyring)]]);
   d := torsionorder(H0);
+  //printf "d is %o\n",d;
+  //printf "We're done.\n";
   a_inv := [];
   if d eq 1 then
     a_inv := [newA2num,newA2denom,newB2num,newB2denom];
@@ -557,7 +563,6 @@ function FindUnivECModel(M0, model, j_map, f: verbose:=false)
         psi:=DefiningEquations(model);
         if psi eq [] then rank:=2; else rank:=Rank(Parent(psi[1])); end if;
         
-        rank:=Rank(Parent(psi[1]));
         polyring := PolynomialRing(Rationals(), rank, "grevlex");//change
         varsnames := ["x","y","z","w","t","u","v","r","s","a","b","c","d","e","f","g","h","i","k","l","m","n","o","p","q","j"];
         AssignNames(~polyring,[varsnames[j] : j in [1..rank]]);//change
@@ -571,7 +576,8 @@ function FindUnivECModel(M0, model, j_map, f: verbose:=false)
         // doing initial reduction
         C := model;
         QC := FunctionField(C);
-        E := LowDegreeDivisor(C, M0`genus);//change to rank//CAN BE SLOW or genus?
+        E := LowDegreeDivisor(C, M0`genus);//change to rank//CAN BE SLOW
+        E;
         if verbose then printf "Using effective divisor of degree %o", Degree(E); end if;
         newA2num, newA2denom, newB2num, newB2denom := FirstReduction(polyring, C, E, r, x, A, B);
 
@@ -590,3 +596,67 @@ function FindUnivECModel(M0, model, j_map, f: verbose:=false)
         return a_inv;
 
 end function;
+
+//L is a list of groups given in terms of their levels and generators.
+L:=[<6,[[1, 0, 3, 5], [2, 3, 3, 2]]>,<6,[[2, 5, 3, 4], [5, 1, 0, 5]]>,<6,[[4, 3, 3, 2], [5, 5, 3, 4]]>,<10,[[1, 3, 5, 2], [9, 9, 0, 7]]>,<10,[[1, 3, 4, 5], [4, 9, 5, 2]]>,<10,[[1, 9, 8, 5], [2, 7, 1, 3]]>,<10,[[3, 8, 3, 5], [4, 7, 5, 8]]>,<10,[[1, 9, 0, 9], [8, 3, 7, 8]]>,<14,[[0, 1, 13, 9], [11, 9, 0, 13]]>,<14,[[1, 1, 7, 2], [8, 1, 9, 0]]>,<14,[[11, 9, 8, 5], [12, 1, 1, 12]]>,<14,[[6, 3, 7, 2], [13, 11, 5, 12]]>,<22,[[9, 0, 1, 21], [13, 5, 21, 18]]>,<22,[[5, 6, 3, 13], [21, 9, 7, 8]]>,<26,[[7, 18, 3, 9], [20, 13, 3, 12]]>,<26,[[18, 11, 19, 11], [25, 0, 23, 7]]>];
+
+//Currently there are many problems with Final Reduction, most of the time it might fail. We will think about it
+//Below we compute the universal elliptic curves for the groups in the list L
+//A model is obtained but most likely the FinalReduction will fail.
+a:=1;
+list:=[];
+for tup in L do
+a;
+
+    G:=sub<GL2Ambient(tup[1])|tup[2]>;
+    GL2Genus(G);
+    M0 := CreateModularCurveRec(G);
+    H := GL2IncludeNegativeOne(G);
+    TY := SL2Intersection(H);
+    M := CreateModularCurveRec(H);
+    M := FindModelOfXG(M);
+    C, jmap, _, _, _, _, _ := AbsoluteJmap(M);
+    lol:=FindRatio(M,M0, 2);
+    lol[1];
+    //
+    try
+        inv:=FindUnivECModel(M0, C, jmap, lol[1]: verbose:=true);
+        inv;
+    catch e
+      print e;
+    end try;
+
+
+a:=a+1;
+end for;
+
+
+//One example
+tup := L[13];
+G:=sub<GL2Ambient(tup[1])|tup[2]>;
+//GL2Genus(G);
+M0 := CreateModularCurveRec(G);
+H := GL2IncludeNegativeOne(G);
+TY := SL2Intersection(H);
+M := CreateModularCurveRec(H);
+M := FindModelOfXG(M);
+C, jmap, _, _, _, _, _ := AbsoluteJmap(M);
+lol:=FindRatio(M,M0, 2:prec0:=20);
+
+
+fonk:=lol[1];
+fkare:=lol[2];
+ealti:=lol[3];
+modforms3:=lol[4];
+
+c:=1;
+afterrelmap:=[Evaluate(fonk[j],[M`F0[i][c]: i in [1..#M`F0]]):j in [1..#fonk]];
+
+ourratio:=afterrelmap[1]/afterrelmap[2];
+therealratio:=fkare[1]/ealti[1];
+
+//Check that ourratio and therealratio match (at the first cusp)
+
+
+
+

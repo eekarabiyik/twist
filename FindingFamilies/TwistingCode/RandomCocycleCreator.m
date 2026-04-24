@@ -1,3 +1,6 @@
+//This functions are not used for the classification.
+
+
 intrinsic RandomCocycle(calG:: GrpMat, G:: GrpMat, N:: RngIntElt)-> SeqEnum //only for coarse families so far but gotta try for fine fams.
 {gives a list of random cocycle to calG/G. It is given by a set of elements that lies in calGmeetSL2/GmeetSL2 (because there is such an isomorphism)} //How will this change for families over number fields? who knows? in general it is not easy to know things.
     //UN,iotaN:=UnitGroup(Integers(N));
@@ -20,10 +23,10 @@ intrinsic RandomCocycle(calG:: GrpMat, G:: GrpMat, N:: RngIntElt)-> SeqEnum //on
 
     gamma:=hom<UN -> W | listgamma>;
     */
-quot,quomap:=quo<W|B>;
+quot,quomap:=quo<W|B>;//This is isomorphic to the agreeable quotient.
 quott,quottmap:=AbelianGroup(quot);
 AbelGL1,abelmap:=AbelianGroup(GL1);
-L:=Homomorphisms(AbelGL1,quott);
+L:=Homomorphisms(AbelGL1,quott); //homomorphisms from (Z/N)^* to \calG/G. N is an input.
 list:=[];
 for mu in L do 
     if #Kernel(mu) eq #GL1 then continue; end if;    
@@ -40,7 +43,7 @@ function lift_hom(f, M)
     return hom<GM -> Codomain(f) | [<GM.i, ChangeRing(GM.i, R) @ f> : i in [1..Ngens(GM)]] >;
 end function;
 
-
+//I need to make this faster :( Hmm it is not that slow honestly.
 intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
 {
     This function takes a cocycle and produces the twisted group.
@@ -51,9 +54,9 @@ intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
     N2,G:=GL2Level(G);
     N3,T:=SL2Level(T);
     NewN:=LCM([N1,N2,N3,N]);
-    NewN;
+    NewN; //We work at this level now.
 
-
+    //Lift everything.
     GL1:=GL1Lift(GL1,NewN);
     realgamma:=lift_hom(realgamma,NewN);
     calG:=GL2Lift(calG,NewN);
@@ -68,6 +71,7 @@ intrinsic TwistGroup(groupslist, realgamma,GL1,N)   -> RngIntElt,SeqEnum
         listofelements:=listofelements cat [<d,g>];
     end for;
     */    
+    //Need to form the determinant map to actually twist the group.
     "Forming the determinant map";
     detmapp:=hom<G->GL1|[<g,Matrix([[Determinant(g)]])>: g in Generators(G)]>;
 
@@ -103,6 +107,9 @@ return NewN, gens;
 end intrinsic; 
 
 
+// intrinsic ChangeHom(realgamma,GL1,N)->
+// {
+// }
 
 
-
+// end intrinsic;

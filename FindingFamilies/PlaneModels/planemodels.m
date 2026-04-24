@@ -96,35 +96,64 @@ Applies the matrix M to the expansions, projecting F0 onto 3 modular forms (give
     //vecs := [Vector([F0[i][j] : i in [1..#F0]]) : j in [1..#F0[1]]];
     //vec3s := [v * Transpose(M) : v in vecs];
     //return [[vec3s[i][j] : i in [1..#vec3s]] : j in [1..3]];
-     exists(t){t:t in [1..Ncols(M)]|not M[1][t] eq 0 };
+     aa:=exists(t){t:t in [1..Ncols(M)]|not M[1][t] eq 0 };
     K:=Parent(M[1][t]);
-    K;
+    //cond1:=Conductor(AbelianExtension(K));
+    //K;
     L:=Parent(Coefficient(F0[1][1],0));
-    L;
+    cond2:=Conductor(L);
+    //L;
     Z<z>:=CyclotomicField(cyclevel);
-    Z;
-    assert L subset Z;
-    assert K subset Z;
-    M:=ChangeRing(M,Z);
-    FF<qw>:=PowerSeriesRing(Z);
-    Mf:=[];
-    for l in [1..#F0] do
-        cu:=[];
-        for j in [1..#F0[l]] do
-            a:=&+[Coefficient(F0[l][j],i)*qw^i: i in [0..AbsolutePrecision(F0[l][j])-1]]+O(qw^(AbsolutePrecision(F0[l][j])));
-            cu:=cu cat [a];
+    //Z;
+    if L subset Z and K subset Z then
+        assert L subset Z;
+        assert K subset Z;
+        M:=ChangeRing(M,Z);
+        FF<qw>:=PowerSeriesRing(Z);
+        Mf:=[];
+        for l in [1..#F0] do
+            cu:=[];
+            for j in [1..#F0[l]] do
+                a:=&+[Coefficient(F0[l][j],i)*qw^i: i in [0..AbsolutePrecision(F0[l][j])-1]]+O(qw^(AbsolutePrecision(F0[l][j])));
+                cu:=cu cat [a];
+            end for;
+            Mf:= Mf cat [cu];
         end for;
-        Mf:= Mf cat [cu];
-    end for;
-    F0:=Mf;
-    ans := [[FF!0 : a in [1..#F0[1]]] : j in [1..Nrows(M)]];
-    for a in [1..#F0[1]] do
-        for j in [1..Nrows(M)] do
-            for i in [1..Ncols(M)] do
-                ans[j][a] +:= M[j][i] * F0[i][a];
+        F0:=Mf;
+        ans := [[FF!0 : a in [1..#F0[1]]] : j in [1..Nrows(M)]];
+        for a in [1..#F0[1]] do
+            for j in [1..Nrows(M)] do
+                for i in [1..Ncols(M)] do
+                    ans[j][a] +:= M[j][i] * F0[i][a];
+                end for;
             end for;
         end for;
-    end for;
+    else
+        //"Selse part";
+        Z<z>:=CyclotomicField(LCM([cyclevel,cond2]));
+        assert L subset Z;
+        assert K subset Z;
+         M:=ChangeRing(M,Z);
+        FF<qw>:=PowerSeriesRing(Z);
+        Mf:=[];
+        for l in [1..#F0] do
+            cu:=[];
+            for j in [1..#F0[l]] do
+                a:=&+[(Z!Coefficient(F0[l][j],i))*qw^i: i in [0..AbsolutePrecision(F0[l][j])-1]]+O(qw^(AbsolutePrecision(F0[l][j])));
+                cu:=cu cat [a];
+            end for;
+            Mf:= Mf cat [cu];
+        end for;
+        F0:=Mf;
+        ans := [[FF!0 : a in [1..#F0[1]]] : j in [1..Nrows(M)]];
+        for a in [1..#F0[1]] do
+            for j in [1..Nrows(M)] do
+                for i in [1..Ncols(M)] do
+                    ans[j][a] +:= M[j][i] * F0[i][a];
+                end for;
+            end for;
+        end for;
+    end if;
     return ans;
 end intrinsic;
 
@@ -254,6 +283,7 @@ intrinsic PlaneModelsFromQExpansions(rec::Rec, Can::Crv : success_amount:=25, gi
                 catch e
                     vprint User1: e;
                 end try;
+                if Cputime() - t0 gt giveup_time then break m; end if;
             elif Cputime() - t0 gt giveup_time then
                 break;
             end if;
@@ -352,8 +382,8 @@ intrinsic PlaneModelsFromQExpansionsForm(rec::Rec, Can::Crv, MFF/*modular forms*
                     else
                         vprint User1: "invalid model, continuing to next m";
                     end if;
-                catch e
-                     vprint User1: e;
+                catch e;
+                     //vprint User1: e;
                 end try;
                 //end for;
             elif Cputime() - t0 gt giveup_time then

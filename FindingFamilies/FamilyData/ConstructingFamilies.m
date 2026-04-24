@@ -7,7 +7,7 @@ This is the code for finding all groups that contain the agreeable groups up to 
 
 
 
-filename:="./FindingFamilies/CummingsPauli/CPdata.dat";  
+filename:="../FindingFamilies/CummingsPauli/CPdata.dat";  
 I:=Open(filename, "r"); 
 _,cp_data:=ReadObjectCheck(I);
 //Code by David Zywina
@@ -1063,6 +1063,142 @@ end for;
 
 return [FAM[k]: k in Keys(FAM)];
 end intrinsic;
+
+
+
+
+
+intrinsic ChangeRepresentative(FAM, G: verbose:=false, computerel:=true, computeabs:=true) -> SeqEnum
+{Takes as input a family and a group that lies in the family. It changes the representative of the 
+family with the given group along with all the needed computations. 
+Need to make sure that I am not changing the modular curve of the agreeable family. Because relative maps have been computed by them.}
+    calG:=FAM`calG;
+    B:=FAM`B;
+    FAM`B`SL:=true;
+    NcalG:=#BaseRing(calG);
+    NB:=#BaseRing(B);
+    NG:=#BaseRing(G);
+    assert GL2IsConjugateSubgroup(calG,G) and GL2IsConjugateSubgroup(B,SL2Intersection(G));
+    
+    _,_,G,_,T:=ConjugateIntoFamily(G,SL2Intersection(G),FAM);
+    FAM`H:=G;
+    if verbose then printf "Computing the models\n"; end if;
+
+
+    
+
+            
+        
+            assert assigned FAM`fine;
+
+
+            G:=FAM`H;
+            calG:=FAM`calG;
+
+            if assigned G`SL then delete G`SL; end if;
+            if assigned calG`SL then delete calG`SL; end if;
+
+        
+            M:=CreateModularCurveRec(G);
+
+            M:=FindModelOfXG(M: G0:=calG);
+            FAM`M:=M;
+            M`H`SL:=true;
+
+            H:=G;
+            calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+            M:=IncreaseModularFormPrecision(M,[Maximum(M`prec[i]+2,((M`prec_sturm[i]-1) * (M`sl2level div M`widths[i]))+5) : i in [1..M`vinf]]);
+            FAM`AOfMF:=AssociativeArray();
+            for i in [1..Ngens(calG)] do
+                FAM`AOfMF[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+            end for;    
+        
+        
+
+
+
+
+    if verbose then printf "Computing Relative Jmaps\n"; end if;
+
+
+
+    if computerel then
+        if assigned FAM`H and not FAM`fine and assigned FAM`M and not assigned FAM`RelativeJMap and not FAM`M`CPname in gonality_equals_2 and not (#FAM`M`psi gt 40 and FAM`M`genus eq 0) then
+            // if FAM`M`CPname in gonality_equals_2 then continue; end if; //Gets stuck sometimes
+            // if #FAM`M`psi gt 40 and FAM`M`genus eq 0 then continue; end if;//Gets stuck sometimes
+            G:=FAM`H;
+            calG:=FAM`calG;
+            M:=FAM`M;
+            MG:=FAM`calGModCurve;
+            L:=FindMorphism(M,MG);
+            FAM`RelativeJMap:=L;
+            if assigned FAM`RelativeJMap then
+                K1:=Parent(FAM`RelativeJMap[1]);
+                K:=BaseRing(K1);
+                rank:=Rank(K1);
+                if Type(K) eq FldCyc and Degree(K) eq 1 then K:=Rationals(); end if;
+                Pol_K:=PolynomialRing(K,rank);
+                L:=[Pol_K!FAM`RelativeJMap[i]: i in [1..#FAM`RelativeJMap]];
+                FAM`RelativeJMap:=L;
+            end if;
+        end if;
+    end if;
+
+
+
+
+    if verbose then printf "Computing the Jmaps\n"; end if;
+
+    if computeabs then
+            if assigned FAM`H and not FAM`fine and assigned FAM`M and not assigned FAM`jmap then
+                require assigned FAM`M : "The modular curve should have been computed.";
+
+                a,b:=AbsoluteJmap(FAM`M);
+                FAM`jmap:=b;
+            end if;
+    end if;
+
+
+
+
+    if verbose then printf "Computation for the gonality 2 modular curves\n"; end if;
+
+
+        if assigned FAM`H and not FAM`fine then
+            G:=FAM`H;
+            calG:=FAM`calG;
+            //if #BaseRing(G) eq 2 and #BaseRing(G) eq #BaseRing(calG) and G eq calG then continue; end if;
+        if FAM`M`CPname in gonality_equals_2 then
+            FAM`CanModelForHyp:=FindCanonicalModel(CreateModularCurveRec(FAM`H));
+        end if; 
+        end if;
+
+
+
+
+        if assigned FAM`H and assigned FAM`CanModelForHyp and not assigned FAM`AOfMFCanModel then
+            H:=FAM`H;
+            calG:=FAM`calG;
+            FAM`AOfMFCanModel:=AssociativeArray();
+            if assigned H`SL then delete H`SL; end if;
+            if assigned calG`SL then delete calG`SL; end if;
+            M:=FAM`CanModelForHyp;
+            calG:=GL2Lift(calG,LCM([#BaseRing(calG),#BaseRing(H)]));
+            M`H`SL:=true;
+            M:=IncreaseModularFormPrecision(M,[Maximum(M`prec[i]+1,((M`prec_sturm[i]-1) * (M`sl2level div M`widths[i]))+5) : i in [1..M`vinf]]);
+            for i in [1..Ngens(calG)] do
+                FAM`AOfMFCanModel[i]:=AutomorphismOfModularForms(M,M`F0,calG.i);
+            end for;    
+        end if;
+
+
+
+    if verbose then printf "Done!\n"; end if;
+
+return FAM;
+end intrinsic;
+
+
 
 
 
