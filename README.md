@@ -1,5 +1,5 @@
 # A Classification of Modular Curves
-CAUTION! A BUG WAS FOUND IN DECEMBER 2025. PLEASE UPDATE AND REDOWNLOAD THE DATA FILES!
+CAUTION! A BUG WAS FOUND IN DECEMBER 2025. PLEASE UPDATE AND REDOWNLOAD THE DATA FILES (VERSION 3 ON ZENODO)!
 
 This repository contains the classification of modular curves upto genus 12 in terms of families. 
 Please let me know any if you have any comments or suggestions, or find any bugs: ek693@cornell.edu
@@ -43,6 +43,6 @@ This repo is optimized for computation of modular curves with respect to group t
 
 
 - Our implementation is usually faster than other implementations for finding models for modular curves. This is certainly the case when the level of modular curves input gets bigger.
-- Improvements will be made. This is a working version as of 5 January 2026.
+- Improvements will be made. This is a working version as of April 2026.
 
 Eray Karabiyik
