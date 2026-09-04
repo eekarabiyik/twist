@@ -1,64 +1,4 @@
-/*
-  main-fixed-intrinsics.m
 
-  Intrinsic-only copy of main-fixed.m.  All named Magma functions in that
-  file have been converted to user-defined intrinsics so that require
-  statements are legal.  main.m and main-fixed.m remain unchanged.
-
-  Corrected working copy of main.m.  The original main.m is intentionally
-  unchanged.  Every implemented correction below is marked with "FIX:".
-
-  REMAINING EXTERNAL OR MODEL-DEPENDENT WORK
-
-  (1) FindRatio must obey one documented convention.  This file expects
-
-          ratio_map = [numerator(h), denominator(h)],  h = f_0^2/E_6.
-
-      The homogeneous branch of the currently inspected FindRatio returns
-      these two entries in the opposite order.  Fix that producer (and its
-      callers/tests) by changing its final homogeneous pair from
-      [denominator,numerator] to [numerator,denominator]; this consumer cannot
-      reliably infer that they were swapped.
-
-  (2) The attached GL2 support code must provide the two-argument intrinsic
-
-          GL2TorsionDegree(H, d).
-
-      The one-argument intrinsic silently replaces d by the minimal level of
-      H and is not an exact-order-d test.  torsionorder below now makes the
-      correct two-argument call, but the intrinsic itself lives outside this
-      file (for example in Modular/EarlierCode/gl2base.m).  The attached spec
-      must load that overload before this file is used.
-
-  (3) LowDegreeDivisor has a caller-supplied KnownDivisor option.  If no
-      rational point is found within SearchBound, it tries all pairs of
-      ambient coordinates.  On a curve representation for which Magma cannot
-      construct any of those rational maps/divisor fibres, pass a certified
-      positive-degree divisor explicitly.
-
-  (4) The input data must be certified to use the same conjugate/fine group,
-      coordinate model, j-map, and ratio map.  This file checks full
-      determinant and absence of -I, but it cannot reconstruct a missing
-      compatibility certificate between independently produced inputs.
-
-  (5) The return value is the generic fibre over Q(C).  Constructing a
-      globally minimal elliptic scheme requires an open cover and local
-      changes of variables; that is a separate patching computation.
-
-  (6) Run the end-to-end examples under the exact Magma/spec environment in
-      which the modular-curve records are produced.  Magma was not available
-      on PATH when this corrected copy was prepared, so only static checks
-      could be run here.
-*/
-
-
-// ---------------------------------------------------------------------------
-// Shared exact arithmetic and presentation helpers
-// ---------------------------------------------------------------------------
-
-// FIX: preserve the denominator used to clear rational coefficients.  The
-// old code took a gcd after clearing denominators but then discarded the
-// clearing factor, which gives the wrong rational content.
 intrinsic RationalPolynomialContent(P::RngMPolElt) -> FldRatElt
 {Returns the exact rational content of a nonzero multivariate polynomial.}
   require P ne 0: "RationalPolynomialContent is undefined for zero.";
@@ -97,8 +37,7 @@ intrinsic AddRationalPrimeSupport(primes::SeqEnum[RngIntElt],
 end intrinsic;
 
 
-// FIX: use the actual Weierstrass weights and Floor, not Round, when taking
-// a common rational scaling out of a list of coefficients.
+
 intrinsic WeightedConstantMultiplier(
     pairs::SeqEnum[SeqEnum[RngMPolElt]],
     weights::SeqEnum[RngIntElt]) -> FldRatElt
@@ -158,8 +97,7 @@ intrinsic PairToFunctionField(num::RngMPolElt, den::RngMPolElt,
 end intrinsic;
 
 
-// FIX: one zero-safe homogenization routine replaces several duplicated
-// blocks that called Max on an empty monomial list.
+
 intrinsic FunctionToHomogeneousPair(h::Any, polyring::RngMPol)
     -> RngMPolElt, RngMPolElt
 {Returns a common-degree homogeneous numerator-denominator presentation.}
@@ -212,8 +150,7 @@ end intrinsic;
 intrinsic PresentationScore(
     pairs::SeqEnum[SeqEnum[RngMPolElt]]) -> SeqEnum[RngIntElt]
 {Returns the deterministic structural score of a coefficient presentation.}
-  // FIX: PairDegree also avoids asking Magma for the degree of the zero
-  // numerator in a coefficient that vanishes.
+
   degrees := [ PairDegree(pair) : pair in pairs ];
   terms := [ #Coefficients(pair[1]) + #Coefficients(pair[2])
              : pair in pairs ];
