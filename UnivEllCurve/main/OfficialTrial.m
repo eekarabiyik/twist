@@ -3,7 +3,7 @@
 
 AttachSpec("./spec");
 AttachSpec("./UnivEllCurve/main/univspec");
-load "./UnivEllCurve/main/univspec/listofcurves.m";
+load "./UnivEllCurve/main/listofcurves.m";
 grouplist:=[];
 for i in  [1..#L] do
     list:=L[i];
@@ -31,15 +31,15 @@ for i in [1..#grouplist] do
     PP:=ProjectiveSpace(Rationals(),rank-1);
     C:=Curve(PP,M`psi);
     "Models computed";
-    ratt:=FindRatio(M,M0,2);
+    ratio_map:=FindRatio(M,M0);
     "Ratio computed";
     //j;
-    //ratt;
-    UnivModel:=FindUnivECModel(M0,C,j,[ratt[2],ratt[1]]);
+    //ratio_map;
+    UnivModel:=FindUnivECModel(M0,C,j,ratio_map);
     "Final Result";
     UnivModel;
     univmodels[i]:=<UnivModel,#BaseRing(G),[Eltseq(a): a in Generators(G)]>;
-    fp := Open("/home/eekarabiyik/univellcurve/datadahaguzel.txt", "w");
+    fp := Open("data.txt", "w");
 
     for t in Keys(univmodels) do
         Puts(fp, Sprint(univmodels[t]));
@@ -49,11 +49,7 @@ for i in [1..#grouplist] do
     delete fp;
 
 
-    // fpp := Open("/home/eekarabiyik/univellcurve/data.dat", "w");
-    // for t in univmodels do
-    //     WriteObject(fpp, t);
-    // end for;
-    // delete fpp;
+
 
 end for;
 

@@ -55,7 +55,8 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
 
     //We find the family G lies in. Depending on the information input we use different methods.
     if already_conjugated and onefamily then
-        Gcong:=G; Tcong:=T; famG:=FAM[1]; 
+        famkey := 1;
+        Gcong:=G; Tcong:=T; famG:=FAM[famkey];
     elif use_agg_label then 
         famkey,famG,Gcong,calGlift,Tcong:=FamilyFinderCanon(G,T,FAM,parentcan:agreeable_label:=agreeable_label, use_agg_label:=use_agg_label);
     elif use_family_label then
@@ -237,7 +238,9 @@ intrinsic FindModel(G::GrpMat, T::GrpMat, FAM::SeqEnum: redcub:=true, test_hyper
         return psi,MAT,relmap,rel,/*famG`JmapcalG,*/    _,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
     end if;
    
-
+    if famG`genus eq 2 then 
+        return psi,MAT,relmap,rel,/*famG`JmapcalG,*/true,famG`genus,K,famG,Gcong,famG`M,_,Tcong,oneelement,parentcalG;
+    end if;
 
 
     if verbose then printf "Computing QQ-gonality...\n"; end if;

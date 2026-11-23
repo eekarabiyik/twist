@@ -295,7 +295,7 @@ intrinsic LoadFamilies(base::MonStgElt, base_labels::MonStgElt : genus:="", inde
                     succ:=true;
                     J:=Open(path_label,"r");
                     content:=Read(J);
-                    listoflabel:=Split(content);
+                    listoflabel := Split(content : IncludeEmpty:=true);
                 catch e
                     succ:=false;
                 end try;
@@ -303,18 +303,17 @@ intrinsic LoadFamilies(base::MonStgElt, base_labels::MonStgElt : genus:="", inde
                 count:=1;
                 repeat
                     b, y := ReadObjectCheck(I);
-                    if b and (label eq "" or label eq y`family_label) then
-                        if succ then
-                            if not count gt #listoflabel then 
-                                famlabel:=Split(listoflabel[count],":")[2];
-                                famlabel;
-                                y`family_label:=famlabel;
+                    if b then
+                        if succ and count le #listoflabel then
+                            fields := Split(listoflabel[count], ":" : IncludeEmpty:=true);
+                            if #fields ge 2 and fields[2] ne "" then
+                                y`family_label := fields[2];
                             end if;
                         end if;
-                        assigned y`family_label;
-                        Append(~FAM, y);
-                        assigned FAM[#FAM]`family_label;
-                        count:=count+1;
+                        count +:= 1;
+                        if label eq "" or (assigned y`family_label and y`family_label eq label) then
+                            Append(~FAM, y);
+                        end if;
                     end if;
                 until not b;
                 delete I;

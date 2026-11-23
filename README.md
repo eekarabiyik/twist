@@ -4,24 +4,28 @@ CAUTION! A BUG WAS FOUND IN DECEMBER 2025. PLEASE UPDATE AND REDOWNLOAD THE DATA
 This repository contains the classification of modular curves upto genus 12 in terms of families. 
 Please let me know any if you have any comments or suggestions, or find any bugs: ek693@cornell.edu
 
-All the data is on: https://zenodo.org/records/15832985
+All the data is on: https://zenodo.org/records/18159016
 Associated preprint: https://eekarabiyik.github.io/files/paper.pdf
 
+## Loading families
 
+From the repository root, initialize the `Modular` submodule for a full installation.
 
-Download these files. Unpack. Put them all in a folder. Individual files in the folder should have paths similar to: `Families/Genus5/Index144` 
-In the file `Main/FindingFamilies/FamilyData/LoadData.m`, the intrinsic `LoadFamiliesGenusIndex`is used for loading the families into a list. 
+```sh
+git submodule update --init -- Modular
+```
 
-Example (assuming the data files are put into the folder `Main/Families`):
+Extract the version 3 data under `Families/` in the repository root. Each index has its own file, such as `Families/Genus5/Index144.dat` or `Families/Genus0/Index24.dat`. Start Magma from the repository root and pass the `Families` folder to the loader.
 
-`FAM:=LoadFamiliesGenusIndex("Main/Families": genus:=5,index:=144);`
-`#FAM`
-`>2247`
+```magma
+AttachSpec("spec");
+FAM := LoadFamiliesGenusIndex("./Families" : genus:=5, index:=144);
+#FAM;
+```
 
-All the families of genus 5 and index 144 are loaded. There are 2247 of them.
+For a collection split into files by agreeable label, such as `Families/Genus5/Index144/<agreeable_label>`, use `LoadFamilies` with the same folder and arguments. Both loaders are defined in [FindingFamilies/FamilyData/LoadData.m](FindingFamilies/FamilyData/LoadData.m).
 
-
-- `Example.m` demonstrates an example.
+A worked example computes a model for a group of index 192 in [FindingFamilies/Example.m](FindingFamilies/Example.m).
 
 
 The main function is `FindModel` in the file main.m in the folder `FindingFamilies/MainCode`.
@@ -33,8 +37,8 @@ It takes an arbitrary subgroup G of GL_2(Z/NZ) with full determinant, its SL2Int
 Some explanations:
 - DrewMagma folder contains a non submodule version of Andrew Sutherland's magma functions for GL2. 
 - FindingFamilies folder is the main folder for computing models and maps. 
-- CumminsPauli folder contains Cummins-Pauli classification of congruence subgroups up to genus 24. 
-- FamilyData folder contains the records for the families we use for our classification. Additionally, it includes a file that computes these families starting from the Cummins-Pauli database.
+- `FindingFamilies/CummingsPauli` contains the Cummins–Pauli classification of congruence subgroups up to genus 24.
+- `FindingFamilies/FamilyData` contains the family record definitions, data loaders, and code for constructing families from the Cummins–Pauli database.
 - FamilyFinder folder contains code for, given a group G, finding the family it lies in. This is done first by computing the agreeable closure of the group and then searching that agreeable subgroup in our data.
 - MainCode folder contains the main.m. Where everything is put together.
 

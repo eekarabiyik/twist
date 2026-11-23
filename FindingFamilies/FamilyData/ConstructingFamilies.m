@@ -7,8 +7,17 @@ This is the code for finding all groups that contain the agreeable groups up to 
 
 
 
-filename:="../FindingFamilies/CummingsPauli/CPdata.dat";  
-I:=Open(filename, "r"); 
+function OpenCPData(path)
+    for prefix in ["", "../", "twist/"] do
+        ok, file := OpenTest(prefix cat path, "r");
+        if ok then
+            return file;
+        end if;
+    end for;
+    error "Cannot open " cat path cat " from " cat GetCurrentDirectory();
+end function;
+
+I := OpenCPData("FindingFamilies/CummingsPauli/CPdata.dat");
 _,cp_data:=ReadObjectCheck(I);
 //Code by David Zywina
 
